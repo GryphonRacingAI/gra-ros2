@@ -29,6 +29,11 @@ cd ~/colcon_ws
 rosdep install -i --from-path src --rosdistro jazzy -y
 ```
 
+If RViz2 is installed add a symlink to `~/colcon_ws/src/gra-ros2/perception/src/ultralytics_ros` before building with symlink-install
+```
+ln -s /opt/ros/jazzy/bin/rviz2 ~/colcon_ws/src/gra-ros2/perception/src/ultralytics_ros/rviz2
+```
+
 Then build and source the workspace
 ```
 cd ~/colcon_ws
