@@ -51,7 +51,7 @@ echo "source ~/colcon_ws/install/setup.bash" >> ~/.bashrc
 
 Run the following command so Gazebo can find the vehicle mesh
 ```
-echo "export GZ_SIM_RESOURCE_PATH=$HOME/colcon_ws/install/simulation/share/" >> ~/.bashrc
+echo "export GZ_SIM_RESOURCE_PATH=$HOME/colcon_ws/gra-ros2/install/simulation/share/" >> ~/.bashrc
 ```
 then continue in a new terminal.
 
