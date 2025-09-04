@@ -1,0 +1,143 @@
+
+
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "ROS2 Simulation (skidpad) [local]",
+      "type": "shell",
+      "command": "cd /home/${env:USER}/colcon_ws && export GZ_SIM_RESOURCE_PATH=${cwd}/install/simulation/share/ && source install/setup.bash && exec ros2 launch simulation dynamic_event.launch.py autostart:=true event:=skidpad",
+      "presentation": { "panel": "new" }
+    },
+    {
+      "label": "ROS2 Simulation (acceleration) [local]",
+      "type": "shell",
+      "command": "cd /home/${env:USER}/colcon_ws && export GZ_SIM_RESOURCE_PATH=${cwd}/install/simulation/share/ && source install/setup.bash && exec ros2 launch simulation dynamic_event.launch.py autostart:=true event:=acceleration",
+      "presentation": { "panel": "new" }
+    },
+    {
+      "label": "ROS2 Simulation (autocross) [local]",
+      "type": "shell",
+      "command": "cd /home/${env:USER}/colcon_ws && export GZ_SIM_RESOURCE_PATH=${cwd}/install/simulation/share/ && source install/setup.bash && exec ros2 launch simulation dynamic_event.launch.py autostart:=true event:=autocross",
+      "presentation": { "panel": "new" }
+    },
+    {
+      "label": "ROS2 Simulation (trackdrive) [local]",
+      "type": "shell",
+      "command": "cd /home/${env:USER}/colcon_ws && export GZ_SIM_RESOURCE_PATH=${cwd}/install/simulation/share/ && source install/setup.bash && exec ros2 launch simulation dynamic_event.launch.py autostart:=true event:=trackdrive",
+      "presentation": { "panel": "new" }
+    },
+    {
+      "label": "rviz2 [local]",
+      "type": "shell",
+      "command": "cd /home/${env:USER}/colcon_ws && source install/setup.bash && exec rviz2 -d ${cwd}/src/rviz_config.rviz",
+      "presentation": { "panel": "new" }
+    },
+    {
+      "label": "rqt_graph [local]",
+      "type": "shell",
+      "command": "cd /home/${env:USER}/colcon_ws && source install/setup.bash && rqt_graph",
+      "presentation": { "panel": "new" }
+    },
+    {
+      "label": "Perception [local]",
+      "type": "shell",
+      "command": "cd /home/${env:USER} && source virtual_env/bin/activate && command -v python && cd /home/${env:USER}/colcon_ws && source install/setup.bash && exec ros2 launch ultralytics_ros predict_with_cloud.launch.xml use_sim_time:=true yolo_model:=conev11n.pt input_topic:=/zed2i/depth_camera/image",
+      "presentation": { "panel": "new" }
+    },
+    {
+      "label": "Pathfinder(skidpad) [local]",
+      "type": "shell",
+      "command": "cd /home/${env:USER} && source virtual_env/bin/activate && command -v python && cd /home/${env:USER}/colcon_ws && source install/setup.bash && exec ros2 run path_planning pathfinder.py --ros-args -p event:=skidpad --remap /track_map:=/perfect_cone_map",
+      "presentation": { "panel": "new" }
+    },
+    {
+      "label": "Pathfinder(acceleration) [local]",
+      "type": "shell",
+      "command": "cd /home/${env:USER} && source virtual_env/bin/activate && command -v python && cd /home/${env:USER}/colcon_ws && source install/setup.bash && exec ros2 run path_planning pathfinder.py --ros-args -p event:=acceleration --remap /track_map:=/perfect_cone_map",
+      "presentation": { "panel": "new" }
+    },
+    {
+      "label": "Pathfinder(autocross) [local]",
+      "type": "shell",
+      "command": "cd /home/${env:USER} && source virtual_env/bin/activate && command -v python && cd /home/${env:USER}/colcon_ws && source install/setup.bash && exec ros2 run path_planning pathfinder.py --ros-args -p event:=autocross --remap /track_map:=/perfect_cone_map",
+      "presentation": { "panel": "new" }
+    },
+    {
+      "label": "Pathfinder(trackdrive) [local]",
+      "type": "shell",
+      "command": "cd /home/${env:USER} && source virtual_env/bin/activate && command -v python && cd /home/${env:USER}/colcon_ws && source install/setup.bash && exec ros2 run path_planning pathfinder.py --ros-args -p event:=trackdrive --remap /track_map:=/perfect_cone_map",
+      "presentation": { "panel": "new" }
+    },
+    {
+      "label": "Perfect SLAM [local]",
+      "type": "shell",
+      "command": "cd /home/${env:USER}/colcon_ws && source install/setup.bash && exec ros2 run simulation perfect_SLAM --ros-args -p use_sim_time:=true",
+      "presentation": { "panel": "new" }
+    },
+    {
+      "label": "Pure_pursuit [local]",
+      "type": "shell",
+      "command": "cd /home/${env:USER}/colcon_ws && source install/setup.bash && exec ros2 run control pure_pursuit.py",
+      "presentation": { "panel": "new" }
+    },
+    {
+      "label": "ackerman_to_cmdvel [local]",
+      "type": "shell",
+      "command": "cd /home/${env:USER}/colcon_ws && source install/setup.bash && exec ros2 run control ackermann_to_cmdvel_node.py",
+      "presentation": { "panel": "new" }
+    },
+    {
+      "label": "Control [local]",
+      "dependsOn": [
+        "Pure_pursuit [local]",
+        "ackerman_to_cmdvel [local]"
+      ],
+      "dependsOrder": "parallel"
+    },
+    {
+      "label": "Run Full System (skidpad) [local]",
+      "dependsOn": [
+        "ROS2 Simulation (skidpad) [local]",
+        "Perception [local]",
+        "Pathfinder(skidpad) [local]",
+        "Perfect SLAM [local]",
+        "rviz2 [local]"
+      ],
+      "dependsOrder": "parallel"
+    },
+    {
+      "label": "Run Full System (acceleration) [local]",
+      "dependsOn": [
+        "ROS2 Simulation (acceleration) [local]",
+        "Perception [local]",
+        "Pathfinder(acceleration) [local]",
+        "Perfect SLAM [local]",
+        "rviz2 [local]"
+      ],
+      "dependsOrder": "parallel"
+    },
+    {
+      "label": "Run Full System (autocross) [local]",
+      "dependsOn": [
+        "ROS2 Simulation (autocross) [local]",
+        "Perception [local]",
+        "Pathfinder(autocross) [local]",
+        "Perfect SLAM [local]",
+        "rviz2 [local]"
+      ],
+      "dependsOrder": "parallel"
+    },
+    {
+      "label": "Run Full System (trackdrive) [local]",
+      "dependsOn": [
+        "ROS2 Simulation (trackdrive) [local]",
+        "Perception [local]",
+        "Pathfinder(trackdrive) [local]",
+        "Perfect SLAM [local]",
+        "rviz2 [local]"
+      ],
+      "dependsOrder": "parallel"
+    }
+  ]
+}
