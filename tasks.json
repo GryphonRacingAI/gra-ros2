@@ -58,6 +58,14 @@
       }
     },
     {
+      "label": "Build",
+      "type": "shell",
+      "command": "apptainer exec --nv --bind /run /local/data/${env:USER}/ros_jazzy.sif bash -c 'cd /local/data/${env:USER}/colcon_ws && colcon build --symlink-install'",
+      "presentation": {
+        "panel": "new"
+      }
+    },
+    {
       "label": "Control",
       "dependsOn": [
         "Pure_pursuit",

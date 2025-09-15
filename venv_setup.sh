@@ -1,7 +1,6 @@
 #!/bin/bash
-#this must be run from colcon_ws
 
-cd $HOME/colcon_ws
+cd /local/date/$USER/colcon_ws
 
 echo " pwd: $(pwd)"
 
@@ -28,7 +27,7 @@ source "$VENV_DIR/bin/activate"
 echo "Upgrading pip..."
 pip install --upgrade pip
 
-# Install requirements
+# Install requirements (for perception)
 if [ -f "$REQ_FILE" ]; then
     echo "Installing dependencies from $REQ_FILE ..."
     pip install -r "$REQ_FILE"
