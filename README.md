@@ -124,11 +124,10 @@ Make sure to install `ros-jazzy-desktop` (which includes RViz2).
 
 To source the overlays automatically every time you open a new terminal, add the following lines to the `.bashrc` script:
 ```bash
-source /opt/ros/jazzy/setup.bash
-source ~/colcon_ws/install/setup.bash
+source /opt/ros/jazzy/setup.bash; cd ~/colcon_ws/install/; source setup.bash
 ```
 
-or simply run the following
+OR simply run the following
 ```bash
 echo "source /opt/ros/jazzy/setup.bash" >> ~/.bashrc
 echo "source ~/colcon_ws/install/setup.bash" >> ~/.bashrc
