@@ -1,5 +1,4 @@
-**Note:** this is **ONLY** for UoL students with access to the Bragg Compute Cluster.
-
+**Note:** this is **ONLY** for UoL students with ACCESS to the Bragg Compute Cluster.
 
 
 ## ROS Jazzy Apptainer Setup 
@@ -8,58 +7,46 @@ Follow each bullet point in steps below.
 
 If you are using your own laptop go to [this section](#accessing-university-apptainer-containers-remotely-using-ssh-with-gui) to setup VPN and remotely access Bragg Computers.
 
-Clone `gra-ros2` into dev branch and pull all git submodules
-```bash
-mkdir -p ~/colcon_ws/src
-git clone -b dev https://github.com/GryphonRacingAI/gra-ros2.git ~/colcon_ws/src
-cd src; git submodule update --init --recursive
-cd ~/colcon_ws/src/apptainer
+1. Run the bragg setup script to get code in your shared bragg computer
 ```
->2. Run the build script to get container environment with dependencies and ros2 jazzy environment.
-```bash
-chmod u+x setup_apptainer.sh
-sh setup_apptainer.sh
+chmod u+x setup.sh
+bash setup.sh
 ```
 
-This automaticallys builds the container images and places in `/local/data/$USER` in 15 minutes
-
->3. Enter your apptainer
-```bash
-cd /local/data/$USER
-apptainer shell --nv /local/data/$USER/ros_jazzy.sif
+When you see the REPL below you are inside your Apptainer container.
 ```
-When you see the REPL below you are inside your container.
+Apptainer>
+```
 
->4. Building your gra-ros2 with colcon
+>2. Inside your container build all the ros2 packages by following the commands below 
 ```bash
 cd ~/colcon_ws
 source /opt/ros/jazzy/setup.bash
 colcon build --symlink-install --packages-skip bringup
 ```
 
-```Apptainer>```
->5. Sourcing environment
+NOTE: make sure you don't have any active python environments in background (mainly `conda`) or else `colcon` won't work
+
+`Apptainer>`
+
+>3. Sourcing environment and getting the `Apptainer>` repl in a new terminal session.
+
+The `setup.sh` script created the following files: `~/.fsairc` and the alias: `fsai`
+
 ```bash
-source ~/colcon_ws/install/setup.bash
+fsai
 ```
 
-If you are a ROS2 noob everything is setup for you to go through the [docs](docs.ros.org/en/jazzy).
+You are now inside the apptainer container: **ros_jazzy.sif** located in `/local/data/$USER/`.
 
-You can create a file in `~` like `.fsairc` with any source or config scripts.
+When inside run the command to source ros2 and colcon_ws
 ```bash
-echo "source /opt/ros/jazzy/setup.bash && source ~/colcon_ws/install/setup.bash && export GZ_SIM_RESOURCE_PATH=~/colcon_ws/install/simulation/share/" > ~/.fsairc
 source ~/.fsairc
 ```
 
-You can now try running `ros2 launch simulation `
->6. Creating an alias to enter apptainer efficiently
 
-Make sure you are not inside apptainer
-```bash
-echo "alias fsai='apptainer shell --nv /local/data/$USER/ros_jazzy.sif'" >> ~/.bashrc
-```
+You can now try running `ros2 launch simulation` command from the bottom of main [README](https://github.com/GryphonRacingAI/gra-ros2/blob/dev/README.md)
 
-Now running: `fsai` should allow you to enter your apptainer container 
 ## Creating your Custom Apptainer Container with extra dependencies
 - `cd /local/data/$USER`
 
