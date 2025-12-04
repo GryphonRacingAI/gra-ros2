@@ -13,7 +13,7 @@ From: osrf/ros:jazzy-desktop-full
     /local/data/<username>/colcon_ws/src /local/data/<username>/colcon_ws/src
  
 %post
-    # Simulation 
+    # --------- Simulation Packages --------- 
     apt-get -y update
     apt-get -y install vim
     apt-get -y install ros-jazzy-pcl-ros
@@ -23,12 +23,19 @@ From: osrf/ros:jazzy-desktop-full
     apt-get -y remove ros-jazzy-simulation
     apt-get install -y libgl1-mesa-dri libglx-mesa0
     apt-get install -y libvulkan1 vulkan-tools
-    apt-get install -y mesa-vulkan-drivers
+    apt-get install -y mesa-vulkan-drivers mesa-utils
     apt-get install -y ros-jazzy-ackermann-msgs
  
     cp /local/data/<username>/ros_gz_bridge.py /opt/ros/jazzy/lib/python3.12/site-packages/ros_gz_bridge/actions/ros_gz_bridge.py
  
+    # --------- NVIDIA drivers ---------
+    # apt install -y software-properties-common
+    # add-apt-repository -y ppa:graphics-drivers/ppa
+    # apt update -y
+    # export DEBIAN_FRONTEND=noninteractive   
+    # apt install -y nvidia-driver-550
  
+    # --------- Gazebo Harmonic ---------
     curl https://packages.osrfoundation.org/gazebo.gpg --output /usr/share/keyrings/pkgs-osrf-archive-keyring.gpg
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] http://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/gazebo-stable.list > /dev/null
     apt-get -y update
@@ -39,25 +46,23 @@ From: osrf/ros:jazzy-desktop-full
     rosdep update
 
 
-    # Bringup setup
-    ## Install Zed 2i packages
- 
-    ### Cuda 12.8
+    # ------------- Zed 2i -------------
     dpkg -i /local/data/<username>/cuda-keyring_1.1-1_all.deb
     apt-get -y update
     apt-get -y install cuda-toolkit-12-8
-    ### 1. ZDK Install
+
     apt-get install -y zstd
-    apt-get install -y libjpeg-turbo8-dev libturbojpeg  # ZDK dependency
+    apt-get install -y libjpeg-turbo8-dev libturbojpeg
  
     cd /local/data/<username>
     chmod +x ZED_SDK_Ubuntu24_cuda12.8_tensorrt10.9_v5.0.5.zstd.run
     ./ZED_SDK_Ubuntu24_cuda12.8_tensorrt10.9_v5.0.5.zstd.run -- silent
-    ### 2. Install VLP-16
+
+    # ------------- Velodyne Lidar -------------
     apt-get install -y ros-jazzy-velodyne
  
-    ## Build the zed_ros2_wrapper colcon packages
-    cd /local/data/<username>/colcon_ws/src  # THIS MUST BE PRESENT BEFOREHAND
+    # ------------- Colcon workspace setup -------------
+    cd /local/data/<username>/colcon_ws/src  # NOTE: THIS MUST BE PRESENT BEFOREHAND
     cd ..
     rosdep update
     rosdep install --from-path src --ignore-src -r -y # install dependencies    
