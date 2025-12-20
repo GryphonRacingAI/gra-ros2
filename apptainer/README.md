@@ -8,6 +8,8 @@ Follow each bullet point in steps below.
 If you are using your own laptop go to [this section](#accessing-university-apptainer-containers-remotely-using-ssh-with-gui) to setup VPN and remotely access Bragg Computers.
 
 1. Run the bragg setup script to get code in your shared bragg computer
+
+Download the file `setup.sh` inside the apptainer folder and open up a terminal to follow the instructions below
 ```
 chmod u+x setup.sh
 bash setup.sh
