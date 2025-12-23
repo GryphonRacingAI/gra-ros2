@@ -1,10 +1,21 @@
 <?xml version="1.0" ?>
 <sdf version='1.7' xmlns:xacro="http://www.ros.org/wiki/xacro">
   <world name='map'>
-
+    <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics">
+      </plugin>
+    <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster">
+    </plugin>
+    <plugin filename="gz-sim-sensors-system" name="gz::sim::systems::Sensors">
+      <render_engine>ogre2</render_engine>
+    </plugin>
+    <plugin
+        filename="gz-sim-user-commands-system"
+        name="gz::sim::systems::UserCommands">
+      </plugin>
+      
     <xacro:include filename="$(find simulation)/models/world/physics.xacro"/>
     <xacro:physics_tags/>
-    
+
     <include>
       <uri>model://simulation/models/world/sun</uri>
     </include>

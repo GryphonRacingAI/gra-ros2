@@ -45,7 +45,7 @@
                     </vertical>
                 </scan>
                 <range>
-                    <min>1.5</min>
+                    <min>0.3</min>     <!--Changed from 1.5 for fastslam implementation-->
                     <max>100.0</max>
                     <resolution>0.002</resolution>
                 </range>

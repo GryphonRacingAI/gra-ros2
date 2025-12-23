@@ -50,7 +50,7 @@
                     <format>R_FLOAT32</format>
                 </image>
                 <clip>
-                    <near>1.5</near>
+                    <near>0.3</near>
                     <far>35.0</far>
                 </clip>
                 <noise>

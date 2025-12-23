@@ -36,7 +36,7 @@ def generate_launch_description():
     
     zed_wrapper_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([os.path.join(
-                get_package_share_directory('zed_wrapper'), 'launch'),
+                get_package_share_directory('zed-ros2-wrapper'), 'launch'),
                 '/zed_camera.launch.py']),
         launch_arguments={'camera_model': 'zed2i', 'serial_number': '36485776'}.items(),
     )

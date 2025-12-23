@@ -34,7 +34,7 @@ class TrackPathfinder(Node):
         
         self.path_planner = PathPlanner(mission_type) # acceleration, skidpad, autocross, trackdrive
         self.path_pub = self.create_publisher(Path, '/path', 10)
-        self.create_subscription(ConeArray, '/track_map', self.cone_callback, 10)
+        self.create_subscription(ConeArray, '/slam/cone_map', self.cone_callback, 10)
         self.create_subscription(Odometry, '/odom', self.odom_callback, 10)
         
         self.tf_buffer = Buffer()
