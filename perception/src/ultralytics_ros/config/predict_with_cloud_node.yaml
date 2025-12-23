@@ -19,26 +19,26 @@ predict_with_cloud_node:
     # max_cluster_size: 70
 
     # LIDAR SIM PARAMS
-    # cluster_tolerance: 0.15
-    # voxel_leaf_size: 0.01
-    # min_cluster_size: 5
-    # max_cluster_size: 70
+    cluster_tolerance: 0.15
+    voxel_leaf_size: 0.01
+    min_cluster_size: 5
+    max_cluster_size: 70
 
   # REAL PARAMS
-    use_sim_time: False
-    camera_info_topic: "/zed/zed_node/left/camera_info"
+    #use_sim_time: False
+    #camera_info_topic: "/zed/zed_node/left/camera_info"
 
-    lidar_topic: "/zed/zed_node/point_cloud/cloud_registered"  # ZED2I
+    #lidar_topic: "/zed/zed_node/point_cloud/cloud_registered"  # ZED2I
     # lidar_topic: "/velodyne_points"                            # LIDAR
 
-    gz_camera_convention: False 
+    # gz_camera_convention: False 
 
   # SIM PARAMS
-    # use_sim_time: True
-    # camera_info_topic: "/zed2i/depth_camera/camera_info"
+    use_sim_time: True
+    camera_info_topic: "/zed2i/depth_camera/camera_info"
 
-    # lidar_topic: "/zed2i/depth_camera/points"                  # ZED2I    
-    # # lidar_topic: "/velodyne_points"                            # LIDAR
+    #lidar_topic: "/zed2i/depth_camera/points"                  # ZED2I    
+    lidar_topic: "/velodyne_points"                            # LIDAR
 
-    # # set to true ONLY if using sim (Gazebo)
-    # gz_camera_convention: True 
+    #set to true ONLY if using sim (Gazebo)
+    gz_camera_convention: True 

@@ -204,7 +204,7 @@ def generate_launch_description():
         ),
         SetLaunchConfiguration(
             name='map_file',
-            value='trackdrive.sdf'
+            value='track_small.sdf'
         )
         ], 
         scoped=False,
