@@ -174,3 +174,11 @@ ros2 launch ultralytics_ros predict_with_cloud.launch.xml use_sim_time:=true yol
 
 All parameters for the 3D perception node `predict_with_cloud_node` are specified in `config/predict_with_cloud_node.yaml`
 
+## Launch Slam
+
+To run the slam node, use the following command
+
+```bash
+ros2 run slam fastslam_node use_sim_time:=true
+```
+
