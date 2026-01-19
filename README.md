@@ -179,6 +179,6 @@ All parameters for the 3D perception node `predict_with_cloud_node` are specifie
 To run the slam node, use the following command
 
 ```bash
-ros2 run slam fastslam_node use_sim_time:=true
+ros2 run slam fastslam_node --ros-args -p use_sim_time:=true
 ```
 
