@@ -22,5 +22,15 @@ sh setup_apptainer.sh
 echo "alias fsai='apptainer shell --nv /local/data/$USER/ros_jazzy.sif'" >> ~/.bashrc
 echo "source /opt/ros/jazzy/setup.bash && source ~/colcon_ws/install/setup.bash && export GZ_SIM_RESOURCE_PATH=~/colcon_ws/install/simulation/share/" > ~/.fsairc
 
+# ---- Add virtual_venv for sourcing external packages ---- 
+cd /local/data/$USER
+python3.12 -m venv colcon_venv
+
+# ---- Add extra packages ----
+source colcon_venv/bin/activate
+pip install ultralytics-ros
+pip install "fsd-path-planning @ git+https://git@github.com/papalotis/ft-fsd-path-planning.git"
+deactivate
+
 # ---- Enter the apptainer container (enable NVIDIA passthrough) -----
 apptainer shell --nv /local/data/$USER/ros_jazzy.sif
