@@ -2,7 +2,7 @@ Bootstrap: docker
 From: osrf/ros:humble-desktop-full
 %files 
     # Obtain files from 
-    CD-CarMakerOffice-linux-14.0 /CD 
+    CarMakerOffice-linux-14.1.1 /CD 
 %post
     
     apt-get -y update
@@ -11,23 +11,21 @@ From: osrf/ros:humble-desktop-full
     apt-get -y install python3-pip
     apt-get -y install python3.10-venv
     
-    apt-get install -y libgl1-mesa-dri libglx-mesa0
-    apt-get install -y libvulkan1 vulkan-tools
-    apt-get install -y mesa-vulkan-drivers
-
+    
     # Carmaker Deps
+    apt-get install -y libopengl0 libglx0 libegl1
+
     export DEBIAN_FRONTEND=noninteractive
     echo "ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true" | debconf-set-selections
     apt-get install -y --reinstall ttf-mscorefonts-installer
     dpkg-reconfigure -f noninteractive ttf-mscorefonts-installer
   
     # Graphics Drivers 
-    apt install -y evince
-    apt install -y software-properties-common
-    add-apt-repository -y ppa:graphics-drivers/ppa
-    apt update -y
-    export DEBIAN_FRONTEND=noninteractive   
-    apt install -y nvidia-driver-550
+    # apt install -y software-properties-common
+    # add-apt-repository -y ppa:graphics-drivers/ppa
+    # apt update -y
+    # export DEBIAN_FRONTEND=noninteractive   
+    # apt install -y nvidia-driver-550
 
     cd CD
     chmod +x ipg-install
@@ -38,3 +36,7 @@ From: osrf/ros:humble-desktop-full
  
     cd /opt/ros
     ln -sfn humble ros2
+
+    # ---- Custom packages ----
+    # pdf viewer to read pdf carmaker docs
+    apt install -y evince

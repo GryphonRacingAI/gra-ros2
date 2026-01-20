@@ -124,11 +124,10 @@ Make sure to install `ros-jazzy-desktop` (which includes RViz2).
 
 To source the overlays automatically every time you open a new terminal, add the following lines to the `.bashrc` script:
 ```bash
-source /opt/ros/jazzy/setup.bash
-source ~/colcon_ws/install/setup.bash
+source /opt/ros/jazzy/setup.bash; cd ~/colcon_ws/install/; source setup.bash
 ```
 
-or simply run the following
+OR simply run the following
 ```bash
 echo "source /opt/ros/jazzy/setup.bash" >> ~/.bashrc
 echo "source ~/colcon_ws/install/setup.bash" >> ~/.bashrc
@@ -174,4 +173,12 @@ ros2 launch ultralytics_ros predict_with_cloud.launch.xml use_sim_time:=true yol
 | input_topic | sets camera input topic | any valid camera video topic | `/image_raw`  |
 
 All parameters for the 3D perception node `predict_with_cloud_node` are specified in `config/predict_with_cloud_node.yaml`
+
+## Launch Slam
+
+To run the slam node, use the following command
+
+```bash
+ros2 run slam fastslam_node --ros-args -p use_sim_time:=true
+```
 
