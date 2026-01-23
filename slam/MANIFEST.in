@@ -1,4 +1,0 @@
-include package.xml
-recursive-include fastslam64 *.cu *.npy *.json *.txt *.md
-recursive-include fastslam64 *.py  # Ensures all .py are caught
-exclude fastslam64/__pycache__/*
