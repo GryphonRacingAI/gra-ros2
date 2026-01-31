@@ -256,17 +256,17 @@ def generate_launch_description():
         ]
     )
 
-    spawn_pose_publisher = Node(
+    initial_map_odom_tf = Node(
         package="tf2_ros",
         executable="static_transform_publisher",
-        name="spawn_pose_publisher",
+        name="initial_map_odom_tf",
         arguments=[
-            "--x", LaunchConfiguration('x'),
-            "--y", LaunchConfiguration('y'),
-            "--z", LaunchConfiguration('z'),
-            "--roll", LaunchConfiguration('R'),
-            "--pitch", LaunchConfiguration('P'),
-            "--yaw", LaunchConfiguration('Y'),
+            "--x", "0",
+            "--y", "0",
+            "--z", "0",
+            "--roll", "0",
+            "--pitch", "0",
+            "--yaw", "0",
             "--frame-id", LaunchConfiguration('world'),
             "--child-frame-id", "odom"
         ]
@@ -309,7 +309,7 @@ def generate_launch_description():
         ros_gz_sim,
         spawn_vehicle,
         robot_state_publisher,
-        spawn_pose_publisher,
+        initial_map_odom_tf,
         ros_gz_bridge,
         ackermann_to_speed_steer_node
     ])
