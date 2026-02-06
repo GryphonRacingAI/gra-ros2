@@ -2,7 +2,15 @@
 Generates the centreline of the track based on the selected event
 
 ## Installation
-1. Create and/or source your virtual environment
+1. Create and/or source your virtual environment if you haven't already
+
+```bash
+cd ~/colcon_ws
+python3 -m venv ros_venv
+source ros_venv/bin/activate
+```
+
+
 2. Install the [ft-fsd-path-planning](https://github.com/papalotis/ft-fsd-path-planning) python package
     ```bash
     pip install "fsd-path-planning @ git+https://git@github.com/papalotis/ft-fsd-path-planning.git"

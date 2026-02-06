@@ -160,6 +160,8 @@ verbosity | sets the Gazebo console output verbosity | 0 - 4| `1`
 
 ## Launch Perception
 
+**NOTE: read the [slam](./perception/src/ultralytics_ros/README.md) to setup your python environment to run perception package**
+
 To launch the perception nodes, use the following command
 
 ```bash
@@ -176,7 +178,7 @@ All parameters for the 3D perception node `predict_with_cloud_node` are specifie
 
 ## Launch Slam
 
-NOTE: read the [slam](./slam/README.md)
+**NOTE: read the [slam](./slam/README.md) to setup your python environment to run slam package**
 
 To run the slam node, use the following command
 
