@@ -15,8 +15,7 @@ find_package(tf2_ros REQUIRED)
 find_package(ackermann_msgs REQUIRED)
 
 install(PROGRAMS
-  scripts/ackermann_to_cmdvel_node.py
-  scripts/pure_pursuit.py
+  scripts/mppi_ros_modified.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

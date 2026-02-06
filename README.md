@@ -160,7 +160,7 @@ verbosity | sets the Gazebo console output verbosity | 0 - 4| `1`
 
 ## Launch Perception
 
-**NOTE: read the [slam](./perception/src/ultralytics_ros/README.md) to setup your python environment to run perception package**
+**NOTE: read the [ultralytics_ros](./perception/src/ultralytics_ros/README.md) to setup your python environment to run perception package**
 
 To launch the perception nodes, use the following command
 
@@ -178,11 +178,19 @@ All parameters for the 3D perception node `predict_with_cloud_node` are specifie
 
 ## Launch Slam
 
+## Launch Path Planning
+
+**NOTE: read the [path_planning](./path_planning/README.md) to setup your python environment first.**
+
+```bash
+ros2 run path_planning pathfinder.py
+```
+
 **NOTE: read the [slam](./slam/README.md) to setup your python environment to run slam package**
 
 To run the slam node, use the following command
 
 ```bash
-ros2 run slam fastslam_node --ros-args -p use_sim_time:=true
+ros2 run slam fastslam_node.py --ros-args -p use_sim_time:=true
 ```
 

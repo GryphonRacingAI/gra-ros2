@@ -198,8 +198,14 @@ class MPPIController(Node):
         
         # 1. Check if ready
         if self.vehicle_state is None or self.path_arr is None:
-            return
+            if self.vehicle_state is None:
+                self.get_logger().info("Waiting for vehicle state")
+            if self.path_arr is None:
+                self.get_logger().info("Waiting for path")
 
+            self.get_clock().sleep_for(rclpy.duration.Duration(seconds=3))
+            return
+            
         x = self.vehicle_state.copy()
         N_path = self.path_arr.shape[0]
 
