@@ -176,6 +176,8 @@ All parameters for the 3D perception node `predict_with_cloud_node` are specifie
 
 ## Launch Slam
 
+NOTE: read the [slam](./slam/README.md)
+
 To run the slam node, use the following command
 
 ```bash
