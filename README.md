@@ -1,5 +1,5 @@
 # Prerequisites
->**Important:** Building pre-requisites from below is only recommended if you have a powerful enough NVIDIA machine (RTX 2060 or more) and are willing to setup dual boot `Ubuntu 24.04`. If not follow the instructions at [apptainer](https://github.com/GryphonRacingAI/gra-ros2/tree/dev/apptainer) to create a container in the university computers where all the below is done.
+>**Important:** Building pre-requisites from below is only recommended if you have a powerful enough NVIDIA machine (RTX 2060 or more) and are willing to setup dual boot `Ubuntu 24.04`. If not follow the instructions at [apptainer](https://github.com/GryphonRacingAI/apptainer) to create a container in the university computers where all the below is done.
 
 
 This package is intended for the following:
@@ -194,3 +194,28 @@ To run the slam node, use the following command
 ros2 run slam fastslam_node.py --ros-args -p use_sim_time:=true
 ```
 
+## Launch Control
+
+```bash
+ros2 run control mppi_ros_modified.py
+```
+
+# Automated Launch
+```bash
+sudo apt install tmux
+```
+
+Get the tmux automated gist locally. <script src="https://gist.github.com/PrabodhGyawali/ff1444eb6042faefe5beabe3d6b0bb50.js"></script>
+
+> Run the script and attach the tmux session
+```bash
+./run_nodes.sh
+tmux attach -t fsai
+```
+
+> Detatch tmux session
+```bash
+tmux kill-session -t fsai
+```
+
+> Edit the tmux session according to your monitoring needs
