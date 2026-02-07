@@ -200,12 +200,13 @@ ros2 run slam fastslam_node.py --ros-args -p use_sim_time:=true
 ros2 run control mppi_ros_modified.py
 ```
 
-# Automated Launch
+> [!TIP]
+> Helpful advice for automating launching 5 nodes and monitoring each of them
 ```bash
 sudo apt install tmux
 ```
 
-Get the tmux automated gist locally. 
+Get the tmux automated gist embedded at bottom of page. 
 
 > Run the script and attach the tmux session
 ```bash
@@ -221,6 +222,4 @@ tmux kill-session -t fsai
 > Edit the tmux session according to your monitoring needs
 
 
-<script 
-src="https://gist.github.com/PrabodhGyawali/ff1444eb6042faefe5beabe3d6b0bb50.js">
-</script>
+<script src="https://gist.github.com/PrabodhGyawali/ff1444eb6042faefe5beabe3d6b0bb50.js"></script>
