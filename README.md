@@ -207,8 +207,6 @@ sudo apt install tmux
 
 Get the tmux automated gist locally. 
 
-<script src="https://gist.github.com/PrabodhGyawali/ff1444eb6042faefe5beabe3d6b0bb50.js"></script>
-
 > Run the script and attach the tmux session
 ```bash
 ./run_nodes.sh
@@ -221,3 +219,8 @@ tmux kill-session -t fsai
 ```
 
 > Edit the tmux session according to your monitoring needs
+
+
+<script 
+src="https://gist.github.com/PrabodhGyawali/ff1444eb6042faefe5beabe3d6b0bb50.js">
+</script>
