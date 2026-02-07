@@ -14,6 +14,7 @@ find_package(nav_msgs REQUIRED)
 find_package(visualization_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
+find_package(ament_index_cpp REQUIRED)
 find_package(ros_gz REQUIRED)
 find_package(ros_gz_interfaces REQUIRED)
 find_package(common_msgs REQUIRED)
@@ -54,11 +55,23 @@ ament_target_dependencies(ackermann_to_speed_steer
   sensor_msgs
 )
 
+add_executable(perfect_path src/perfect_path.cpp)
+ament_target_dependencies(perfect_path
+  rclcpp
+  nav_msgs
+  geometry_msgs
+  visualization_msgs
+  tf2_ros
+  tf2_geometry_msgs
+  ament_index_cpp
+)
+
 # Install executables
 install(TARGETS
   perfect_perception
   perfect_SLAM
   ackermann_to_speed_steer
+  perfect_path
   DESTINATION lib/${PROJECT_NAME}
 )
 
