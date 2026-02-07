@@ -206,7 +206,10 @@ ros2 run control mppi_ros_modified.py
 sudo apt install tmux
 ```
 
-Get the tmux automated gist embedded at bottom of page. 
+Get the tmux automated [gist](https://gist.github.com/PrabodhGyawali/ff1444eb6042faefe5beabe3d6b0bb50). 
+```bash
+chmod u+x run_nodes.sh
+```
 
 > Run the script and attach the tmux session
 ```bash
@@ -219,7 +222,4 @@ tmux attach -t fsai
 tmux kill-session -t fsai
 ```
 
-> Edit the tmux session according to your monitoring needs
-
-
-<script src="https://gist.github.com/PrabodhGyawali/ff1444eb6042faefe5beabe3d6b0bb50.js"></script>
+> Edit the tmux script according to your monitoring needs
