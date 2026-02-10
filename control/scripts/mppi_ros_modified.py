@@ -82,13 +82,25 @@ def dynamics_vec(X, U):
 class MPPIController(Node):
     def __init__(self):
         super().__init__('mppi_controller')
+        
+        self.path_topic = self.declare_parameter('path_topic', '/perfect_path').value
+        self.ask_path_topic = self.declare_parameter('ask_path_topic', False).value
+
+        if self.ask_path_topic and sys.stdin.isatty():
+            ans = input("Choose path topic: [1] /path  [2] /perfect_path (default 1): ").strip()
+            if ans == "2":
+                self.path_topic = "/perfect_path"
+            else:
+                self.path_topic = "/path"
+
+        self.get_logger().info(f"[MPPI] Using path topic: {self.path_topic}")
 
         # -- Subscribers --
         self.sub_odom = self.create_subscription(
             Odometry, '/odom', self.odom_callback, 10)
         
         self.sub_path = self.create_subscription(
-            Path, '/path', self.path_callback, 10)
+            Path, self.path_topic, self.path_callback, 10)
             
         self.sub_cones = self.create_subscription(
             PointCloud2, '/slam/cones', self.cone_callback, 10)
