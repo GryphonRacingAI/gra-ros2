@@ -23,9 +23,16 @@ public:
     tf_buffer_(this->get_clock()),
     tf_listener_(tf_buffer_)
   {
-    const auto default_config =
-      ament_index_cpp::get_package_share_directory("simulation") +
-      "/config/perfect_path_acceleration_pairs.txt";
+    const auto share_dir =
+      ament_index_cpp::get_package_share_directory("simulation") + "/config";
+
+    track_ = this->declare_parameter<std::string>("track", "acceleration");
+    std::string default_config;
+    if (track_ == "mppi_track") {
+      default_config = share_dir + "/perfect_path_mppi_track_pairs.txt";
+    } else {
+      default_config = share_dir + "/perfect_path_acceleration_pairs.txt";
+    }
 
     config_file_ = this->declare_parameter<std::string>("config_file", default_config);
     lookahead_distance_ = this->declare_parameter<double>("lookahead_distance", 30.0);
@@ -239,6 +246,7 @@ private:
     publish_markers(path.header.stamp, mids_odom, seg);
   }
 
+  std::string track_;
   std::string config_file_;
   double lookahead_distance_{30.0};
   int max_points_{200};

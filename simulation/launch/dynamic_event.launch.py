@@ -213,6 +213,46 @@ def generate_launch_description():
             )
     )
 
+    set_mppi_track = GroupAction([
+        SetLaunchConfiguration(
+             name='x',
+             value='7.5'
+        ),
+        SetLaunchConfiguration(
+            name='y',
+            value='44.0'
+        ),
+        SetLaunchConfiguration(
+             name='z',
+             value='0.0'
+        ),
+        SetLaunchConfiguration(
+            name='R',
+            value='0.0'
+        ),
+        SetLaunchConfiguration(
+             name='P',
+             value='0.0'
+        ),
+        SetLaunchConfiguration(
+            name='Y',
+            value='0.0'
+        ),
+        SetLaunchConfiguration(
+            name='world',
+            value='map'
+        ),
+        SetLaunchConfiguration(
+            name='map_file',
+            value='mppi_track.sdf'
+        )
+        ], 
+        scoped=False,
+        condition=IfCondition(
+            EqualsSubstitution(LaunchConfiguration('event'), "mppi_track")
+            )
+    )
+
     set_gz_args = SetLaunchConfiguration(
         name='gz_args',
         value=[LaunchConfiguration('map_file'), ' ',
@@ -304,6 +344,7 @@ def generate_launch_description():
         set_skidpad,
         set_autocross,
         set_trackdrive,
+        set_mppi_track,
         set_gz_args,
         
         ros_gz_sim,
