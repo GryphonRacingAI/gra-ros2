@@ -1,5 +1,5 @@
 # Prerequisites
->**Important:** Building pre-requisites from below is only recommended if you have a powerful enough NVIDIA machine (RTX 2060 or more) and are willing to setup dual boot `Ubuntu 24.04`. If not follow the instructions at [apptainer](https://github.com/GryphonRacingAI/gra-ros2/tree/dev/apptainer) to create a container in the university computers where all the below is done.
+>**Important:** Building pre-requisites from below is only recommended if you have a powerful enough NVIDIA machine (RTX 2060 or more) and are willing to setup dual boot `Ubuntu 24.04`. If not follow the instructions at [apptainer](https://github.com/GryphonRacingAI/apptainer) to create a container in the university computers where all the below is done.
 
 
 This package is intended for the following:
@@ -160,6 +160,8 @@ verbosity | sets the Gazebo console output verbosity | 0 - 4| `1`
 
 ## Launch Perception
 
+**NOTE: read the [ultralytics_ros](./perception/src/ultralytics_ros/README.md) to setup your python environment to run perception package**
+
 To launch the perception nodes, use the following command
 
 ```bash
@@ -176,9 +178,48 @@ All parameters for the 3D perception node `predict_with_cloud_node` are specifie
 
 ## Launch Slam
 
+## Launch Path Planning
+
+**NOTE: read the [path_planning](./path_planning/README.md) to setup your python environment first.**
+
+```bash
+ros2 run path_planning pathfinder.py
+```
+
+**NOTE: read the [slam](./slam/README.md) to setup your python environment to run slam package**
+
 To run the slam node, use the following command
 
 ```bash
-ros2 run slam fastslam_node --ros-args -p use_sim_time:=true
+ros2 run slam fastslam_node.py --ros-args -p use_sim_time:=true
 ```
 
+## Launch Control
+
+```bash
+ros2 run control mppi_ros_modified.py
+```
+
+> [!TIP]
+> Helpful advice for automating launching 5 nodes and monitoring each of them
+```bash
+sudo apt install tmux
+```
+
+Get the tmux automated [gist](https://gist.github.com/PrabodhGyawali/ff1444eb6042faefe5beabe3d6b0bb50). 
+```bash
+chmod u+x run_nodes.sh
+```
+
+> Run the script and attach the tmux session
+```bash
+./run_nodes.sh
+tmux attach -t fsai
+```
+
+> Detatch tmux session
+```bash
+tmux kill-session -t fsai
+```
+
+> Edit the tmux script according to your monitoring needs

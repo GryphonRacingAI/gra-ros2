@@ -45,7 +45,7 @@ This should launch Gazebo Sim, with the acceleration track and ADS-DV vehicle mo
 The following launch arguments are provided for `dynamic_event.launch.py`
   | Argument |Description| Options | Default
 --|--|--|--|
-event | specifies which track to spawn in based on the dynamic event |`acceleration`, `skidpad`, `autocross`, `trackdrive` |`acceleration`
+event | specifies which track to spawn in based on the dynamic event |`acceleration`, `skidpad`, `autocross`, `trackdrive`, `mppi_track` |`acceleration`
 autostart | starts the simulation automatically |`true`, `false`|`true`
 model_file | path to the vehicle model sdf file | Any valid path to vehicle sdf model |hard-coded path
 name | sets the vehicle name in Gazebo | Any valid string|`ads_dv`
@@ -86,12 +86,30 @@ ros2 run simulation perfect_SLAM --ros-args -p use_sim_time:=true
 
 <img width="1525" height="396" alt="perfect_SLAM" src="https://github.com/user-attachments/assets/560ce03d-fa46-4be7-990e-6f47c514d203" />
 
+### Run Perfect Path
+```bash
+ros2 run simulation perfect_path --ros-args -p use_sim_time:=true
+```
+
+To select the track for the perfect path (must match the spawned world):
+
+| Parameter | Description | Options | Default |
+|-----------|-------------|---------|---------|
+| track | Track whose cone-pairs config is used | `acceleration`, `mppi_track` | `acceleration` |
+| config_file | Override with a custom cone-pairs file path | Any valid path | Derived from `track` |
+
+Example for MPPI track:
+```bash
+ros2 run simulation perfect_path --ros-args -p use_sim_time:=true -p track:=mppi_track
+```
+
 ## Interface
 
 | Node | Inputs | Outputs | Description |
 |------|--------|---------|-------------|
 | `perfect_SLAM` | `/logical_camera` (ros_gz_interfaces/msg/LogicalCameraImage) | `/perfect_cone_map` (common_msgs/msg/ConeArray)<br>`/perfect_cone_map_markers` (visualization_msgs/msg/MarkerArray)<br>`/perfect_odom` (nav_msgs/msg/Odometry) | Perfect SLAM simulation node |
 | `perfect_perception` | `/logical_camera` (ros_gz_interfaces/msg/LogicalCameraImage) | `/perfect_cone_array` (common_msgs/msg/ConeArray)<br>`/perfect_cone_array_markers` (visualization_msgs/msg/MarkerArray) | Perfect perception simulation node |
+| `perfect_path` | `/odom` (nav_msgs/msg/Odometry) | `/perfect_path` (nav_msgs/msg/Path)<br>`/perfect_path_markers` (visualization_msgs/msg/MarkerArray) | Publishes a hardcoded lookahead path from a cone-pairs config; use `track` param to choose acceleration or mppi_track |
 | `ackermann_to_speed_steer` | `/ackermann_cmd` (ackermann_msgs/msg/AckermannDrive)<br>`/joint_states` (sensor_msgs/msg/JointState) | `/speed_cmd` (std_msgs/msg/Float64)<br>`/steer_angle_cmd` (std_msgs/msg/Float64)<br>`/steer_angle` (std_msgs/msg/Float64) | Converts Ackermann commands to speed and steering commands, and publishes current steering angle
 
 **Note:** both perfect_perception and perfect_SLAM rely on TF to get some ground truth data (vehicle pose, cone poses, etc.), as this is how it is currently bridged from Gazebo to ROS.
