@@ -103,6 +103,18 @@ Example for MPPI track:
 ros2 run simulation perfect_path --ros-args -p use_sim_time:=true -p track:=mppi_track
 ```
 
+### Run Teleop 
+
+Install the Slider Publisher package
+```bash
+sudo apt install ros-jazzy-slider-publisher
+```
+
+Launch:
+```bash
+ros2 launch simulation teleop.launch
+```
+
 ## Interface
 
 | Node | Inputs | Outputs | Description |
