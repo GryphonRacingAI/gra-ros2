@@ -1,0 +1,12 @@
+speed_cmd:
+  type: std_msgs/msg/Float64
+  data:
+    min: -5
+    max: 5
+    default: 0
+steer_angle_cmd:
+  type: std_msgs/msg/Float64
+  data:
+    min: -10
+    max: 10
+    default: 0
