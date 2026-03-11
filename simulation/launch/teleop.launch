@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="slider_publisher" exec="slider_publisher" name="teleop" output="screen">
+        <param name="config" value="$(find-pkg-share simulation)/config/teleop.yaml"/>
+    </node>
+</launch>
