@@ -9,7 +9,7 @@ from nav_msgs.msg import Path, Odometry
 from sensor_msgs.msg import PointCloud2
 from ackermann_msgs.msg import AckermannDrive, AckermannDriveStamped
 from geometry_msgs.msg import PoseStamped, Point32
-from std_msgs.msg import Header
+from std_msgs.msg import Header, String
 
 # TF transformations
 from tf_transformations import euler_from_quaternion
@@ -106,7 +106,8 @@ class MPPIController(Node):
         self.inner_cones_csv = self.declare_parameter('inner_cones_csv', '').value
         self.outer_cones_csv = self.declare_parameter('outer_cones_csv', '').value
 
-        inner_cones, outer_cones = self._load_cones()
+        inner_cones = np.empty((0, 2))
+        outer_cones = np.empty((0, 2))
 
         n = min(len(inner_cones), len(outer_cones))
         inner_cones = inner_cones[:n]
@@ -117,13 +118,15 @@ class MPPIController(Node):
         self.get_logger().info(f"[MPPI] Using path topic: {self.path_topic}")
 
         self.sub_odom = self.create_subscription(
-            Odometry, '/odom', self.odom_callback, 10)
+           Odometry, '/odom', self.odom_callback, 10)
 
-        self.sub_path = self.create_subscription(
-            Path, self.path_topic, self.path_callback, 10)
+        self.sub_path = None
+        if self.test_mode != 'static_test':
+            self.sub_path = self.create_subscription(
+               Path, self.path_topic, self.path_callback, 10)
 
         self.sub_cones = self.create_subscription(
-            PointCloud2, '/slam/cones', self.cone_callback, 10)
+           PointCloud2, '/slam/cones', self.cone_callback, 10)
 
         self.pub_drive = self.create_publisher(
             AckermannDriveStamped, '/drive', 10)
@@ -133,8 +136,13 @@ class MPPIController(Node):
 
         self.pub_viz_path = self.create_publisher(
             Path, '/viz/mppi_path', 10)
+        
+        self.pub_params = self.create_publisher(
+            String, '/mppi/parameters', 10)
 
         self.timer = self.create_timer(DT, self.control_loop)
+        
+        self._publish_parameters()
 
         self.vehicle_state = None
         self.path_arr = None
@@ -153,7 +161,12 @@ class MPPIController(Node):
         self.initialized = False
 
         if self.test_mode == 'static_test':
+            self.get_logger().info("[MPPI] Running in static test mode")
+            inner_cones, outer_cones = self._load_cones()
             self._generate_static_path(inner_cones, outer_cones)
+        else:
+            # TODO: Implement path loading from topic
+            pass
 
         self.get_logger().info("MPPI Controller Initialized")
 
@@ -161,6 +174,7 @@ class MPPIController(Node):
         if self.inner_cones_csv and self.outer_cones_csv:
             inner = np.loadtxt(self.inner_cones_csv, delimiter=',')
             outer = np.loadtxt(self.outer_cones_csv, delimiter=',')
+            self.get_logger().info(f"Loaded {len(inner)} inner cones and {len(outer)} outer cones")
             return inner, outer
         return np.empty((0, 2)), np.empty((0, 2))
 
@@ -222,6 +236,8 @@ class MPPIController(Node):
         Receive global path, calculate curvature and speed profile.
         Assumes path doesn't change drastically every frame.
         """
+        if self.test_mode == 'static_test':
+            return
         n_points = len(msg.poses)
         if n_points < 2:
             return
@@ -282,15 +298,15 @@ class MPPIController(Node):
         """ Main MPPI Iteration (Called at 20Hz) """
         
         # 1. Check if ready
-        if self.vehicle_state is None or self.path_arr is None:
-            if self.vehicle_state is None:
-                self.get_logger().info("Waiting for vehicle state")
-            if self.path_arr is None:
-                self.get_logger().info("Waiting for path")
-
+        if self.vehicle_state is None:
+            self.get_logger().info("Waiting for vehicle state")
             self.get_clock().sleep_for(rclpy.duration.Duration(seconds=3))
             return
-            
+        if self.path_arr is None:
+            self.get_logger().info("Waiting for path")
+            self.get_clock().sleep_for(rclpy.duration.Duration(seconds=3))
+            return
+        
         x = self.vehicle_state.copy()
         N_path = self.path_arr.shape[0]
 
@@ -458,6 +474,33 @@ class MPPIController(Node):
             pose.pose.position.y = pt[1]
             msg.poses.append(pose)
         self.pub_viz_path.publish(msg)
+    
+    def _publish_parameters(self):
+        """Publish MPPI parameters for logging"""
+        import json
+        params = {
+            'DT': DT,
+            'H': H,
+            'K': K,
+            'LAMBDA': LAMBDA,
+            'SIGMA_U_BASE': SIGMA_U_BASE.tolist(),
+            'SIGMA_U_MIN': SIGMA_U_MIN.tolist(),
+            'W_PATH': W_PATH,
+            'W_HEADING': W_HEADING,
+            'W_SPEED': W_SPEED,
+            'W_CONTROL': W_CONTROL,
+            'W_TERMINAL': W_TERMINAL,
+            'W_OBSTACLE': W_OBSTACLE,
+            'MAX_A': MAX_A,
+            'MIN_V': MIN_V,
+            'MAX_V': MAX_V,
+            'MAX_STEER': MAX_STEER,
+            'L_BASE': L_BASE
+        }
+        msg = String()
+        msg.data = json.dumps(params)
+        self.pub_params.publish(msg)
+        self.get_logger().info("Published MPPI parameters")
 
 def main(args=None):
     rclpy.init(args=args)

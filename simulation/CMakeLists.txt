@@ -76,8 +76,17 @@ install(TARGETS
 )
 
 # Install directories
-install(DIRECTORY config launch models
+install(DIRECTORY config launch models tracks
   DESTINATION share/${PROJECT_NAME}
+)
+
+# Install Python scripts
+install(PROGRAMS
+  scripts/headless_sim_monitor.py
+  scripts/results_manager.py
+  scripts/run_headless_batch.py
+  scripts/generate_mppi_track_world.py
+  DESTINATION lib/${PROJECT_NAME}
 )
 
 if(BUILD_TESTING)
