@@ -37,7 +37,9 @@ Leeds Gryphon Racing AI Gazebo simulation environment with an ADS-DV model, sens
 
 ```bash
 ros2 launch simulation dynamic_event.launch.py autostart:=true
+pkill gz # This must be ran, to prevent Gazebo from glitching and actually stop all launched gz and ros2 nodes 
 ```
+
 
 This should launch Gazebo Sim, with the acceleration track and ADS-DV vehicle model spawned in.
 ![Example](https://github.com/user-attachments/assets/99254e31-ed0a-49ae-9bee-ec22e6a2810f)
