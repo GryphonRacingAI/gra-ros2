@@ -66,12 +66,19 @@ ament_target_dependencies(perfect_path
   ament_index_cpp
 )
 
+add_executable(headless_monitor src/headless_monitor.cpp)
+ament_target_dependencies(headless_monitor
+  rclcpp
+  nav_msgs
+)
+
 # Install executables
 install(TARGETS
   perfect_perception
   perfect_SLAM
   ackermann_to_speed_steer
   perfect_path
+  headless_monitor
   DESTINATION lib/${PROJECT_NAME}
 )
 
@@ -82,9 +89,6 @@ install(DIRECTORY config launch models tracks
 
 # Install Python scripts
 install(PROGRAMS
-  scripts/headless_sim_monitor.py
-  scripts/results_manager.py
-  scripts/run_headless_batch.py
   scripts/generate_mppi_track_world.py
   DESTINATION lib/${PROJECT_NAME}
 )
