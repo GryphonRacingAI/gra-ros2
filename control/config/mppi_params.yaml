@@ -1,0 +1,39 @@
+mppi_controller:
+  ros__parameters:
+    # MPPI Core Parameters
+    dt: 0.05
+    horizon: 12
+    num_rollouts: 500
+    lambda: 2.0
+    sigma_u_base: [0.6, 0.15]
+    sigma_u_min: [0.2, 0.05]
+    
+    # Cost Weights
+    w_path: 40.0
+    w_heading: 5.0
+    w_speed: 2.0
+    w_control: 4.5
+    w_terminal: 1.0
+    w_obstacle: 150.0
+    
+    # Vehicle Limits
+    max_accel: 3.0
+    min_vel: -1.0
+    max_vel: 8.0
+    max_steer: 0.5235987756  # np.pi/6
+    
+    # Vehicle Geometry
+    wheelbase: 1.6
+    
+    # Path Following
+    search_window: 50
+    safety_distance: 0.6
+    cone_radius: 0.2
+    
+    # Speed Profile
+    a_lat_max: 2.0
+    v_max_straight: 7.0
+    v_min: 1.0
+    
+    # Noise Smoothing
+    alpha: 0.5

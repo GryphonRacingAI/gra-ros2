@@ -25,48 +25,78 @@ source install/setup.bash
 Model Predictive Path Integral controller that consumes a planned path, odometry, and cone obstacles to publish Ackermann commands.
 
 ```bash
-ros2 run control mppi_ros_modified.py
+ros2 run control mppi_ros_modified --ros-args --params-file /home/prabo/colcon_ws/src/control/config/mppi_params.yaml
 ```
 
 ### ROS Parameters
 
+All parameters are loaded from the YAML config file:
+
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `path_topic` | string | `/perfect_path` | Topic for the reference path (`nav_msgs/Path`) |
-| `ask_path_topic` | bool | `false` | If true, prompt at startup to choose between `/path` or `/perfect_path` |
-
-Example:
-
-```bash
-ros2 run control mppi_ros_modified.py --ros-args \
-  -p path_topic:=/path \
-  -p ask_path_topic:=false
-```
-
-### Script Constants (edit `mppi_ros_modified.py` to change)
-
-| Constant | Value | Description |
-|----------|-------|-------------|
-| `DT` | 0.05 | Control loop period (s) |
-| `H` | 16 | Planning horizon (steps) |
-| `K` | 200 | Number of rollouts |
-| `LAMBDA` | 2.0 | MPPI temperature |
-| `SIGMA_U_BASE` | [0.6, 0.15] | Base noise std for [accel, steer] |
-| `SIGMA_U_MIN` | [0.2, 0.05] | Min noise std |
-| `W_PATH` | 20.0 | Path deviation weight |
-| `W_HEADING` | 3.0 | Heading error weight |
-| `W_SPEED` | 10.0 | Overspeed penalty weight |
-| `W_CONTROL` | 1.5 | Control effort weight |
-| `W_TERMINAL` | 5.0 | Terminal cost weight |
-| `W_OBSTACLE` | 15.0 | Obstacle avoidance weight |
-| `MAX_A` | 3.0 | Max acceleration (m/s²) |
-| `MIN_V` | -1.0 | Min velocity (m/s) |
-| `MAX_V` | 8.0 | Max velocity (m/s) |
-| `MAX_STEER` | π/6 | Max steering angle (rad) |
-| `L_BASE` | 1.6 | Wheelbase (m) |
+| **MPPI Core** ||||
+| `dt` | float | 0.05 | Control loop period in seconds (20Hz) |
+| `horizon` | int | 12 | Planning horizon in steps (H × dt = 0.6s lookahead) |
+| `num_rollouts` | int | 500 | Number of Monte Carlo rollouts (K). More = better sampling but slower |
+| `lambda` | float | 2.0 | MPPI temperature. Lower = more aggressive exploitation |
+| `sigma_u_base` | float[2] | [0.6, 0.15] | Base noise std dev for [acceleration, steering] |
+| `sigma_u_min` | float[2] | [0.2, 0.05] | Minimum noise std dev |
+| **Cost Weights** ||||
+| `w_path` | float | 40.0 | Weight for path deviation cost |
+| `w_heading` | float | 5.0 | Weight for heading error cost |
+| `w_speed` | float | 2.0 | Weight for overspeed penalty |
+| `w_control` | float | 4.5 | Weight for control effort (smoothness) |
+| `w_terminal` | float | 1.0 | Weight for terminal position error |
+| `w_obstacle` | float | 150.0 | Weight for obstacle avoidance (high = safety priority) |
+| **Vehicle Limits** ||||
+| `max_accel` | float | 3.0 | Maximum acceleration in m/s² |
+| `min_vel` | float | -1.0 | Minimum velocity in m/s (allows small reverse) |
+| `max_vel` | float | 8.0 | Maximum velocity in m/s |
+| `max_steer` | float | 0.524 | Maximum steering angle in radians (~30°) |
+| **Vehicle Geometry** ||||
+| `wheelbase` | float | 1.6 | Distance between front and rear axles in meters |
+| **Path Following** ||||
+| `search_window` | int | 50 | Number of path points to search for closest point |
+| `safety_distance` | float | 0.6 | Minimum safe distance from obstacles in meters |
+| `cone_radius` | float | 0.2 | Assumed radius of cone obstacles in meters |
+| **Speed Profile** ||||
+| `a_lat_max` | float | 2.0 | Maximum lateral acceleration for curvature-based speed limits |
+| `v_max_straight` | float | 7.0 | Maximum speed on straight sections in m/s |
+| `v_min` | float | 1.0 | Minimum reference speed (prevents stalling in sharp turns) |
+| **Noise Smoothing** ||||
+| `alpha` | float | 0.5 | Exponential smoothing for noise correlation (0=uncorrelated, 1=fully correlated) |
 
 # Interface
 
-| Node | Inputs | Outputs | Description |
-|------|--------|---------|-------------|
-| `mppi_ros_modified.py` | `/odom` (`nav_msgs/Odometry`)<br>`path_topic` (`nav_msgs/Path`, default `/perfect_path`)<br>`/slam/cones` (`sensor_msgs/PointCloud2`) | `/drive` (`ackermann_msgs/AckermannDriveStamped`)<br>`/ackermann_cmd` (`ackermann_msgs/AckermannDrive`)<br>`/viz/mppi_path` (`nav_msgs/Path`, optional) | MPPI path-following controller with obstacle avoidance |
+```mermaid
+flowchart LR
+    subgraph Inputs
+        ODOM["/odom<br>nav_msgs/Odometry"]
+        PATH["/path<br>nav_msgs/Path"]
+        CONES["/slam/cones<br>sensor_msgs/PointCloud2"]
+    end
+
+    MPPI[mppi_controller]
+
+    subgraph Outputs
+        DRIVE["/drive<br>ackermann_msgs/AckermannDriveStamped"]
+        ACK["/ackermann_cmd<br>ackermann_msgs/AckermannDrive"]
+        VIZ["/viz/mppi_path<br>nav_msgs/Path"]
+    end
+
+    ODOM --> MPPI
+    PATH --> MPPI
+    CONES --> MPPI
+    MPPI --> DRIVE
+    MPPI --> ACK
+    MPPI -.-> VIZ
+```
+
+| Topic | Type | Direction | Description |
+|-------|------|-----------|-------------|
+| `/odom` | `nav_msgs/Odometry` | Input | Vehicle pose and velocity from odometry |
+| `/path` | `nav_msgs/Path` | Input | Reference path to follow (configurable via `path_topic` param) |
+| `/slam/cones` | `sensor_msgs/PointCloud2` | Input | Detected cone positions for obstacle avoidance |
+| `/drive` | `ackermann_msgs/AckermannDriveStamped` | Output | Primary drive command with timestamp |
+| `/ackermann_cmd` | `ackermann_msgs/AckermannDrive` | Output | Ackermann command (alternative interface) |
+| `/viz/mppi_path` | `nav_msgs/Path` | Output | (Optional) Visualization of planned trajectory |
