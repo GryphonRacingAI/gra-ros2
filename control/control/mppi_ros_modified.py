@@ -2,7 +2,8 @@
 import rclpy
 from rclpy.node import Node
 import numpy as np
-import math
+
+from control.path_processor import PathProcessor, PathProcessorConfig
 
 # ROS Messages
 from nav_msgs.msg import Path, Odometry
@@ -15,50 +16,6 @@ from std_msgs.msg import Header, String
 from tf_transformations import euler_from_quaternion
 import sensor_msgs_py.point_cloud2 as pc2
 
-# ============================
-# Parameters & Constants
-# ============================
-DT = 0.05
-H = 12          # Horizon
-K = 500         # Number of rollouts
-LAMBDA = 2.0
-SIGMA_U_BASE = np.array([0.6, 0.15])
-SIGMA_U_MIN  = np.array([0.2, 0.05])
-
-# Weights
-W_PATH = 40.0
-W_HEADING = 5.0
-W_SPEED = 2.0
-W_CONTROL = 4.5
-W_TERMINAL = 1.0
-W_OBSTACLE = 150.0
-
-# Limits
-MAX_A = 3.0
-MIN_V = -1.0
-MAX_V = 8.0
-MAX_STEER = np.pi/6  # ~0.52 rad
-
-# Vehicle specific
-L_BASE = 1.6 # Wheelbase (Approximate, used for better kinematic model if needed)
-
-def interpolate_points(arr, num_between=3):
-    result = []
-
-    for i in range(len(arr) - 1):
-        start = arr[i]
-        end = arr[i + 1]
-
-        # generate num_between + 2 points including start/end
-        segment = np.linspace(start, end, num_between + 2)
-
-        # avoid duplicating the start point except for the first segment
-        if i > 0:
-            segment = segment[1:]
-
-        result.extend(segment)
-
-    return np.array(result)
 
 # Helper Functions
 def clamp(x, lo, hi):
@@ -67,7 +24,7 @@ def clamp(x, lo, hi):
 def normalize_angle(theta):
     return np.arctan2(np.sin(theta), np.cos(theta))
 
-def dynamics_vec(X, U):
+def dynamics_vec(X, U, dt, max_accel, max_steer, min_vel, max_vel):
     """
     Vectorized dynamics:
     X: (K, H+1, 4)  [x, y, theta, v]
@@ -77,8 +34,8 @@ def dynamics_vec(X, U):
     
     # Note: X is mutable and updated in place for next steps
     for h in range(H_curr):
-        a = clamp(U[:, h, 0], -MAX_A, MAX_A)
-        steer = clamp(U[:, h, 1], -MAX_STEER, MAX_STEER)
+        a = clamp(U[:, h, 0], -max_accel, max_accel)
+        steer = clamp(U[:, h, 1], -max_steer, max_steer)
         
         theta = X[:, h, 2]
         v = X[:, h, 3]
@@ -90,10 +47,10 @@ def dynamics_vec(X, U):
         # OR dtheta = steer * dt (Simplified model from original script)
         
         # Using the Simplified Model from original script to preserve behavior:
-        X[:, h+1, 0] = X[:, h, 0] + DT * v * np.cos(theta)
-        X[:, h+1, 1] = X[:, h, 1] + DT * v * np.sin(theta)
-        X[:, h+1, 2] = theta + DT * steer # Note: This treats steer as yaw rate
-        X[:, h+1, 3] = clamp(v + DT * a, MIN_V, MAX_V)
+        X[:, h+1, 0] = X[:, h, 0] + dt * v * np.cos(theta)
+        X[:, h+1, 1] = X[:, h, 1] + dt * v * np.sin(theta)
+        X[:, h+1, 2] = theta + dt * steer # Note: This treats steer as yaw rate
+        X[:, h+1, 3] = clamp(v + dt * a, min_vel, max_vel)
 
     return X
 
@@ -105,6 +62,50 @@ class MPPIController(Node):
         self.test_mode = self.declare_parameter('test_mode', '').value
         self.inner_cones_csv = self.declare_parameter('inner_cones_csv', '').value
         self.outer_cones_csv = self.declare_parameter('outer_cones_csv', '').value
+
+        # MPPI Core Parameters
+        self.dt = self.declare_parameter('dt', 0.05).value
+        self.horizon = self.declare_parameter('horizon', 12).value
+        self.num_rollouts = self.declare_parameter('num_rollouts', 500).value
+        self.lambda_ = self.declare_parameter('lambda', 2.0).value
+        self.sigma_u_base = np.array(self.declare_parameter('sigma_u_base', [0.6, 0.15]).value)
+        self.sigma_u_min = np.array(self.declare_parameter('sigma_u_min', [0.2, 0.05]).value)
+
+        # Cost Weights
+        self.w_path = self.declare_parameter('w_path', 40.0).value
+        self.w_heading = self.declare_parameter('w_heading', 5.0).value
+        self.w_speed = self.declare_parameter('w_speed', 2.0).value
+        self.w_control = self.declare_parameter('w_control', 4.5).value
+        self.w_terminal = self.declare_parameter('w_terminal', 1.0).value
+        self.w_obstacle = self.declare_parameter('w_obstacle', 150.0).value
+
+        # Vehicle Limits
+        self.max_accel = self.declare_parameter('max_accel', 3.0).value
+        self.min_vel = self.declare_parameter('min_vel', -1.0).value
+        self.max_vel = self.declare_parameter('max_vel', 8.0).value
+        self.max_steer = self.declare_parameter('max_steer', np.pi/6).value
+
+        # Vehicle Geometry
+        self.wheelbase = self.declare_parameter('wheelbase', 1.6).value
+
+        # Path Following
+        self.search_window = self.declare_parameter('search_window', 50).value
+        self.safety_distance = self.declare_parameter('safety_distance', 0.6).value
+        self.cone_radius = self.declare_parameter('cone_radius', 0.2).value
+
+        # Speed Profile
+        self.a_lat_max = self.declare_parameter('a_lat_max', 2.0).value
+        self.v_max_straight = self.declare_parameter('v_max_straight', 7.0).value
+        self.v_min = self.declare_parameter('v_min', 1.0).value
+
+        self.path_processor = PathProcessor(PathProcessorConfig(
+            a_lat_max=self.a_lat_max,
+            v_max_straight=self.v_max_straight,
+            v_min=self.v_min,
+        ))
+
+        # Noise Smoothing
+        self.alpha = self.declare_parameter('alpha', 0.5).value
 
         inner_cones = np.empty((0, 2))
         outer_cones = np.empty((0, 2))
@@ -140,10 +141,8 @@ class MPPIController(Node):
         self.pub_params = self.create_publisher(
             String, '/mppi/parameters', 10)
 
-        self.timer = self.create_timer(DT, self.control_loop)
+        self.timer = self.create_timer(self.dt, self.control_loop)
         
-        self._publish_parameters()
-
         self.vehicle_state = None
         self.path_arr = None
         self.path_heading = None
@@ -155,7 +154,7 @@ class MPPIController(Node):
                 np.hstack([outer_cones, r2[:, None]])
             ])
 
-        self.u0 = np.zeros((H, 2))
+        self.u0 = np.zeros((self.horizon, 2))
         self.u0[:, 0] = 1.0
         self.path_idx = 0
         self.initialized = False
@@ -170,6 +169,9 @@ class MPPIController(Node):
 
         self.get_logger().info("MPPI Controller Initialized")
 
+    ###
+    #  static_test methods
+    ###
     def _load_cones(self):
         if self.inner_cones_csv and self.outer_cones_csv:
             inner = np.loadtxt(self.inner_cones_csv, delimiter=',')
@@ -185,37 +187,17 @@ class MPPIController(Node):
             return
 
         midline = (inner_cones[:n] + outer_cones[:n]) / 2.0
-        path_pts = interpolate_points(midline, num_between=5)
-        path_x = path_pts[:, 0]
-        path_y = path_pts[:, 1]
-
-        dx_p = np.gradient(path_x)
-        dy_p = np.gradient(path_y)
-        ddx_p = np.gradient(dx_p)
-        ddy_p = np.gradient(dy_p)
-
-        kappa = (dx_p * ddy_p - dy_p * ddx_p) / (dx_p**2 + dy_p**2 + 1e-6)**1.5
-        kappa_abs = np.abs(kappa)
-
-        a_lat_max = 2.0
-        v_max_straight = 7.0
-        v_min = 1.0
-
-        v_ref = np.sqrt(a_lat_max / (kappa_abs + 1e-3))
-        v_ref = np.clip(v_ref, v_min, v_max_straight)
-
-        heading_ref = np.arctan2(dy_p, dx_p)
-
-        self.path_arr = path_pts
-        self.path_v_ref = v_ref
-        self.path_heading = heading_ref
+        result = self.path_processor(midline)
+        self.path_arr = result.points
+        self.path_v_ref = result.speed_ref
+        self.path_heading = result.heading
 
         self.vehicle_state = np.array([
-            path_x[0], path_y[0], heading_ref[0], 0.0
+            result.points[0, 0], result.points[0, 1], result.heading[0], 0.0
         ], dtype=float)
 
         self.get_logger().info(
-            f"Static path generated: {len(path_pts)} points from {n} cone pairs"
+            f"Static path generated: {len(result.points)} points from {n} cone pairs"
         )
 
     def odom_callback(self, msg):
@@ -238,6 +220,7 @@ class MPPIController(Node):
         """
         if self.test_mode == 'static_test':
             return
+        
         n_points = len(msg.poses)
         if n_points < 2:
             return
@@ -247,35 +230,12 @@ class MPPIController(Node):
         
         # Stack into (N, 2)
         new_path = np.column_stack((path_x, path_y))
-        new_path = interpolate_points(new_path, num_between=5)
-        path_x = new_path[:, 0]
-        path_y = new_path[:, 1]
-        
-        # Compute Gradients for Reference Speed (Same as script)
-        dx_p = np.gradient(path_x)
-        dy_p = np.gradient(path_y)
-        ddx_p = np.gradient(dx_p)
-        ddy_p = np.gradient(dy_p)
-
-        # Curvature kappa
-        kappa = (dx_p * ddy_p - dy_p * ddx_p) / (dx_p**2 + dy_p**2 + 1e-6)**1.5
-        kappa_abs = np.abs(kappa)
-
-        # Speed Profile Generation
-        a_lat_max = 2.0
-        v_max_straight = 7.0
-        v_min = 1.0
-        
-        v_ref = np.sqrt(a_lat_max / (kappa_abs + 1e-3))
-        v_ref = np.clip(v_ref, v_min, v_max_straight)
-        
-        # Heading
-        heading_ref = np.arctan2(dy_p, dx_p)
+        result = self.path_processor(new_path)
 
         # Update member variables
-        self.path_arr = new_path
-        self.path_v_ref = v_ref
-        self.path_heading = heading_ref
+        self.path_arr = result.points
+        self.path_v_ref = result.speed_ref
+        self.path_heading = result.heading
         
         # Reset index if path changes significantly (optional logic)
         # For now, we rely on the search window in the control loop
@@ -290,8 +250,8 @@ class MPPIController(Node):
             
         points_np = np.array(points_list) # (N, 2)
         
-        # Add radius column (0.2m)
-        r = 0.2 * np.ones((points_np.shape[0], 1))
+        # Add radius column
+        r = self.cone_radius * np.ones((points_np.shape[0], 1))
         self.obstacles = np.hstack([points_np, r])
 
     def control_loop(self):
@@ -314,7 +274,7 @@ class MPPIController(Node):
         # 2. Find closest path point (Search Window)
         # ------------------------
         # Search in a window around the previous index to be efficient
-        search_window = 50
+        search_window = self.search_window
         i0 = self.path_idx
         i1 = min(self.path_idx + search_window, N_path)
         
@@ -338,64 +298,64 @@ class MPPIController(Node):
         # ------------------------
         # Extract slices for Path, Heading, Speed
         # Pad if horizon goes beyond path length
-        indices = np.arange(curr_idx, curr_idx + H + 1)
+        indices = np.arange(curr_idx, curr_idx + self.horizon + 1)
         # Handle end of path (clamp to last point)
         indices_clamped = np.clip(indices, 0, N_path - 1)
         
-        ref_pts = self.path_arr[indices_clamped]          # (H+1, 2)
-        heading_ref = self.path_heading[indices_clamped[:-1]] # (H,) - heading is for steps 1..H
-        v_ref = self.path_v_ref[indices_clamped]          # (H+1,)
+        ref_pts = self.path_arr[indices_clamped]          # (self.horizon+1, 2)
+        heading_ref = self.path_heading[indices_clamped[:-1]] # (self.horizon,) - heading is for steps 1..self.horizon
+        v_ref = self.path_v_ref[indices_clamped]          # (self.horizon+1,)
 
         # ------------------------
         # 4. Sample Noise
         # ------------------------
-        noise = np.random.randn(K, H, 2) * SIGMA_U_BASE # Simplified noise for ROS speed
+        noise = np.random.randn(self.num_rollouts, self.horizon, 2) * self.sigma_u_base # Simplified noise for ROS speed
         
         # Smoothing (Time correlation)
         alpha = 0.5
-        for h in range(1, H):
-            noise[:, h, :] = alpha * noise[:, h-1, :] + (1 - alpha) * noise[:, h, :]
+        for h in range(1, self.horizon):
+            noise[:, h, :] = self.alpha * noise[:, h-1, :] + (1 - self.alpha) * noise[:, h, :]
             
         U_rollouts = self.u0[None, :, :] + noise
 
         # ------------------------
         # 5. Simulate Dynamics (Rollouts)
         # ------------------------
-        X_sim = np.zeros((K, H+1, 4))
+        X_sim = np.zeros((self.num_rollouts, self.horizon+1, 4))
         X_sim[:, 0, :] = x  # Initialize all rollouts at current state
-        X_sim = dynamics_vec(X_sim, U_rollouts)
+        X_sim = dynamics_vec(X_sim, U_rollouts, self.dt, self.max_accel, self.max_steer, self.min_vel, self.max_vel)
 
         # ------------------------
         # 6. Cost Calculation
         # ------------------------
-        cost = np.zeros(K)
+        cost = np.zeros(self.num_rollouts)
 
         # A. Path Deviation
         d_path = np.linalg.norm(X_sim[:, :, :2] - ref_pts[None, :, :], axis=2)
-        cost += W_PATH * np.sum(d_path[:, 1:], axis=1)
+        cost += self.w_path * np.sum(d_path[:, 1:], axis=1)
 
         # B. Heading Error
         sim_heading = X_sim[:, 1:, 2]
         # Normalize error
         h_err = sim_heading - heading_ref[None, :]
         h_err = np.arctan2(np.sin(h_err), np.cos(h_err))
-        cost += W_HEADING * np.sum(np.abs(h_err), axis=1)
+        cost += self.w_heading * np.sum(np.abs(h_err), axis=1)
 
         # C. Control Effort
-        cost += W_CONTROL * np.sum(U_rollouts**2, axis=(1, 2))
+        cost += self.w_control * np.sum(U_rollouts**2, axis=(1, 2))
 
         # D. Terminal Cost
-        cost += W_TERMINAL * np.linalg.norm(X_sim[:, -1, :2] - ref_pts[-1], axis=1)
+        cost += self.w_terminal * np.linalg.norm(X_sim[:, -1, :2] - ref_pts[-1], axis=1)
 
         # E. Speed Cost (Overspeed penalty)
         v_traj = X_sim[:, :, 3]
         speed_err = v_traj - v_ref[None, :]
         over_speed = np.clip(speed_err, 0.0, None)
-        cost += W_SPEED * np.sum(over_speed[:, 1:]**2, axis=1)
+        cost += self.w_speed * np.sum(over_speed[:, 1:]**2, axis=1)
 
         # F. Obstacle Cost
         if self.obstacles.shape[0] > 0:
-            # Broadcast dimensions: (K, H+1, 1, 2) - (1, 1, N_obs, 2)
+            # Broadcast dimensions: (self.num_rollouts, self.horizon+1, 1, 2) - (1, 1, N_obs, 2)
             X_pos = X_sim[:, :, :2][:, :, None, :]
             obs_pos = self.obstacles[:, :2][None, None, :, :]
             obs_r = self.obstacles[:, 2][None, None, :]
@@ -406,25 +366,25 @@ class MPPIController(Node):
             d_obs = np.linalg.norm(X_pos - obs_pos, axis=-1) - obs_r
             
             safety_dist = 0.6
-            d_pen = safety_dist - d_obs
+            d_pen = self.safety_distance - d_obs
             d_pen = np.clip(d_pen, 0.0, None)
             
-            obs_cost = W_OBSTACLE * np.sum(d_pen**2, axis=(1, 2))
+            obs_cost = self.w_obstacle * np.sum(d_pen**2, axis=(1, 2))
             cost += np.clip(obs_cost, 0.0, 1e4)
 
         # ------------------------
         # 7. Update Weights (MPPI)
         # ------------------------
         min_cost = cost.min()
-        weights = np.exp(-(cost - min_cost) / LAMBDA)
+        weights = np.exp(-(cost - min_cost) / self.lambda_)
         weights /= (weights.sum() + 1e-12)
 
         du = np.sum(weights[:, None, None] * noise, axis=0)
         self.u0 += du
         
         # Clamp controls
-        self.u0[:, 0] = clamp(self.u0[:, 0], -MAX_A, MAX_A)
-        self.u0[:, 1] = clamp(self.u0[:, 1], -MAX_STEER, MAX_STEER)
+        self.u0[:, 0] = clamp(self.u0[:, 0], -self.max_accel, self.max_accel)
+        self.u0[:, 1] = clamp(self.u0[:, 1], -self.max_steer, self.max_steer)
 
         # ------------------------
         # 8. Publish Control
@@ -436,8 +396,8 @@ class MPPIController(Node):
         # Speed command logic: 
         # Ackermann message usually takes speed, not acceleration.
         # We integrate accel for a target speed, or just send current v + dt*a
-        target_speed = x[3] + DT * accel_cmd
-        target_speed = clamp(target_speed, MIN_V, MAX_V)
+        target_speed = x[3] + self.dt * accel_cmd
+        target_speed = clamp(target_speed, self.min_vel, self.max_vel)
 
         drive_msg = AckermannDriveStamped()
         drive_msg.header.stamp = self.get_clock().now().to_msg()
@@ -475,33 +435,6 @@ class MPPIController(Node):
             msg.poses.append(pose)
         self.pub_viz_path.publish(msg)
     
-    def _publish_parameters(self):
-        """Publish MPPI parameters for logging"""
-        import json
-        params = {
-            'DT': DT,
-            'H': H,
-            'K': K,
-            'LAMBDA': LAMBDA,
-            'SIGMA_U_BASE': SIGMA_U_BASE.tolist(),
-            'SIGMA_U_MIN': SIGMA_U_MIN.tolist(),
-            'W_PATH': W_PATH,
-            'W_HEADING': W_HEADING,
-            'W_SPEED': W_SPEED,
-            'W_CONTROL': W_CONTROL,
-            'W_TERMINAL': W_TERMINAL,
-            'W_OBSTACLE': W_OBSTACLE,
-            'MAX_A': MAX_A,
-            'MIN_V': MIN_V,
-            'MAX_V': MAX_V,
-            'MAX_STEER': MAX_STEER,
-            'L_BASE': L_BASE
-        }
-        msg = String()
-        msg.data = json.dumps(params)
-        self.pub_params.publish(msg)
-        self.get_logger().info("Published MPPI parameters")
-
 def main(args=None):
     rclpy.init(args=args)
     node = MPPIController()
