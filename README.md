@@ -178,6 +178,12 @@ All parameters for the 3D perception node `predict_with_cloud_node` are specifie
 
 ## Launch Slam
 
+**NOTE: read the [slam](./slam/README.md) to setup your python environment to run slam package**
+
+```bash
+ros2 run slam fastslam_node.py --ros-args -p use_sim_time:=true
+```
+
 ## Launch Path Planning
 
 **NOTE: read the [path_planning](./path_planning/README.md) to setup your python environment first.**
