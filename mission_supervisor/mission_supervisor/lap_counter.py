@@ -35,6 +35,7 @@ class LapCounter(Node):
         # State
         self.car_position = Point()
         self.cone_positions = []
+        self.last_known_cones = None
         self.previous_position = None
         self.lap_count = 0  # Lap count
         self.in_cooldown = False
@@ -45,39 +46,72 @@ class LapCounter(Node):
         self.get_logger().info("Lap Counter node initialised (using odom frame coordinates)")
 
     def cone_callback(self, msg):
-        # Extract large orange cones from the ConeArray message (odom frame)
-        self.cone_positions = msg.large_orange_cones
+        if len(msg.large_orange_cones) < 2:
+            self.last_known_cones = None
+            return
+
+        # Determine source frame (usually velodyne or base_link)
+        source_frame = msg.header.frame_id if hasattr(msg, 'header') and msg.header.frame_id else 'base_link'
+
+        transformed_cones = []
+        for cone in msg.large_orange_cones[:2]:
+            try:
+                point_stamped = PointStamped()
+                point_stamped.header = msg.header
+                point_stamped.point = cone.position
+
+                # Transform to odom frame
+                transformed = self.tf_buffer.transform(
+                    point_stamped,
+                    self.odom_frame,
+                    timeout=Duration(seconds=0.5)
+                )
+
+                # Keep the original Cone object but update its position to odom coordinates
+                transformed_cone = copy.deepcopy(cone)
+                transformed_cone.position = transformed.point
+                transformed_cones.append(transformed_cone)
+
+            except (LookupException, ConnectivityException, ExtrapolationException) as ex:
+                self.get_logger().warning(f"Could not transform cone from {source_frame} to odom: {ex}")
+                return 
 
     def odom_callback(self, msg):
         # Odometry is in odom frame, same as cones - perfect coordinate consistency
+        # self.get_logger().info(f"Using {len(self.cone_positions)} live cones, latched={self.last_known_cones is not None}")
         self.car_position = msg.pose.pose.position
 
-        if self.previous_position is not None and len(self.cone_positions) >= 2 and not self.in_cooldown:
-            first_cone = self.cone_positions[0]
-            second_cone = self.cone_positions[1]
+        if self.previous_position is not None and self.last_known_cones is not None and not self.in_cooldown:
+            first_cone = self.last_known_cones[0]
+            second_cone = self.last_known_cones[1]
 
             # Calculate vectors - using .position since cones have position field
             finish_line_vector = (second_cone.position.x - first_cone.position.x, second_cone.position.y - first_cone.position.y)
             prev_car_vector = (self.previous_position.x - first_cone.position.x, self.previous_position.y - first_cone.position.y)
             curr_car_vector = (self.car_position.x - first_cone.position.x, self.car_position.y - first_cone.position.y)
+            # self.get_logger().info(f"Vectors: finish_line={finish_line_vector}, prev_car={prev_car_vector}, curr_car={curr_car_vector}")
 
             # Calculate cross products to determine if the car has crossed the finish line
             prev_cross = finish_line_vector[0] * prev_car_vector[1] - finish_line_vector[1] * prev_car_vector[0]
             curr_cross = finish_line_vector[0] * curr_car_vector[1] - finish_line_vector[1] * curr_car_vector[0]
+            # self.get_logger().info(f"Cross products: prev_cross={prev_cross:.6f}, curr_cross={curr_cross:.6f}, product={prev_cross * curr_cross:.6f}")
 
             if prev_cross * curr_cross < 0:  # Signs are different, indicating a crossing
+                self.get_logger().info(f"Crossing detected! Checking proximity to finish line...")
                 if self.is_near_finish_line(first_cone, second_cone, self.car_position):
                     self.lap_count += 1
                     self.get_logger().info(f"Lap completed! Total laps: {self.lap_count}")
                     self.initiate_cooldown()
-
+                else:
+                    self.get_logger().info(f"Crossing detected but car is too far from finish line, ignoring.")
+       
         self.previous_position = self.car_position
 
     def is_near_finish_line(self, first_cone, second_cone, car_position, threshold=4.0):    # 4.0 meter away from the line segment will be ignored
         """Check if the car is near the line segment formed by the first and second cone."""
         def point_line_distance(px, py, x1, y1, x2, y2):
             # Calculate the distance from point (px, py) to the line segment (x1, y1) - (x2, y2)
-            line_mag = math.dist((x2, x1), (y2, y1))
+            line_mag = math.dist((x1, y1), (x2, y2))
             if line_mag < 1e-6:
                 return float('inf')  # Line segment too small, effectively a point
             u1 = ((px - x1) * (x2 - x1) + (py - y1) * (y2 - y1)) / (line_mag**2)

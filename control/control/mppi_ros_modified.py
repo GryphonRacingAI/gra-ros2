@@ -178,7 +178,9 @@ class MPPIController(Node):
             outer = np.loadtxt(self.outer_cones_csv, delimiter=',')
             self.get_logger().info(f"Loaded {len(inner)} inner cones and {len(outer)} outer cones")
             return inner, outer
-        return np.empty((0, 2)), np.empty((0, 2))
+        else:
+            self.get_logger().warn("Cones CSV files not specified!")
+            return np.empty((0, 2)), np.empty((0, 2))
 
     def _generate_static_path(self, inner_cones, outer_cones):
         n = min(len(inner_cones), len(outer_cones))

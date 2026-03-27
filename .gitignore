@@ -11,3 +11,5 @@ venv/
 dist/
 build/
 *.egg
+
+.pytest_cache/
