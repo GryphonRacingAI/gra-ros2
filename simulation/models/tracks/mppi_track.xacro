@@ -28,7 +28,7 @@
     <xacro:include filename="$(find simulation)/models/cones/cone.xacro"/>
 
     <model name="cones">
-      <xacro:cone name="inner_1" type="orange" pose="6.49447171658257 41.7389113024907 0.15 0 0 0"/>
+      <xacro:cone name="inner_1" type="large_orange" pose="6.49447171658257 41.7389113024907 0.15 0 0 0"/>
       <xacro:cone name="inner_2" type="blue" pose="8.49189149682204 41.8037451937836 0.15 0 0 0"/>
       <xacro:cone name="inner_3" type="blue" pose="10.4848751821667 41.8690573815958 0.15 0 0 0"/>
       <xacro:cone name="inner_4" type="blue" pose="12.473517040832 41.9319164105607 0.15 0 0 0"/>
@@ -174,12 +174,7 @@
       <xacro:cone name="inner_144" type="blue" pose="-1.53976115651896 41.5427010208205 0.15 0 0 0"/>
       <xacro:cone name="inner_145" type="blue" pose="0.4754310943428 41.5765527022834 0.15 0 0 0"/>
       <xacro:cone name="inner_146" type="blue" pose="2.48619653317858 41.622438779726 0.15 0 0 0"/>
-      <xacro:cone name="inner_147" type="blue" pose="6.49447171658257 41.7389113024907 0.15 0 0 0"/>
-      <xacro:cone name="inner_148" type="blue" pose="8.49189149682204 41.8037451937836 0.15 0 0 0"/>
-      <xacro:cone name="inner_149" type="blue" pose="10.4848751821667 41.8690573815958 0.15 0 0 0"/>
-      <xacro:cone name="inner_150" type="blue" pose="12.473517040832 41.9319164105607 0.15 0 0 0"/>
-      <xacro:cone name="inner_151" type="blue" pose="14.4579005366844 41.9894100214277 0.15 0 0 0"/>
-      <xacro:cone name="outer_1" type="orange" pose="8.29483356036796 47.8005083348189 0.15 0 0 0"/>
+      <xacro:cone name="outer_1" type="large_orange" pose="8.29483356036796 47.8005083348189 0.15 0 0 0"/>
       <xacro:cone name="outer_2" type="yellow" pose="10.2903642978411 47.8659036790991 0.15 0 0 0"/>
       <xacro:cone name="outer_3" type="yellow" pose="12.2903853701921 47.9291209919643 0.15 0 0 0"/>
       <xacro:cone name="outer_4" type="yellow" pose="14.2949817462715 47.9871977358879 0.15 0 0 0"/>
@@ -325,12 +320,7 @@
       <xacro:cone name="outer_144" type="yellow" pose="0.355197826404633 47.5753479114301 0.15 0 0 0"/>
       <xacro:cone name="outer_145" type="yellow" pose="2.33404449770947 47.6205092826547 0.15 0 0 0"/>
       <xacro:cone name="outer_146" type="yellow" pose="4.31684977705784 47.6749328204622 0.15 0 0 0"/>
-      <xacro:cone name="outer_147" type="yellow" pose="8.29483356036796 47.8005083348189 0.15 0 0 0"/>
-      <xacro:cone name="outer_148" type="yellow" pose="10.2903642978411 47.8659036790991 0.15 0 0 0"/>
-      <xacro:cone name="outer_149" type="yellow" pose="12.2903853701921 47.9291209919643 0.15 0 0 0"/>
-      <xacro:cone name="outer_150" type="yellow" pose="14.2949817462715 47.9871977358879 0.15 0 0 0"/>
-      <xacro:cone name="outer_151" type="yellow" pose="16.3042155724446 48.0371512121282 0.15 0 0 0"/>
-
+      
       <plugin name="gz::sim::systems::PosePublisher" filename="gz-sim-pose-publisher-system">
         <use_pose_vector_msg>true</use_pose_vector_msg>
         <publish_model_pose>true</publish_model_pose>
