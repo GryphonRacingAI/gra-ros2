@@ -28,7 +28,7 @@ class EvaluatorNode(Node):
         self.get_logger().info("Pose Subscribers synchronized. Waiting for data...")
         # Map Subscribers 
         self.slam_map_sub = Subscriber(self,ConeArray, "/slam/cone_map")   
-        self.perfect_cone_map_sub = Subscriber(self,ConeArray, "/perfect_cone_array")
+        self.perfect_cone_map_sub = Subscriber(self,ConeArray, "/perfect_cone_map")
         # Map topics Synchronizer
         self.map_sync = ApproximateTimeSynchronizer([self.slam_map_sub, self.perfect_cone_map_sub], queue_size=20, slop=0.05) 
         self.map_sync.registerCallback(self.map_callback)
