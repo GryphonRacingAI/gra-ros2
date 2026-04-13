@@ -2,16 +2,16 @@
 <sdf version='1.7' xmlns:xacro="http://www.ros.org/wiki/xacro">
   <world name='map'>
 
-      <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics">
+      <plugin filename="ignition-gazebo-physics-system" name="ignition::gazebo::systems::Physics">
       </plugin>
-      <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster">
+      <plugin filename="ignition-gazebo-scene-broadcaster-system" name="ignition::gazebo::systems::SceneBroadcaster">
       </plugin>
-      <plugin filename="gz-sim-sensors-system" name="gz::sim::systems::Sensors">
+      <plugin filename="ignition-gazebo-sensors-system" name="ignition::gazebo::systems::Sensors">
         <render_engine>ogre2</render_engine>
       </plugin>
       <plugin
-        filename="gz-sim-user-commands-system"
-        name="gz::sim::systems::UserCommands">
+        filename="ignition-gazebo-user-commands-system"
+        name="ignition::gazebo::systems::UserCommands">
       </plugin>
 
 	  <xacro:include filename="$(find simulation)/models/world/physics.xacro"/>
@@ -78,7 +78,7 @@
       <xacro:cone name="large_orange_5" type="large_orange" pose="25 1.5 0.033 0 0 0"/>
       <xacro:cone name="large_orange_6" type="large_orange" pose="25 -1.5 0.033 0 0 0"/>
 
-      <plugin name="gz::sim::systems::PosePublisher" filename="gz-sim-pose-publisher-system">
+      <plugin name="ignition::gazebo::systems::PosePublisher" filename="ignition-gazebo-pose-publisher-system">
           <use_pose_vector_msg>true</use_pose_vector_msg>
           <publish_model_pose>true</publish_model_pose>
           <publish_nested_model_pose>true</publish_nested_model_pose>

@@ -30,6 +30,8 @@ endif()
 set(msg_files
   "msg/Cone.msg"
   "msg/ConeArray.msg"
+  "msg/LogicalCameraImageModel.msg"
+  "msg/LogicalCameraImage.msg"
 )
 
 rosidl_generate_interfaces(${PROJECT_NAME}

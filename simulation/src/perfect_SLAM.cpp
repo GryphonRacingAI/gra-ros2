@@ -1,7 +1,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <geometry_msgs/msg/point.hpp>
 #include <std_msgs/msg/header.hpp>
-#include <ros_gz_interfaces/msg/logical_camera_image.hpp>
+#include <common_msgs/msg/logical_camera_image.hpp>
 #include <common_msgs/msg/cone.hpp>
 #include <common_msgs/msg/cone_array.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
@@ -22,7 +22,7 @@ public:
       std::bind(&PerfectSLAMNode::publish_perfect_odometry, this)
     );
     marker_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("/perfect_cone_map_markers", 1);
-    sub_ = this->create_subscription<ros_gz_interfaces::msg::LogicalCameraImage>(
+    sub_ = this->create_subscription<common_msgs::msg::LogicalCameraImage>(
       "/logical_camera", 10, std::bind(&PerfectSLAMNode::callback, this, std::placeholders::_1));
   }
 
@@ -37,7 +37,7 @@ private:
     return seen_cone_ids_.find(id) == seen_cone_ids_.end();
   }
 
-  void callback(const ros_gz_interfaces::msg::LogicalCameraImage::SharedPtr msg) {
+  void callback(const common_msgs::msg::LogicalCameraImage::SharedPtr msg) {
     last_header_ = msg->header;
     for (const auto &model : msg->model) {
       std::string id = model.name;
@@ -207,7 +207,7 @@ private:
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_pub_;
   rclcpp::TimerBase::SharedPtr odom_timer_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_pub_;
-  rclcpp::Subscription<ros_gz_interfaces::msg::LogicalCameraImage>::SharedPtr sub_;
+  rclcpp::Subscription<common_msgs::msg::LogicalCameraImage>::SharedPtr sub_;
   tf2_ros::Buffer tf_buffer_;
   tf2_ros::TransformListener tf_listener_;
   geometry_msgs::msg::TransformStamped last_transform_;
