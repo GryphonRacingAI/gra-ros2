@@ -12,9 +12,23 @@ from ackermann_msgs.msg import AckermannDrive, AckermannDriveStamped
 from geometry_msgs.msg import PoseStamped, Point32
 from std_msgs.msg import Header, String
 
-# TF transformations
-from tf_transformations import euler_from_quaternion
 import sensor_msgs_py.point_cloud2 as pc2
+import math
+
+
+def euler_from_quaternion(quat):
+    x, y, z, w = quat
+    sinr_cosp = 2.0 * (w * x + y * z)
+    cosr_cosp = 1.0 - 2.0 * (x * x + y * y)
+    roll = math.atan2(sinr_cosp, cosr_cosp)
+
+    sinp = 2.0 * (w * y - z * x)
+    pitch = math.copysign(math.pi / 2, sinp) if abs(sinp) >= 1 else math.asin(sinp)
+
+    siny_cosp = 2.0 * (w * z + x * y)
+    cosy_cosp = 1.0 - 2.0 * (y * y + z * z)
+    yaw = math.atan2(siny_cosp, cosy_cosp)
+    return roll, pitch, yaw
 
 
 # Helper Functions

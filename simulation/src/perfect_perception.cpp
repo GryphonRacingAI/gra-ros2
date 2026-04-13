@@ -1,8 +1,8 @@
 #include <rclcpp/rclcpp.hpp>
 #include <geometry_msgs/msg/point.hpp>
 #include <std_msgs/msg/header.hpp>
-#include <ros_gz_interfaces/msg/logical_camera_image.hpp>
-#include <ros_gz_interfaces/msg/logical_camera_image_model.hpp>
+#include <common_msgs/msg/logical_camera_image.hpp>
+#include <common_msgs/msg/logical_camera_image_model.hpp>
 #include <common_msgs/msg/cone.hpp>
 #include <common_msgs/msg/cone_array.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
@@ -19,13 +19,13 @@ public:
       "/perfect_cone_array", 10);
     marker_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>(
       "/perfect_cone_array_markers", 1);
-    sub_ = this->create_subscription<ros_gz_interfaces::msg::LogicalCameraImage>(
+    sub_ = this->create_subscription<common_msgs::msg::LogicalCameraImage>(
       "/logical_camera", 10,
       std::bind(&PerfectPerceptionNode::callback, this, _1));
   }
 
 private:
-  void callback(const ros_gz_interfaces::msg::LogicalCameraImage::SharedPtr msg) {
+  void callback(const common_msgs::msg::LogicalCameraImage::SharedPtr msg) {
     last_msg_ = msg;
     publish_latest();
   }
@@ -130,10 +130,10 @@ private:
 
   rclcpp::Publisher<common_msgs::msg::ConeArray>::SharedPtr pub_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_pub_;
-  rclcpp::Subscription<ros_gz_interfaces::msg::LogicalCameraImage>::SharedPtr sub_;
+  rclcpp::Subscription<common_msgs::msg::LogicalCameraImage>::SharedPtr sub_;
   tf2_ros::Buffer tf_buffer_;
   tf2_ros::TransformListener tf_listener_;
-  ros_gz_interfaces::msg::LogicalCameraImage::SharedPtr last_msg_;
+  common_msgs::msg::LogicalCameraImage::SharedPtr last_msg_;
   int last_marker_count_ = 0;
 };
 

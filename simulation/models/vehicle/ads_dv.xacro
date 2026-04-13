@@ -126,7 +126,7 @@
 
 
         <!-- Ackermann Steering Plugin -->
-        <plugin filename="gz-sim-ackermann-steering-system" name="gz::sim::systems::AckermannSteering">
+        <plugin filename="ignition-gazebo-ackermann-steering-system" name="ignition::gazebo::systems::AckermannSteering">
             <steering_only>True</steering_only>
             <steer_p_gain>5.0</steer_p_gain>
             <left_joint>front_left_wheel_joint</left_joint>
@@ -149,20 +149,20 @@
             <frame_id>odom</frame_id>
             <child_frame_id>base_link</child_frame_id>
         </plugin>
-        <plugin filename="gz-sim-joint-controller-system" name="gz::sim::systems::JointController">
+        <plugin filename="ignition-gazebo-joint-controller-system" name="ignition::gazebo::systems::JointController">
             <joint_name>rear_left_wheel_joint</joint_name>
             <joint_name>rear_right_wheel_joint</joint_name>
             <topic>speed_cmd</topic>
         </plugin>
-        <plugin name="gz::sim::systems::LogicalCamera" filename="gz-sim-logical-camera-system">
+        <plugin name="ignition::gazebo::systems::LogicalCamera" filename="ignition-gazebo-logical-camera-system">
             <render_engine>ogre2</render_engine>
         </plugin>
-            <plugin name="gz::sim::systems::JointStatePublisher" filename="gz-sim-joint-state-publisher-system">
+            <plugin name="ignition::gazebo::systems::JointStatePublisher" filename="ignition-gazebo-joint-state-publisher-system">
             <topic>/model/ads_dv/joint_state</topic>
         </plugin>
-        <plugin filename="gz-sim-imu-system" name="gz::sim::systems::Imu">
+        <plugin filename="ignition-gazebo-imu-system" name="ignition::gazebo::systems::Imu">
         </plugin>
-        <plugin filename="gz-sim-odometry-publisher-system" name="gz::sim::systems::OdometryPublisher">
+        <plugin filename="ignition-gazebo-odometry-publisher-system" name="ignition::gazebo::systems::OdometryPublisher">
             <odom_frame>odom</odom_frame>
             <robot_base_frame>base_link</robot_base_frame>
             <odom_publish_frequency>600</odom_publish_frequency>

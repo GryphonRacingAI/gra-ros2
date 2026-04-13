@@ -275,16 +275,16 @@ def generate_launch_description():
         executable="create",
         name="create_node",
         output="both",
-        parameters=[
-            {'world': LaunchConfiguration('world')},
-            {'file': "ads_dv.sdf"},
-            {'name': LaunchConfiguration('name')},
-            {'x': LaunchConfiguration('x')},
-            {'y': LaunchConfiguration('y')},
-            {'z': LaunchConfiguration('z')},
-            {'R': LaunchConfiguration('R')},
-            {'P': LaunchConfiguration('P')},
-            {'Y': LaunchConfiguration('Y')}
+        arguments=[
+            '-world', LaunchConfiguration('world'),
+            '-file', LaunchConfiguration('model_file'),
+            '-name', LaunchConfiguration('name'),
+            '-x', LaunchConfiguration('x'),
+            '-y', LaunchConfiguration('y'),
+            '-z', LaunchConfiguration('z'),
+            '-R', LaunchConfiguration('R'),
+            '-P', LaunchConfiguration('P'),
+            '-Y', LaunchConfiguration('Y'),
         ]
     )
 
@@ -331,7 +331,9 @@ def generate_launch_description():
             {'steer_cmd_topic': '/steer_angle_cmd'},
             {'steer_angle_topic': '/steer_angle'},
             {'ackermann_cmd_topic': '/ackermann_cmd'},
-            {'joint_states_topic': '/joint_states'}
+            {'joint_states_topic': '/joint_states'},
+            {'cmd_vel_topic': '/cmd_vel'},
+            {'wheelbase': 1.6}
         ]
     )
 
