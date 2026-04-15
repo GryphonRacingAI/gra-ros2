@@ -7,13 +7,14 @@ from pathlib import Path
 def main():
     script_dir = Path(__file__).resolve().parent
     workspace_root = script_dir.parent.parent
-    control_scripts = workspace_root / "control" / "scripts"
+    control_scripts = workspace_root / "simulation" / "tracks" / "mppi_track" 
     inner_path = control_scripts / "inner_cones.csv"
     outer_path = control_scripts / "outer_cones.csv"
     output_path = script_dir.parent / "models" / "tracks" / "mppi_track.xacro"
 
     inner_cones = []
     outer_cones = []
+
 
     with open(inner_path) as f:
         for row in csv.reader(f):
@@ -63,14 +64,23 @@ def main():
     ]
 
     for i, (x, y) in enumerate(inner_cones):
-        cone_type = "orange" if i == 0 else "blue"
         pose = f"{x} {y} 0.15 0 0 0"
-        lines.append(f'      <xacro:cone name="inner_{i+1}" type="{cone_type}" pose="{pose}"/>')
+        if i == 0:
+            cone_type = "orange"
+            lines.append(f'      <xacro:cone name="orange_{i+1}" type="{cone_type}" pose="{pose}"/>')
+        else:
+            cone_type = "blue"
+            lines.append(f'      <xacro:cone name="blue_{i+1}" type="{cone_type}" pose="{pose}"/>')
+
 
     for i, (x, y) in enumerate(outer_cones):
-        cone_type = "orange" if i == 0 else "yellow"
         pose = f"{x} {y} 0.15 0 0 0"
-        lines.append(f'      <xacro:cone name="outer_{i+1}" type="{cone_type}" pose="{pose}"/>')
+        if i == 0:
+            cone_type = "orange"
+            lines.append(f'      <xacro:cone name="orange_{i+1}" type="{cone_type}" pose="{pose}"/>')
+        else:
+            cone_type = "yellow"
+            lines.append(f'      <xacro:cone name="yellow_{i+1}" type="{cone_type}" pose="{pose}"/>')
 
     lines.extend([
         "",
