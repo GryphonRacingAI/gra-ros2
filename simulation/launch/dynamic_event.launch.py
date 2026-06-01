@@ -14,6 +14,7 @@ from launch.substitutions import (
     TextSubstitution,
     IfElseSubstitution,
     EqualsSubstitution,
+    PathJoinSubstitution,
 )
 from launch.conditions import IfCondition
 from launch_ros.actions import Node
@@ -257,9 +258,18 @@ def generate_launch_description():
 
     set_gz_args = SetLaunchConfiguration(
         name='gz_args',
-        value=[LaunchConfiguration('map_file'), ' ',
-               LaunchConfiguration('autostart_flag'), ' ',
-               '-v ', LaunchConfiguration('verbosity')]
+        value=[
+            PathJoinSubstitution([
+                get_package_share_directory('simulation'),
+                'models',
+                'tracks',
+                LaunchConfiguration('map_file'),
+            ]),
+            ' ',
+            LaunchConfiguration('autostart_flag'),
+            ' ',
+            '-v ', LaunchConfiguration('verbosity')
+        ]
     )
 
 
