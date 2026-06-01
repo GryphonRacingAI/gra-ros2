@@ -82,7 +82,7 @@ void PredictWithCloudNode::syncCallback(const sensor_msgs::msg::CameraInfo::Cons
   rclcpp::Duration callback_interval = current_call_time - last_call_time_;
   last_call_time_ = current_call_time;
 
-  RCLCPP_INFO(this->get_logger(), "syncCallback triggered at time: %.2f, interval: %.2f seconds",
+  RCLCPP_DEBUG(this->get_logger(), "syncCallback triggered at time: %.2f, interval: %.2f seconds",
                current_call_time.seconds(), callback_interval.seconds());
 
   // Convert the input cloud to PCL format
@@ -97,30 +97,30 @@ void PredictWithCloudNode::syncCallback(const sensor_msgs::msg::CameraInfo::Cons
   // Downsample the point cloud
   pcl::PointCloud<pcl::PointXYZ>::Ptr downsampled_cloud = downsampleCloudMsg(
       std::make_shared<sensor_msgs::msg::PointCloud2>(*cloud_msg));
-  RCLCPP_INFO(this->get_logger(), "Downsampled cloud size: %zu", downsampled_cloud->points.size());
+  RCLCPP_DEBUG(this->get_logger(), "Downsampled cloud size: %zu", downsampled_cloud->points.size());
 
   // Remove ground plane after downsampling && FOV clipping
   pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_cloud(new pcl::PointCloud<pcl::PointXYZ>());
   removeGroundPlane(downsampled_cloud, filtered_cloud);
-  RCLCPP_INFO(this->get_logger(), "Filtered cloud size after ground removal: %zu", filtered_cloud->points.size());
+  RCLCPP_DEBUG(this->get_logger(), "Filtered cloud size after ground removal: %zu", filtered_cloud->points.size());
 
   // Publish the filtered cloud
   sensor_msgs::msg::PointCloud2 filtered_cloud_msg;
   pcl::toROSMsg(*filtered_cloud, filtered_cloud_msg);
   filtered_cloud_msg.header = cloud_msg->header;
   filtered_cloud_pub_->publish(filtered_cloud_msg);
-  RCLCPP_INFO(this->get_logger(), "Published filtered cloud with %zu points", filtered_cloud->points.size());
+  RCLCPP_DEBUG(this->get_logger(), "Published filtered cloud with %zu points", filtered_cloud->points.size());
 
   // Update camera model
   cam_model_.fromCameraInfo(camera_info_msg);
-  RCLCPP_INFO(this->get_logger(), "Camera model updated.");
+  RCLCPP_DEBUG(this->get_logger(), "Camera model updated.");
 
   // Transform point cloud in camera frame to optical frame
   pcl::PointCloud<pcl::PointXYZ>::Ptr transformed_cloud = cloud2TransformedCloud(filtered_cloud,
                                                                                   cloud_msg->header.frame_id,
                                                                                   cam_model_.tfFrame(),
                                                                                   cloud_msg->header.stamp);
-  RCLCPP_INFO(this->get_logger(), "Transformed cloud size: %zu", transformed_cloud->points.size());
+  RCLCPP_DEBUG(this->get_logger(), "Transformed cloud size: %zu", transformed_cloud->points.size());
 
   // Project cloud to detection
   vision_msgs::msg::Detection3DArray detection3d_array_msg;
@@ -128,7 +128,7 @@ void PredictWithCloudNode::syncCallback(const sensor_msgs::msg::CameraInfo::Cons
   
   projectCloud(transformed_cloud, yolo_result_msg, cloud_msg->header, detection3d_array_msg, detection_cloud_msg);
 
-  RCLCPP_INFO(this->get_logger(), "Detection3DArray contains %zu detections", detection3d_array_msg.detections.size());
+  RCLCPP_DEBUG(this->get_logger(), "Detection3DArray contains %zu detections", detection3d_array_msg.detections.size());
 
   // Create marker array for visualization
   visualization_msgs::msg::MarkerArray marker_array_msg = createMarkerArray(detection3d_array_msg, callback_interval.seconds());
@@ -137,9 +137,9 @@ void PredictWithCloudNode::syncCallback(const sensor_msgs::msg::CameraInfo::Cons
   detection_cloud_pub_->publish(detection_cloud_msg);
   marker_pub_->publish(marker_array_msg);
 
-  RCLCPP_INFO(this->get_logger(), "Published detections and markers.");
+  RCLCPP_DEBUG(this->get_logger(), "Published detections and markers.");
   rclcpp::Time end_time = this->now();
-  RCLCPP_INFO(this->get_logger(), "Execution time for syncCallback: %.6f seconds", (end_time - start_time).seconds());
+  RCLCPP_DEBUG(this->get_logger(), "Execution time for syncCallback: %.6f seconds", (end_time - start_time).seconds());
 }
 
 void PredictWithCloudNode::transformPointCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud_in,
@@ -148,7 +148,7 @@ void PredictWithCloudNode::transformPointCloud(const pcl::PointCloud<pcl::PointX
 {
   int cloud_size = cloud_in->size();
   cloud_out->resize(cloud_size);
-  RCLCPP_INFO(this->get_logger(), "Applying transform to %d points.", cloud_size);
+  RCLCPP_DEBUG(this->get_logger(), "Applying transform to %d points.", cloud_size);
 
   for (int i = 0; i < cloud_size; i++)
   {
@@ -183,7 +183,7 @@ void PredictWithCloudNode::projectCloud(const pcl::PointCloud<pcl::PointXYZ>::Pt
   common_msgs::msg::ConeArray cone_array_msg;
   cone_array_msg.header = header;
 
-  RCLCPP_INFO(this->get_logger(), "Processing %zu 2D detections for projection.", yolo_result_msg->detections.detections.size());
+  RCLCPP_DEBUG(this->get_logger(), "Processing %zu 2D detections for projection.", yolo_result_msg->detections.detections.size());
 
   for (size_t i = 0; i < yolo_result_msg->detections.detections.size(); i++)
   {
@@ -198,7 +198,7 @@ void PredictWithCloudNode::projectCloud(const pcl::PointCloud<pcl::PointXYZ>::Pt
       processPointsWithMask(cloud, yolo_result_msg->masks[i], detection_cloud_raw);
     }
     
-    RCLCPP_INFO(this->get_logger(), "Detection %zu raw cloud size: %zu", i, detection_cloud_raw->points.size());
+    RCLCPP_DEBUG(this->get_logger(), "Detection %zu raw cloud size: %zu", i, detection_cloud_raw->points.size());
 
     if (!detection_cloud_raw->points.empty())
     {
@@ -210,7 +210,7 @@ void PredictWithCloudNode::projectCloud(const pcl::PointCloud<pcl::PointXYZ>::Pt
 
       // Extract the closest cluster
       pcl::PointCloud<pcl::PointXYZ>::Ptr closest_detection_cloud = euclideanClusterExtraction(detection_cloud);
-      RCLCPP_INFO(this->get_logger(), "Detection %zu cluster size: %zu", i, closest_detection_cloud->points.size());
+      RCLCPP_DEBUG(this->get_logger(), "Detection %zu cluster size: %zu", i, closest_detection_cloud->points.size());
 
       *combine_detection_cloud += *closest_detection_cloud;
 
@@ -238,13 +238,13 @@ void PredictWithCloudNode::projectCloud(const pcl::PointCloud<pcl::PointXYZ>::Pt
     }
     else
     {
-      RCLCPP_INFO(this->get_logger(), "Detection %zu: No points passed the filtering.", i);
+      RCLCPP_DEBUG(this->get_logger(), "Detection %zu: No points passed the filtering.", i);
     }
   }
 
   pcl::toROSMsg(*combine_detection_cloud, combine_detection_cloud_msg);
   combine_detection_cloud_msg.header = header;
-  RCLCPP_INFO(this->get_logger(), "Combined detection cloud size: %zu", combine_detection_cloud->points.size());
+  RCLCPP_DEBUG(this->get_logger(), "Combined detection cloud size: %zu", combine_detection_cloud->points.size());
 
   // Publish the ConeArray
   cone_array_pub_->publish(cone_array_msg);
@@ -277,7 +277,7 @@ void PredictWithCloudNode::processPointsWithBbox(const pcl::PointCloud<pcl::Poin
     // Log the projection for the first point (optional)
     if (&point == &cloud->points.front())
     {
-      RCLCPP_INFO(this->get_logger(), "First sensor point: (%.2f, %.2f, %.2f) transformed to optical: (%.2f, %.2f, %.2f) projects to (%.2f, %.2f)",
+      RCLCPP_DEBUG(this->get_logger(), "First sensor point: (%.2f, %.2f, %.2f) transformed to optical: (%.2f, %.2f, %.2f) projects to (%.2f, %.2f)",
                   point.x, point.y, point.z,
                   optical_pt.x, optical_pt.y, optical_pt.z,
                   uv.x, uv.y);
@@ -299,7 +299,7 @@ void PredictWithCloudNode::processPointsWithBbox(const pcl::PointCloud<pcl::Poin
       detection_cloud_raw->points.push_back(point);
     }
   }
-  RCLCPP_INFO(this->get_logger(), "processPointsWithBbox: %zu points passed bbox filter", detection_cloud_raw->points.size());
+  RCLCPP_DEBUG(this->get_logger(), "processPointsWithBbox: %zu points passed bbox filter", detection_cloud_raw->points.size());
 }
 
 
@@ -337,7 +337,7 @@ void PredictWithCloudNode::processPointsWithMask(const pcl::PointCloud<pcl::Poin
       }
     }
   }
-  RCLCPP_INFO(this->get_logger(), "processPointsWithMask: %zu points passed mask filter", detection_cloud_raw->points.size());
+  RCLCPP_DEBUG(this->get_logger(), "processPointsWithMask: %zu points passed mask filter", detection_cloud_raw->points.size());
 }
 
 void PredictWithCloudNode::createBoundingBox(
@@ -375,7 +375,7 @@ void PredictWithCloudNode::createBoundingBox(
 
   detection3d_array_msg.detections.push_back(detection3d_msg);
 
-  RCLCPP_INFO(this->get_logger(), "Created bounding box with center (%.2f, %.2f, %.2f) and size (%.2f, %.2f, %.2f)",
+  RCLCPP_DEBUG(this->get_logger(), "Created bounding box with center (%.2f, %.2f, %.2f) and size (%.2f, %.2f, %.2f)",
                bbox_center[0], bbox_center[1], bbox_center[2],
                detection3d_msg.bbox.size.x, detection3d_msg.bbox.size.y, detection3d_msg.bbox.size.z);
 }
@@ -407,7 +407,7 @@ PredictWithCloudNode::downsampleCloudMsg(const sensor_msgs::msg::PointCloud2::Co
   voxel_grid.setLeafSize(voxel_leaf_size_, voxel_leaf_size_, voxel_leaf_size_);
   voxel_grid.filter(*downsampled_cloud);
 
-  RCLCPP_INFO(this->get_logger(), "Downsampled cloud: original %zu points, filtered to %zu points",
+  RCLCPP_DEBUG(this->get_logger(), "Downsampled cloud: original %zu points, filtered to %zu points",
               cloud->points.size(), downsampled_cloud->points.size());
 
   return downsampled_cloud;
@@ -446,7 +446,7 @@ void PredictWithCloudNode::removeGroundPlane(
   extract.setNegative(true); // Remove ground points
   extract.filter(*output_cloud);
 
-  RCLCPP_INFO(this->get_logger(), "Removed %zu ground points, %zu remain.",
+  RCLCPP_DEBUG(this->get_logger(), "Removed %zu ground points, %zu remain.",
               inliers->indices.size(), output_cloud->points.size());
 }
 
@@ -463,13 +463,13 @@ PredictWithCloudNode::cloud2TransformedCloud(const pcl::PointCloud<pcl::PointXYZ
     pcl::PointCloud<pcl::PointXYZ>::Ptr transformed_cloud(new pcl::PointCloud<pcl::PointXYZ>());
     transformPointCloud(cloud, transformed_cloud, eigen_transform);
 
-    RCLCPP_INFO(this->get_logger(), "Transformed cloud from '%s' to '%s' using TF.",
+    RCLCPP_DEBUG(this->get_logger(), "Transformed cloud from '%s' to '%s' using TF.",
                  source_frame.c_str(), target_frame.c_str());
     return transformed_cloud;
   }
   catch (tf2::TransformException& e)
   {
-    RCLCPP_WARN(this->get_logger(), "TF transform exception: %s", e.what());
+    RCLCPP_DEBUG(this->get_logger(), "TF transform exception (using original cloud): %s", e.what());
     return cloud;
   }
 }
@@ -490,7 +490,7 @@ PredictWithCloudNode::euclideanClusterExtraction(const pcl::PointCloud<pcl::Poin
   float min_distance = std::numeric_limits<float>::max();
   pcl::PointCloud<pcl::PointXYZ>::Ptr closest_cluster(new pcl::PointCloud<pcl::PointXYZ>());
 
-  RCLCPP_INFO(this->get_logger(), "Found %zu clusters", cluster_indices.size());
+  RCLCPP_DEBUG(this->get_logger(), "Found %zu clusters", cluster_indices.size());
   for (const auto& cluster : cluster_indices)
   {
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_cluster(new pcl::PointCloud<pcl::PointXYZ>());
@@ -509,7 +509,7 @@ PredictWithCloudNode::euclideanClusterExtraction(const pcl::PointCloud<pcl::Poin
       *closest_cluster = *cloud_cluster;
     }
   }
-  RCLCPP_INFO(this->get_logger(), "Selected cluster with distance: %.2f", min_distance);
+  RCLCPP_DEBUG(this->get_logger(), "Selected cluster with distance: %.2f", min_distance);
   return closest_cluster;
 }
 
@@ -541,11 +541,11 @@ PredictWithCloudNode::createMarkerArray(const vision_msgs::msg::Detection3DArray
       marker_msg.color.a = 0.5;
       marker_msg.lifetime = rclcpp::Duration(std::chrono::duration<double>(duration));
       marker_array_msg.markers.push_back(marker_msg);
-      RCLCPP_INFO(this->get_logger(), "Created marker id %zu with lifetime %.2f sec", i, duration);
+      RCLCPP_DEBUG(this->get_logger(), "Created marker id %zu with lifetime %.2f sec", i, duration);
     }
     else
     {
-      RCLCPP_INFO(this->get_logger(), "Skipping marker creation for detection %zu due to non-finite dimensions", i);
+      RCLCPP_DEBUG(this->get_logger(), "Skipping marker creation for detection %zu due to non-finite dimensions", i);
     }
   }
 
