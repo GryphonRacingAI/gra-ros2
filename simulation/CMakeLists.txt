@@ -30,6 +30,7 @@ ament_target_dependencies(perfect_perception
   visualization_msgs
   tf2_ros
   tf2_geometry_msgs
+  ros_gz_interfaces
   common_msgs
 )
 
@@ -42,6 +43,7 @@ ament_target_dependencies(perfect_SLAM
   visualization_msgs
   tf2_ros
   tf2_geometry_msgs
+  ros_gz_interfaces
   common_msgs
 )
 
@@ -49,7 +51,6 @@ add_executable(ackermann_to_speed_steer src/ackermann_to_speed_steer.cpp)
 ament_target_dependencies(ackermann_to_speed_steer
   rclcpp
   std_msgs
-  geometry_msgs
   ackermann_msgs
   sensor_msgs
 )

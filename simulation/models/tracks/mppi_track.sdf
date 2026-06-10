@@ -5,14 +5,14 @@
 <!-- =================================================================================== -->
 <sdf version="1.7">
   <world name="map">
-    <plugin filename="ignition-gazebo-physics-system" name="ignition::gazebo::systems::Physics">
+    <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics">
       </plugin>
-    <plugin filename="ignition-gazebo-scene-broadcaster-system" name="ignition::gazebo::systems::SceneBroadcaster">
+    <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster">
     </plugin>
-    <plugin filename="ignition-gazebo-sensors-system" name="ignition::gazebo::systems::Sensors">
+    <plugin filename="gz-sim-sensors-system" name="gz::sim::systems::Sensors">
       <render_engine>ogre2</render_engine>
     </plugin>
-    <plugin filename="ignition-gazebo-user-commands-system" name="ignition::gazebo::systems::UserCommands">
+    <plugin filename="gz-sim-user-commands-system" name="gz::sim::systems::UserCommands">
       </plugin>
     <gravity>0 0 -9.8</gravity>
     <magnetic_field>6e-06 2.3e-05 -4.2e-05</magnetic_field>
@@ -42,23 +42,22 @@
       <uri>model://simulation/models/world/ground_plane</uri>
     </include>
     <model name="cones">
-      <model name="inner_1">
+      <model name="orange_1">
         <static>true</static>
         <pose>6.49447171658257 41.7389113024907 0.15 0 0 0</pose>
-        <link name="inner_1_link">
+        <link name="orange_1_link">
           <visual name="visual">
             <geometry>
               <mesh>
-                <uri>model://simulation/models/cones/cone_large_orange/mesh.dae</uri>
+                <uri>model://simulation/models/cones/cone_orange/mesh.dae</uri>
               </mesh>
             </geometry>
           </visual>
           <collision name="collision">
-            <pose>0 0 0.232 0 0 0</pose>
             <geometry>
               <!-- Simpler collision model for performance boost -->
               <box>
-                <size>0.26 0.26 0.53</size>
+                <size>0.22 0.23 0.3</size>
               </box>
             </geometry>
             <surface>
@@ -76,23 +75,22 @@
           </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
-            <mass>1.05</mass>
-            <!-- Edit centre of mass later -->
+            <mass>0.45</mass>
             <inertia>
-              <ixx>0.003</ixx>
+              <ixx>0.013</ixx>
               <ixy>0.0</ixy>
               <ixz>0.0</ixz>
-              <iyy>0.003</iyy>
+              <iyy>0.013</iyy>
               <iyz>0.0</iyz>
-              <izz>0.002</izz>
+              <izz>0.006</izz>
             </inertia>
           </inertial>
         </link>
       </model>
-      <model name="inner_2">
+      <model name="blue_2">
         <static>true</static>
         <pose>8.49189149682204 41.8037451937836 0.15 0 0 0</pose>
-        <link name="inner_2_link">
+        <link name="blue_2_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -134,10 +132,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_3">
+      <model name="blue_3">
         <static>true</static>
         <pose>10.4848751821667 41.8690573815958 0.15 0 0 0</pose>
-        <link name="inner_3_link">
+        <link name="blue_3_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -179,10 +177,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_4">
+      <model name="blue_4">
         <static>true</static>
         <pose>12.473517040832 41.9319164105607 0.15 0 0 0</pose>
-        <link name="inner_4_link">
+        <link name="blue_4_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -224,10 +222,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_5">
+      <model name="blue_5">
         <static>true</static>
         <pose>14.4579005366844 41.9894100214277 0.15 0 0 0</pose>
-        <link name="inner_5_link">
+        <link name="blue_5_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -269,10 +267,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_6">
+      <model name="blue_6">
         <static>true</static>
         <pose>16.4380855350346 42.0386448286094 0.15 0 0 0</pose>
-        <link name="inner_6_link">
+        <link name="blue_6_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -314,10 +312,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_7">
+      <model name="blue_7">
         <static>true</static>
         <pose>22.3534294484539 42.1081444836209 0.15 0 0 0</pose>
-        <link name="inner_7_link">
+        <link name="blue_7_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -359,10 +357,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_8">
+      <model name="blue_8">
         <static>true</static>
         <pose>24.3165071700586 42.0957886616701 0.15 0 0 0</pose>
-        <link name="inner_8_link">
+        <link name="blue_8_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -404,10 +402,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_9">
+      <model name="blue_9">
         <static>true</static>
         <pose>26.2748937812757 42.0609961552005 0.15 0 0 0</pose>
-        <link name="inner_9_link">
+        <link name="blue_9_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -449,10 +447,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_10">
+      <model name="blue_10">
         <static>true</static>
         <pose>28.2282468521326 42.0009961057027 0.15 0 0 0</pose>
-        <link name="inner_10_link">
+        <link name="blue_10_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -494,10 +492,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_11">
+      <model name="blue_11">
         <static>true</static>
         <pose>30.1761149294924 41.9130441723441 0.15 0 0 0</pose>
-        <link name="inner_11_link">
+        <link name="blue_11_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -539,10 +537,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_12">
+      <model name="blue_12">
         <static>true</static>
         <pose>32.0795946202318 41.7896079706255 0.15 0 0 0</pose>
-        <link name="inner_12_link">
+        <link name="blue_12_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -584,10 +582,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_13">
+      <model name="blue_13">
         <static>true</static>
         <pose>33.88171993278 41.5914171121172 0.15 0 0 0</pose>
-        <link name="inner_13_link">
+        <link name="blue_13_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -629,10 +627,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_14">
+      <model name="blue_14">
         <static>true</static>
         <pose>37.1238045770298 40.8042280456036 0.15 0 0 0</pose>
-        <link name="inner_14_link">
+        <link name="blue_14_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -674,10 +672,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_15">
+      <model name="blue_15">
         <static>true</static>
         <pose>38.5108000329817 40.1631834270328 0.15 0 0 0</pose>
-        <link name="inner_15_link">
+        <link name="blue_15_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -719,10 +717,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_16">
+      <model name="blue_16">
         <static>true</static>
         <pose>40.7498148915033 38.2980872410971 0.15 0 0 0</pose>
-        <link name="inner_16_link">
+        <link name="blue_16_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -764,10 +762,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_17">
+      <model name="blue_17">
         <static>true</static>
         <pose>41.6428012725483 37.057274095852 0.15 0 0 0</pose>
-        <link name="inner_17_link">
+        <link name="blue_17_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -809,10 +807,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_18">
+      <model name="blue_18">
         <static>true</static>
         <pose>42.3684952713925 35.6541128117207 0.15 0 0 0</pose>
-        <link name="inner_18_link">
+        <link name="blue_18_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -854,10 +852,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_19">
+      <model name="blue_19">
         <static>true</static>
         <pose>42.923741279885 34.1220862330776 0.15 0 0 0</pose>
-        <link name="inner_19_link">
+        <link name="blue_19_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -899,10 +897,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_20">
+      <model name="blue_20">
         <static>true</static>
         <pose>43.4562377484922 30.9418382209873 0.15 0 0 0</pose>
-        <link name="inner_20_link">
+        <link name="blue_20_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -944,10 +942,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_21">
+      <model name="blue_21">
         <static>true</static>
         <pose>43.4041825643156 29.3682424552239 0.15 0 0 0</pose>
-        <link name="inner_21_link">
+        <link name="blue_21_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -989,10 +987,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_22">
+      <model name="blue_22">
         <static>true</static>
         <pose>43.1310900802234 27.8454335309325 0.15 0 0 0</pose>
-        <link name="inner_22_link">
+        <link name="blue_22_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -1034,10 +1032,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_23">
+      <model name="blue_23">
         <static>true</static>
         <pose>42.6373380962399 26.4081334491868 0.15 0 0 0</pose>
-        <link name="inner_23_link">
+        <link name="blue_23_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -1079,10 +1077,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_24">
+      <model name="blue_24">
         <static>true</static>
         <pose>41.92136068956 25.0723633391567 0.15 0 0 0</pose>
-        <link name="inner_24_link">
+        <link name="blue_24_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -1124,10 +1122,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_25">
+      <model name="blue_25">
         <static>true</static>
         <pose>39.8493389129556 22.6733478226331 0.15 0 0 0</pose>
-        <link name="inner_25_link">
+        <link name="blue_25_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -1169,10 +1167,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_26">
+      <model name="blue_26">
         <static>true</static>
         <pose>37.1330772214184 20.7325660900255 0.15 0 0 0</pose>
-        <link name="inner_26_link">
+        <link name="blue_26_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -1214,10 +1212,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_27">
+      <model name="blue_27">
         <static>true</static>
         <pose>35.6438750732877 19.9947555768891 0.15 0 0 0</pose>
-        <link name="inner_27_link">
+        <link name="blue_27_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -1259,10 +1257,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_28">
+      <model name="blue_28">
         <static>true</static>
         <pose>34.097019809549 19.4366654165469 0.15 0 0 0</pose>
-        <link name="inner_28_link">
+        <link name="blue_28_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -1304,10 +1302,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_29">
+      <model name="blue_29">
         <static>true</static>
         <pose>32.5117013027651 19.0709696852617 0.15 0 0 0</pose>
-        <link name="inner_29_link">
+        <link name="blue_29_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -1349,10 +1347,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_30">
+      <model name="blue_30">
         <static>true</static>
         <pose>30.9105163807122 18.908114245835 0.15 0 0 0</pose>
-        <link name="inner_30_link">
+        <link name="blue_30_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -1394,10 +1392,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_31">
+      <model name="blue_31">
         <static>true</static>
         <pose>29.305019764528 18.9545691109581 0.15 0 0 0</pose>
-        <link name="inner_31_link">
+        <link name="blue_31_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -1439,10 +1437,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_32">
+      <model name="blue_32">
         <static>true</static>
         <pose>27.6851829730976 19.2045278218877 0.15 0 0 0</pose>
-        <link name="inner_32_link">
+        <link name="blue_32_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -1484,10 +1482,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_33">
+      <model name="blue_33">
         <static>true</static>
         <pose>24.4759113345748 20.2570787967781 0.15 0 0 0</pose>
-        <link name="inner_33_link">
+        <link name="blue_33_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -1529,10 +1527,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_34">
+      <model name="blue_34">
         <static>true</static>
         <pose>21.3685688158133 21.9377743574784 0.15 0 0 0</pose>
-        <link name="inner_34_link">
+        <link name="blue_34_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -1574,10 +1572,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_35">
+      <model name="blue_35">
         <static>true</static>
         <pose>19.8072187451783 22.9775182612717 0.15 0 0 0</pose>
-        <link name="inner_35_link">
+        <link name="blue_35_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -1619,10 +1617,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_36">
+      <model name="blue_36">
         <static>true</static>
         <pose>18.2040616100214 24.1054677217171 0.15 0 0 0</pose>
-        <link name="inner_36_link">
+        <link name="blue_36_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -1664,10 +1662,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_37">
+      <model name="blue_37">
         <static>true</static>
         <pose>16.5291821840059 25.277806927272 0.15 0 0 0</pose>
-        <link name="inner_37_link">
+        <link name="blue_37_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -1709,10 +1707,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_38">
+      <model name="blue_38">
         <static>true</static>
         <pose>14.7490275765791 26.4446189166734 0.15 0 0 0</pose>
-        <link name="inner_38_link">
+        <link name="blue_38_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -1754,10 +1752,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_39">
+      <model name="blue_39">
         <static>true</static>
         <pose>10.7566166245341 28.5122919557571 0.15 0 0 0</pose>
-        <link name="inner_39_link">
+        <link name="blue_39_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -1799,10 +1797,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_40">
+      <model name="blue_40">
         <static>true</static>
         <pose>8.59035703212379 29.2671114310357 0.15 0 0 0</pose>
-        <link name="inner_40_link">
+        <link name="blue_40_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -1844,10 +1842,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_41">
+      <model name="blue_41">
         <static>true</static>
         <pose>6.36970146209175 29.8034933598624 0.15 0 0 0</pose>
-        <link name="inner_41_link">
+        <link name="blue_41_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -1889,10 +1887,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_42">
+      <model name="blue_42">
         <static>true</static>
         <pose>4.11753580708921 30.1252372241127 0.15 0 0 0</pose>
-        <link name="inner_42_link">
+        <link name="blue_42_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -1934,10 +1932,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_43">
+      <model name="blue_43">
         <static>true</static>
         <pose>-0.405973075502234 30.1500578730274 0.15 0 0 0</pose>
-        <link name="inner_43_link">
+        <link name="blue_43_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -1979,10 +1977,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_44">
+      <model name="blue_44">
         <static>true</static>
         <pose>-2.75740378439869 29.8083496207198 0.15 0 0 0</pose>
-        <link name="inner_44_link">
+        <link name="blue_44_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -2024,10 +2022,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_45">
+      <model name="blue_45">
         <static>true</static>
         <pose>-7.53032772904185 27.7630095130657 0.15 0 0 0</pose>
-        <link name="inner_45_link">
+        <link name="blue_45_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -2069,10 +2067,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_46">
+      <model name="blue_46">
         <static>true</static>
         <pose>-9.55882345130782 25.8360602858122 0.15 0 0 0</pose>
-        <link name="inner_46_link">
+        <link name="blue_46_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -2114,10 +2112,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_47">
+      <model name="blue_47">
         <static>true</static>
         <pose>-10.9967405848897 23.4446538263345 0.15 0 0 0</pose>
-        <link name="inner_47_link">
+        <link name="blue_47_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -2159,10 +2157,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_48">
+      <model name="blue_48">
         <static>true</static>
         <pose>-11.7530941810305 20.7728147412547 0.15 0 0 0</pose>
-        <link name="inner_48_link">
+        <link name="blue_48_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -2204,10 +2202,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_49">
+      <model name="blue_49">
         <static>true</static>
         <pose>-11.7945553145768 18.0098876247875 0.15 0 0 0</pose>
-        <link name="inner_49_link">
+        <link name="blue_49_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -2249,10 +2247,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_50">
+      <model name="blue_50">
         <static>true</static>
         <pose>-11.1377067999357 15.3398589997259 0.15 0 0 0</pose>
-        <link name="inner_50_link">
+        <link name="blue_50_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -2294,10 +2292,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_51">
+      <model name="blue_51">
         <static>true</static>
         <pose>-9.84329815385971 12.9293912425976 0.15 0 0 0</pose>
-        <link name="inner_51_link">
+        <link name="blue_51_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -2339,10 +2337,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_52">
+      <model name="blue_52">
         <static>true</static>
         <pose>-4.31864858110937 8.32717777382664 0.15 0 0 0</pose>
-        <link name="inner_52_link">
+        <link name="blue_52_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -2384,10 +2382,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_53">
+      <model name="blue_53">
         <static>true</static>
         <pose>-2.64821833398598 7.33684919790624 0.15 0 0 0</pose>
-        <link name="inner_53_link">
+        <link name="blue_53_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -2429,10 +2427,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_54">
+      <model name="blue_54">
         <static>true</static>
         <pose>-1.23396167898668 6.38669110355496 0.15 0 0 0</pose>
-        <link name="inner_54_link">
+        <link name="blue_54_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -2474,10 +2472,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_55">
+      <model name="blue_55">
         <static>true</static>
         <pose>-0.139159724307982 5.41310565569044 0.15 0 0 0</pose>
-        <link name="inner_55_link">
+        <link name="blue_55_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -2519,10 +2517,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_56">
+      <model name="blue_56">
         <static>true</static>
         <pose>0.583196113153409 4.42232005043196 0.15 0 0 0</pose>
-        <link name="inner_56_link">
+        <link name="blue_56_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -2564,10 +2562,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_57">
+      <model name="blue_57">
         <static>true</static>
         <pose>1.00846697640521 3.25999992647677 0.15 0 0 0</pose>
-        <link name="inner_57_link">
+        <link name="blue_57_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -2609,10 +2607,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_58">
+      <model name="blue_58">
         <static>true</static>
         <pose>1.42452204766312 -0.235409796458984 0.15 0 0 0</pose>
-        <link name="inner_58_link">
+        <link name="blue_58_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -2654,10 +2652,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_59">
+      <model name="blue_59">
         <static>true</static>
         <pose>1.7076976610908 -2.501572642794 0.15 0 0 0</pose>
-        <link name="inner_59_link">
+        <link name="blue_59_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -2699,10 +2697,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_60">
+      <model name="blue_60">
         <static>true</static>
         <pose>2.43395748729283 -5.02746251429141 0.15 0 0 0</pose>
-        <link name="inner_60_link">
+        <link name="blue_60_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -2744,10 +2742,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_61">
+      <model name="blue_61">
         <static>true</static>
         <pose>5.90118769712182 -9.36241405660719 0.15 0 0 0</pose>
-        <link name="inner_61_link">
+        <link name="blue_61_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -2789,10 +2787,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_62">
+      <model name="blue_62">
         <static>true</static>
         <pose>8.13219227914984 -10.6723062142501 0.15 0 0 0</pose>
-        <link name="inner_62_link">
+        <link name="blue_62_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -2834,10 +2832,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_63">
+      <model name="blue_63">
         <static>true</static>
         <pose>10.4108490166236 -11.5249176387577 0.15 0 0 0</pose>
-        <link name="inner_63_link">
+        <link name="blue_63_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -2879,10 +2877,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_64">
+      <model name="blue_64">
         <static>true</static>
         <pose>14.7174578544944 -12.4162331505645 0.15 0 0 0</pose>
-        <link name="inner_64_link">
+        <link name="blue_64_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -2924,10 +2922,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_65">
+      <model name="blue_65">
         <static>true</static>
         <pose>16.6611999625517 -12.7135418322201 0.15 0 0 0</pose>
-        <link name="inner_65_link">
+        <link name="blue_65_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -2969,10 +2967,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_66">
+      <model name="blue_66">
         <static>true</static>
         <pose>18.4669199253036 -13.0527675263258 0.15 0 0 0</pose>
-        <link name="inner_66_link">
+        <link name="blue_66_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -3014,10 +3012,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_67">
+      <model name="blue_67">
         <static>true</static>
         <pose>20.2513584750154 -13.4902268953088 0.15 0 0 0</pose>
-        <link name="inner_67_link">
+        <link name="blue_67_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -3059,10 +3057,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_68">
+      <model name="blue_68">
         <static>true</static>
         <pose>22.0275043214267 -14.0208096878619 0.15 0 0 0</pose>
-        <link name="inner_68_link">
+        <link name="blue_68_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -3104,10 +3102,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_69">
+      <model name="blue_69">
         <static>true</static>
         <pose>23.7938485314227 -14.6351269687361 0.15 0 0 0</pose>
-        <link name="inner_69_link">
+        <link name="blue_69_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -3149,10 +3147,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_70">
+      <model name="blue_70">
         <static>true</static>
         <pose>29.038055353384 -16.8864873288738 0.15 0 0 0</pose>
-        <link name="inner_70_link">
+        <link name="blue_70_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -3194,10 +3192,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_71">
+      <model name="blue_71">
         <static>true</static>
         <pose>30.7681622622371 -17.739262619614 0.15 0 0 0</pose>
-        <link name="inner_71_link">
+        <link name="blue_71_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -3239,10 +3237,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_72">
+      <model name="blue_72">
         <static>true</static>
         <pose>32.3760783979903 -18.6039808584518 0.15 0 0 0</pose>
-        <link name="inner_72_link">
+        <link name="blue_72_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -3284,10 +3282,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_73">
+      <model name="blue_73">
         <static>true</static>
         <pose>33.7897740653103 -19.5166383512928 0.15 0 0 0</pose>
-        <link name="inner_73_link">
+        <link name="blue_73_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -3329,10 +3327,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_74">
+      <model name="blue_74">
         <static>true</static>
         <pose>34.9667330396653 -20.5090458088496 0.15 0 0 0</pose>
-        <link name="inner_74_link">
+        <link name="blue_74_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -3374,10 +3372,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_75">
+      <model name="blue_75">
         <static>true</static>
         <pose>35.8614855279756 -21.5808775016001 0.15 0 0 0</pose>
-        <link name="inner_75_link">
+        <link name="blue_75_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -3419,10 +3417,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_76">
+      <model name="blue_76">
         <static>true</static>
         <pose>36.4612858521334 -22.745130864389 0.15 0 0 0</pose>
-        <link name="inner_76_link">
+        <link name="blue_76_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -3464,10 +3462,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_77">
+      <model name="blue_77">
         <static>true</static>
         <pose>36.8711477182864 -25.4557910211687 0.15 0 0 0</pose>
-        <link name="inner_77_link">
+        <link name="blue_77_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -3509,10 +3507,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_78">
+      <model name="blue_78">
         <static>true</static>
         <pose>36.6696611457761 -26.8930663715963 0.15 0 0 0</pose>
-        <link name="inner_78_link">
+        <link name="blue_78_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -3554,10 +3552,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_79">
+      <model name="blue_79">
         <static>true</static>
         <pose>35.5175477601575 -29.6867414698392 0.15 0 0 0</pose>
-        <link name="inner_79_link">
+        <link name="blue_79_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -3599,10 +3597,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_80">
+      <model name="blue_80">
         <static>true</static>
         <pose>34.6369025552692 -30.9011171932826 0.15 0 0 0</pose>
-        <link name="inner_80_link">
+        <link name="blue_80_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -3644,10 +3642,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_81">
+      <model name="blue_81">
         <static>true</static>
         <pose>33.5888282300982 -31.9233335254203 0.15 0 0 0</pose>
-        <link name="inner_81_link">
+        <link name="blue_81_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -3689,10 +3687,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_82">
+      <model name="blue_82">
         <static>true</static>
         <pose>32.4026659456202 -32.7184009884738 0.15 0 0 0</pose>
-        <link name="inner_82_link">
+        <link name="blue_82_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -3734,10 +3732,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_83">
+      <model name="blue_83">
         <static>true</static>
         <pose>29.6211021726631 -33.5886007841515 0.15 0 0 0</pose>
-        <link name="inner_83_link">
+        <link name="blue_83_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -3779,10 +3777,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_84">
+      <model name="blue_84">
         <static>true</static>
         <pose>27.9849204584717 -33.717019313626 0.15 0 0 0</pose>
-        <link name="inner_84_link">
+        <link name="blue_84_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -3824,10 +3822,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_85">
+      <model name="blue_85">
         <static>true</static>
         <pose>26.2183096377485 -33.68480226464 0.15 0 0 0</pose>
-        <link name="inner_85_link">
+        <link name="blue_85_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -3869,10 +3867,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_86">
+      <model name="blue_86">
         <static>true</static>
         <pose>24.3309596262912 -33.5465676173721 0.15 0 0 0</pose>
-        <link name="inner_86_link">
+        <link name="blue_86_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -3914,10 +3912,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_87">
+      <model name="blue_87">
         <static>true</static>
         <pose>22.3208062313579 -33.3726612899257 0.15 0 0 0</pose>
-        <link name="inner_87_link">
+        <link name="blue_87_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -3959,10 +3957,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_88">
+      <model name="blue_88">
         <static>true</static>
         <pose>18.1328018280879 -33.1964401661521 0.15 0 0 0</pose>
-        <link name="inner_88_link">
+        <link name="blue_88_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -4004,10 +4002,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_89">
+      <model name="blue_89">
         <static>true</static>
         <pose>14.1429922166079 -33.1731958647648 0.15 0 0 0</pose>
-        <link name="inner_89_link">
+        <link name="blue_89_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -4049,10 +4047,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_90">
+      <model name="blue_90">
         <static>true</static>
         <pose>12.2313503871593 -33.1266878316603 0.15 0 0 0</pose>
-        <link name="inner_90_link">
+        <link name="blue_90_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -4094,10 +4092,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_91">
+      <model name="blue_91">
         <static>true</static>
         <pose>10.3778348140314 -33.0132052855498 0.15 0 0 0</pose>
-        <link name="inner_91_link">
+        <link name="blue_91_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -4139,10 +4137,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_92">
+      <model name="blue_92">
         <static>true</static>
         <pose>8.58829435522285 -32.8040580663346 0.15 0 0 0</pose>
-        <link name="inner_92_link">
+        <link name="blue_92_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -4184,10 +4182,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_93">
+      <model name="blue_93">
         <static>true</static>
         <pose>6.84064584789227 -32.4725374962639 0.15 0 0 0</pose>
-        <link name="inner_93_link">
+        <link name="blue_93_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -4229,10 +4227,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_94">
+      <model name="blue_94">
         <static>true</static>
         <pose>5.0700994448255 -32.0172508962124 0.15 0 0 0</pose>
-        <link name="inner_94_link">
+        <link name="blue_94_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -4274,10 +4272,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_95">
+      <model name="blue_95">
         <static>true</static>
         <pose>3.27322533222869 -31.4640545504384 0.15 0 0 0</pose>
-        <link name="inner_95_link">
+        <link name="blue_95_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -4319,10 +4317,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_96">
+      <model name="blue_96">
         <static>true</static>
         <pose>-0.418687595522242 -30.179669644723 0.15 0 0 0</pose>
-        <link name="inner_96_link">
+        <link name="blue_96_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -4364,10 +4362,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_97">
+      <model name="blue_97">
         <static>true</static>
         <pose>-4.09627739578414 -28.8238238024923 0.15 0 0 0</pose>
-        <link name="inner_97_link">
+        <link name="blue_97_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -4409,10 +4407,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_98">
+      <model name="blue_98">
         <static>true</static>
         <pose>-5.8920216078647 -28.1122858460715 0.15 0 0 0</pose>
-        <link name="inner_98_link">
+        <link name="blue_98_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -4454,10 +4452,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_99">
+      <model name="blue_99">
         <static>true</static>
         <pose>-7.65255868890126 -27.3645667343373 0.15 0 0 0</pose>
-        <link name="inner_99_link">
+        <link name="blue_99_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -4499,10 +4497,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_100">
+      <model name="blue_100">
         <static>true</static>
         <pose>-9.3735582672942 -26.570622321206 0.15 0 0 0</pose>
-        <link name="inner_100_link">
+        <link name="blue_100_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -4544,10 +4542,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_101">
+      <model name="blue_101">
         <static>true</static>
         <pose>-11.077254916009 -25.7164049091686 0.15 0 0 0</pose>
-        <link name="inner_101_link">
+        <link name="blue_101_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -4589,10 +4587,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_102">
+      <model name="blue_102">
         <static>true</static>
         <pose>-14.4775165017317 -23.8562440887552 0.15 0 0 0</pose>
-        <link name="inner_102_link">
+        <link name="blue_102_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -4634,10 +4632,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_103">
+      <model name="blue_103">
         <static>true</static>
         <pose>-16.185233511045 -22.8738429891042 0.15 0 0 0</pose>
-        <link name="inner_103_link">
+        <link name="blue_103_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -4679,10 +4677,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_104">
+      <model name="blue_104">
         <static>true</static>
         <pose>-17.906698460143 -21.8724503885825 0.15 0 0 0</pose>
-        <link name="inner_104_link">
+        <link name="blue_104_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -4724,10 +4722,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_105">
+      <model name="blue_105">
         <static>true</static>
         <pose>-19.628089973309 -20.8717543910881 0.15 0 0 0</pose>
-        <link name="inner_105_link">
+        <link name="blue_105_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -4769,10 +4767,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_106">
+      <model name="blue_106">
         <static>true</static>
         <pose>-22.928385262226 -18.8697018891971 0.15 0 0 0</pose>
-        <link name="inner_106_link">
+        <link name="blue_106_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -4814,10 +4812,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_107">
+      <model name="blue_107">
         <static>true</static>
         <pose>-24.4790807692059 -17.8277052050408 0.15 0 0 0</pose>
-        <link name="inner_107_link">
+        <link name="blue_107_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -4859,10 +4857,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_108">
+      <model name="blue_108">
         <static>true</static>
         <pose>-27.3051265922114 -15.5801090683244 0.15 0 0 0</pose>
-        <link name="inner_108_link">
+        <link name="blue_108_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -4904,10 +4902,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_109">
+      <model name="blue_109">
         <static>true</static>
         <pose>-28.5448479313762 -14.3530174024786 0.15 0 0 0</pose>
-        <link name="inner_109_link">
+        <link name="blue_109_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -4949,10 +4947,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_110">
+      <model name="blue_110">
         <static>true</static>
         <pose>-29.6530218737847 -13.0404842531107 0.15 0 0 0</pose>
-        <link name="inner_110_link">
+        <link name="blue_110_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -4994,10 +4992,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_111">
+      <model name="blue_111">
         <static>true</static>
         <pose>-30.6444406510768 -11.6234683085559 0.15 0 0 0</pose>
-        <link name="inner_111_link">
+        <link name="blue_111_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -5039,10 +5037,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_112">
+      <model name="blue_112">
         <static>true</static>
         <pose>-31.5169602294234 -10.1146356600596 0.15 0 0 0</pose>
-        <link name="inner_112_link">
+        <link name="blue_112_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -5084,10 +5082,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_113">
+      <model name="blue_113">
         <static>true</static>
         <pose>-32.2692264908853 -8.52739205631154 0.15 0 0 0</pose>
-        <link name="inner_113_link">
+        <link name="blue_113_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -5129,10 +5127,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_114">
+      <model name="blue_114">
         <static>true</static>
         <pose>-32.9016624434539 -6.87420998418598 0.15 0 0 0</pose>
-        <link name="inner_114_link">
+        <link name="blue_114_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -5174,10 +5172,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_115">
+      <model name="blue_115">
         <static>true</static>
         <pose>-34.1160057737752 -1.6080377618219 0.15 0 0 0</pose>
-        <link name="inner_115_link">
+        <link name="blue_115_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -5219,10 +5217,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_116">
+      <model name="blue_116">
         <static>true</static>
         <pose>-34.3261608207142 0.237322459171913 0.15 0 0 0</pose>
-        <link name="inner_116_link">
+        <link name="blue_116_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -5264,10 +5262,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_117">
+      <model name="blue_117">
         <static>true</static>
         <pose>-34.4624174228984 2.11880932640591 0.15 0 0 0</pose>
-        <link name="inner_117_link">
+        <link name="blue_117_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -5309,10 +5307,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_118">
+      <model name="blue_118">
         <static>true</static>
         <pose>-34.5407037273032 4.03273612643633 0.15 0 0 0</pose>
-        <link name="inner_118_link">
+        <link name="blue_118_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -5354,10 +5352,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_119">
+      <model name="blue_119">
         <static>true</static>
         <pose>-34.5779532171168 5.97700580252438 0.15 0 0 0</pose>
-        <link name="inner_119_link">
+        <link name="blue_119_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -5399,10 +5397,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_120">
+      <model name="blue_120">
         <static>true</static>
         <pose>-34.5920061096721 7.95066706685753 0.15 0 0 0</pose>
-        <link name="inner_120_link">
+        <link name="blue_120_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -5444,10 +5442,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_121">
+      <model name="blue_121">
         <static>true</static>
         <pose>-34.6203010935088 11.9628384547546 0.15 0 0 0</pose>
-        <link name="inner_121_link">
+        <link name="blue_121_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -5489,10 +5487,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_122">
+      <model name="blue_122">
         <static>true</static>
         <pose>-34.6463516562825 13.9656473217268 0.15 0 0 0</pose>
-        <link name="inner_122_link">
+        <link name="blue_122_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -5534,10 +5532,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_123">
+      <model name="blue_123">
         <static>true</static>
         <pose>-34.6751545298116 15.9616504117489 0.15 0 0 0</pose>
-        <link name="inner_123_link">
+        <link name="blue_123_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -5579,10 +5577,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_124">
+      <model name="blue_124">
         <static>true</static>
         <pose>-34.7230350194217 19.933473343198 0.15 0 0 0</pose>
-        <link name="inner_124_link">
+        <link name="blue_124_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -5624,10 +5622,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_125">
+      <model name="blue_125">
         <static>true</static>
         <pose>-34.7332354577762 21.9093507078716 0.15 0 0 0</pose>
-        <link name="inner_125_link">
+        <link name="blue_125_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -5669,10 +5667,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_126">
+      <model name="blue_126">
         <static>true</static>
         <pose>-34.728433845112 23.8784778261844 0.15 0 0 0</pose>
-        <link name="inner_126_link">
+        <link name="blue_126_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -5714,10 +5712,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_127">
+      <model name="blue_127">
         <static>true</static>
         <pose>-34.6466389854161 27.7320065787716 0.15 0 0 0</pose>
-        <link name="inner_127_link">
+        <link name="blue_127_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -5759,10 +5757,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_128">
+      <model name="blue_128">
         <static>true</static>
         <pose>-34.4887912178893 29.4532110956616 0.15 0 0 0</pose>
-        <link name="inner_128_link">
+        <link name="blue_128_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -5804,10 +5802,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_129">
+      <model name="blue_129">
         <static>true</static>
         <pose>-34.1674004338218 30.9833511541837 0.15 0 0 0</pose>
-        <link name="inner_129_link">
+        <link name="blue_129_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -5849,10 +5847,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_130">
+      <model name="blue_130">
         <static>true</static>
         <pose>-33.6523388115164 32.2835000565933 0.15 0 0 0</pose>
-        <link name="inner_130_link">
+        <link name="blue_130_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -5894,10 +5892,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_131">
+      <model name="blue_131">
         <static>true</static>
         <pose>-32.9540435069214 33.3001054449054 0.15 0 0 0</pose>
-        <link name="inner_131_link">
+        <link name="blue_131_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -5939,10 +5937,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_132">
+      <model name="blue_132">
         <static>true</static>
         <pose>-32.0153881487289 34.0792118997941 0.15 0 0 0</pose>
-        <link name="inner_132_link">
+        <link name="blue_132_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -5984,10 +5982,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_133">
+      <model name="blue_133">
         <static>true</static>
         <pose>-28.7867224485036 35.7027232116937 0.15 0 0 0</pose>
-        <link name="inner_133_link">
+        <link name="blue_133_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -6029,10 +6027,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_134">
+      <model name="blue_134">
         <static>true</static>
         <pose>-26.87370749476 36.7067299514829 0.15 0 0 0</pose>
-        <link name="inner_134_link">
+        <link name="blue_134_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -6074,10 +6072,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_135">
+      <model name="blue_135">
         <static>true</static>
         <pose>-21.7623826032159 39.595866321033 0.15 0 0 0</pose>
-        <link name="inner_135_link">
+        <link name="blue_135_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -6119,10 +6117,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_136">
+      <model name="blue_136">
         <static>true</static>
         <pose>-20.1418625665089 40.3549987041733 0.15 0 0 0</pose>
-        <link name="inner_136_link">
+        <link name="blue_136_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -6164,10 +6162,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_137">
+      <model name="blue_137">
         <static>true</static>
         <pose>-18.5286281071084 40.9596629960629 0.15 0 0 0</pose>
-        <link name="inner_137_link">
+        <link name="blue_137_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -6209,10 +6207,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_138">
+      <model name="blue_138">
         <static>true</static>
         <pose>-16.9269162480936 41.3805845888608 0.15 0 0 0</pose>
-        <link name="inner_138_link">
+        <link name="blue_138_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -6254,10 +6252,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_139">
+      <model name="blue_139">
         <static>true</static>
         <pose>-15.2947586791386 41.6060043323431 0.15 0 0 0</pose>
-        <link name="inner_139_link">
+        <link name="blue_139_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -6299,10 +6297,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_140">
+      <model name="blue_140">
         <static>true</static>
         <pose>-13.5312107482484 41.6777684016896 0.15 0 0 0</pose>
-        <link name="inner_140_link">
+        <link name="blue_140_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -6344,10 +6342,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_141">
+      <model name="blue_141">
         <static>true</static>
         <pose>-9.64289482747188 41.5853268011948 0.15 0 0 0</pose>
-        <link name="inner_141_link">
+        <link name="blue_141_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -6389,10 +6387,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_142">
+      <model name="blue_142">
         <static>true</static>
         <pose>-7.61112976471737 41.5421552074769 0.15 0 0 0</pose>
-        <link name="inner_142_link">
+        <link name="blue_142_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -6434,10 +6432,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_143">
+      <model name="blue_143">
         <static>true</static>
         <pose>-5.58318659783131 41.5226049040385 0.15 0 0 0</pose>
-        <link name="inner_143_link">
+        <link name="blue_143_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -6479,10 +6477,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_144">
+      <model name="blue_144">
         <static>true</static>
         <pose>-1.53976115651896 41.5427010208205 0.15 0 0 0</pose>
-        <link name="inner_144_link">
+        <link name="blue_144_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -6524,10 +6522,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_145">
+      <model name="blue_145">
         <static>true</static>
         <pose>0.4754310943428 41.5765527022834 0.15 0 0 0</pose>
-        <link name="inner_145_link">
+        <link name="blue_145_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -6569,10 +6567,10 @@
           </inertial>
         </link>
       </model>
-      <model name="inner_146">
+      <model name="blue_146">
         <static>true</static>
         <pose>2.48619653317858 41.622438779726 0.15 0 0 0</pose>
-        <link name="inner_146_link">
+        <link name="blue_146_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -6614,23 +6612,22 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_1">
+      <model name="orange_2">
         <static>true</static>
         <pose>8.29483356036796 47.8005083348189 0.15 0 0 0</pose>
-        <link name="outer_1_link">
+        <link name="orange_2_link">
           <visual name="visual">
             <geometry>
               <mesh>
-                <uri>model://simulation/models/cones/cone_large_orange/mesh.dae</uri>
+                <uri>model://simulation/models/cones/cone_orange/mesh.dae</uri>
               </mesh>
             </geometry>
           </visual>
           <collision name="collision">
-            <pose>0 0 0.232 0 0 0</pose>
             <geometry>
               <!-- Simpler collision model for performance boost -->
               <box>
-                <size>0.26 0.26 0.53</size>
+                <size>0.22 0.23 0.3</size>
               </box>
             </geometry>
             <surface>
@@ -6648,23 +6645,22 @@
           </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
-            <mass>1.05</mass>
-            <!-- Edit centre of mass later -->
+            <mass>0.45</mass>
             <inertia>
-              <ixx>0.003</ixx>
+              <ixx>0.013</ixx>
               <ixy>0.0</ixy>
               <ixz>0.0</ixz>
-              <iyy>0.003</iyy>
+              <iyy>0.013</iyy>
               <iyz>0.0</iyz>
-              <izz>0.002</izz>
+              <izz>0.006</izz>
             </inertia>
           </inertial>
         </link>
       </model>
-      <model name="outer_2">
+      <model name="yellow_2">
         <static>true</static>
         <pose>10.2903642978411 47.8659036790991 0.15 0 0 0</pose>
-        <link name="outer_2_link">
+        <link name="yellow_2_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -6706,10 +6702,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_3">
+      <model name="yellow_3">
         <static>true</static>
         <pose>12.2903853701921 47.9291209919643 0.15 0 0 0</pose>
-        <link name="outer_3_link">
+        <link name="yellow_3_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -6751,10 +6747,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_4">
+      <model name="yellow_4">
         <static>true</static>
         <pose>14.2949817462715 47.9871977358879 0.15 0 0 0</pose>
-        <link name="outer_4_link">
+        <link name="yellow_4_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -6796,10 +6792,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_5">
+      <model name="yellow_5">
         <static>true</static>
         <pose>16.3042155724446 48.0371512121282 0.15 0 0 0</pose>
-        <link name="outer_5_link">
+        <link name="yellow_5_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -6841,10 +6837,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_6">
+      <model name="yellow_6">
         <static>true</static>
         <pose>18.318112860148 48.0759783968909 0.15 0 0 0</pose>
-        <link name="outer_6_link">
+        <link name="yellow_6_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -6886,10 +6882,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_7">
+      <model name="yellow_7">
         <static>true</static>
         <pose>24.3872198920862 48.0953719564451 0.15 0 0 0</pose>
-        <link name="outer_7_link">
+        <link name="yellow_7_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -6931,10 +6927,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_8">
+      <model name="yellow_8">
         <static>true</static>
         <pose>26.4188343006777 48.0592693339474 0.15 0 0 0</pose>
-        <link name="outer_8_link">
+        <link name="yellow_8_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -6976,10 +6972,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_9">
+      <model name="yellow_9">
         <static>true</static>
         <pose>28.4542241392916 47.9967391176812 0.15 0 0 0</pose>
-        <link name="outer_9_link">
+        <link name="yellow_9_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -7021,10 +7017,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_10">
+      <model name="yellow_10">
         <static>true</static>
         <pose>30.4929111587893 47.9046750145358 0.15 0 0 0</pose>
-        <link name="outer_10_link">
+        <link name="yellow_10_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -7066,10 +7062,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_11">
+      <model name="yellow_11">
         <static>true</static>
         <pose>32.5715480310539 47.7694057800486 0.15 0 0 0</pose>
-        <link name="outer_11_link">
+        <link name="yellow_11_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -7111,10 +7107,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_12">
+      <model name="yellow_12">
         <static>true</static>
         <pose>34.7354354110013 47.5303707137414 0.15 0 0 0</pose>
-        <link name="outer_12_link">
+        <link name="yellow_12_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -7156,10 +7152,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_13">
+      <model name="yellow_13">
         <static>true</static>
         <pose>36.9671887094624 47.1090924863221 0.15 0 0 0</pose>
-        <link name="outer_13_link">
+        <link name="yellow_13_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -7201,10 +7197,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_14">
+      <model name="yellow_14">
         <static>true</static>
         <pose>41.4608084515852 45.3878796220444 0.15 0 0 0</pose>
-        <link name="outer_14_link">
+        <link name="yellow_14_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -7246,10 +7242,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_15">
+      <model name="yellow_15">
         <static>true</static>
         <pose>43.5486168233166 43.9466679046951 0.15 0 0 0</pose>
-        <link name="outer_15_link">
+        <link name="yellow_15_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -7291,10 +7287,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_16">
+      <model name="yellow_16">
         <static>true</static>
         <pose>46.7637769841785 40.1838709296144 0.15 0 0 0</pose>
-        <link name="outer_16_link">
+        <link name="yellow_16_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -7336,10 +7332,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_17">
+      <model name="yellow_17">
         <static>true</static>
         <pose>47.8711744070693 38.045874156376 0.15 0 0 0</pose>
-        <link name="outer_17_link">
+        <link name="yellow_17_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -7381,10 +7377,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_18">
+      <model name="yellow_18">
         <static>true</static>
         <pose>48.6759026786991 35.8287318442088 0.15 0 0 0</pose>
-        <link name="outer_18_link">
+        <link name="yellow_18_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -7426,10 +7422,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_19">
+      <model name="yellow_19">
         <static>true</static>
         <pose>49.2095764033813 33.5308461962448 0.15 0 0 0</pose>
-        <link name="outer_19_link">
+        <link name="yellow_19_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -7471,10 +7467,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_20">
+      <model name="yellow_20">
         <static>true</static>
         <pose>49.371790659603 28.7456240961468 0.15 0 0 0</pose>
-        <link name="outer_20_link">
+        <link name="yellow_20_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -7516,10 +7512,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_21">
+      <model name="yellow_21">
         <static>true</static>
         <pose>48.9402528124274 26.3442245678724 0.15 0 0 0</pose>
-        <link name="outer_21_link">
+        <link name="yellow_21_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -7561,10 +7557,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_22">
+      <model name="yellow_22">
         <static>true</static>
         <pose>48.1379348685719 24.0115869446911 0.15 0 0 0</pose>
-        <link name="outer_22_link">
+        <link name="yellow_22_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -7606,10 +7602,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_23">
+      <model name="yellow_23">
         <static>true</static>
         <pose>46.9718766730536 21.8331831495909 0.15 0 0 0</pose>
-        <link name="outer_23_link">
+        <link name="yellow_23_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -7651,10 +7647,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_24">
+      <model name="yellow_24">
         <static>true</static>
         <pose>45.5183908761479 19.8937545099424 0.15 0 0 0</pose>
-        <link name="outer_24_link">
+        <link name="yellow_24_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -7696,10 +7692,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_25">
+      <model name="yellow_25">
         <static>true</static>
         <pose>42.034452284309 16.7521854290723 0.15 0 0 0</pose>
-        <link name="outer_25_link">
+        <link name="yellow_25_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -7741,10 +7737,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_26">
+      <model name="yellow_26">
         <static>true</static>
         <pose>38.0024261140352 14.4777602906678 0.15 0 0 0</pose>
-        <link name="outer_26_link">
+        <link name="yellow_26_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -7786,10 +7782,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_27">
+      <model name="yellow_27">
         <static>true</static>
         <pose>35.7974585974047 13.6826661179064 0.15 0 0 0</pose>
-        <link name="outer_27_link">
+        <link name="yellow_27_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -7831,10 +7827,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_28">
+      <model name="yellow_28">
         <static>true</static>
         <pose>33.4965697064231 13.1523520909686 0.15 0 0 0</pose>
-        <link name="outer_28_link">
+        <link name="yellow_28_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -7876,10 +7872,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_29">
+      <model name="yellow_29">
         <static>true</static>
         <pose>31.1302557069132 12.9121393769316 0.15 0 0 0</pose>
-        <link name="outer_29_link">
+        <link name="yellow_29_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -7921,10 +7917,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_30">
+      <model name="yellow_30">
         <static>true</static>
         <pose>28.7495405480103 12.9803375419597 0.15 0 0 0</pose>
-        <link name="outer_30_link">
+        <link name="yellow_30_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -7966,10 +7962,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_31">
+      <model name="yellow_31">
         <static>true</static>
         <pose>26.4275819814214 13.3378047377686 0.15 0 0 0</pose>
-        <link name="outer_31_link">
+        <link name="yellow_31_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -8011,10 +8007,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_32">
+      <model name="yellow_32">
         <static>true</static>
         <pose>24.1935407090117 13.9452300781406 0.15 0 0 0</pose>
-        <link name="outer_32_link">
+        <link name="yellow_32_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -8056,10 +8052,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_33">
+      <model name="yellow_33">
         <static>true</static>
         <pose>20.0475993937396 15.7534500265274 0.15 0 0 0</pose>
-        <link name="outer_33_link">
+        <link name="yellow_33_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -8101,10 +8097,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_34">
+      <model name="yellow_34">
         <static>true</static>
         <pose>16.395185781583 18.0421326577611 0.15 0 0 0</pose>
-        <link name="outer_34_link">
+        <link name="yellow_34_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -8146,10 +8142,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_35">
+      <model name="yellow_35">
         <static>true</static>
         <pose>14.7344934919394 19.210358215895 0.15 0 0 0</pose>
-        <link name="outer_35_link">
+        <link name="yellow_35_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -8191,10 +8187,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_36">
+      <model name="yellow_36">
         <static>true</static>
         <pose>13.1401972893467 20.3265665388672 0.15 0 0 0</pose>
-        <link name="outer_36_link">
+        <link name="yellow_36_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -8236,10 +8232,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_37">
+      <model name="yellow_37">
         <static>true</static>
         <pose>11.5833537070008 21.3477072094266 0.15 0 0 0</pose>
-        <link name="outer_37_link">
+        <link name="yellow_37_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -8281,10 +8277,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_38">
+      <model name="yellow_38">
         <static>true</static>
         <pose>10.0428032559345 22.2341839570762 0.15 0 0 0</pose>
-        <link name="outer_38_link">
+        <link name="yellow_38_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -8326,10 +8322,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_39">
+      <model name="yellow_39">
         <static>true</static>
         <pose>6.90006888859156 23.510122114402 0.15 0 0 0</pose>
-        <link name="outer_39_link">
+        <link name="yellow_39_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -8371,10 +8367,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_40">
+      <model name="yellow_40">
         <static>true</static>
         <pose>5.24310276950825 23.9102111346615 0.15 0 0 0</pose>
-        <link name="outer_40_link">
+        <link name="yellow_40_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -8416,10 +8412,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_41">
+      <model name="yellow_41">
         <static>true</static>
         <pose>3.54614319085073 24.1525066527486 0.15 0 0 0</pose>
-        <link name="outer_41_link">
+        <link name="yellow_41_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -8461,10 +8457,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_42">
+      <model name="yellow_42">
         <static>true</static>
         <pose>1.82453456285617 24.2384953941222 0.15 0 0 0</pose>
-        <link name="outer_42_link">
+        <link name="yellow_42_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -8506,10 +8502,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_43">
+      <model name="yellow_43">
         <static>true</static>
         <pose>-1.49646987010121 23.9423419780574 0.15 0 0 0</pose>
-        <link name="outer_43_link">
+        <link name="yellow_43_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -8551,10 +8547,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_44">
+      <model name="yellow_44">
         <static>true</static>
         <pose>-2.88611819700968 23.518850361989 0.15 0 0 0</pose>
-        <link name="outer_44_link">
+        <link name="yellow_44_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -8596,10 +8592,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_45">
+      <model name="yellow_45">
         <static>true</static>
         <pose>-4.87663538345929 22.0841121388762 0.15 0 0 0</pose>
-        <link name="outer_45_link">
+        <link name="yellow_45_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -8641,10 +8637,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_46">
+      <model name="yellow_46">
         <static>true</static>
         <pose>-5.48860547878733 21.0654842962416 0.15 0 0 0</pose>
-        <link name="outer_46_link">
+        <link name="yellow_46_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -8686,10 +8682,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_47">
+      <model name="yellow_47">
         <static>true</static>
         <pose>-5.81567263287249 19.9085084532591 0.15 0 0 0</pose>
-        <link name="outer_47_link">
+        <link name="yellow_47_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -8731,10 +8727,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_48">
+      <model name="yellow_48">
         <static>true</static>
         <pose>-5.8334919233918 18.6923268134878 0.15 0 0 0</pose>
-        <link name="outer_48_link">
+        <link name="yellow_48_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -8776,10 +8772,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_49">
+      <model name="yellow_49">
         <static>true</static>
         <pose>-5.53917605118359 17.497740705306 0.15 0 0 0</pose>
-        <link name="outer_49_link">
+        <link name="yellow_49_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -8821,10 +8817,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_50">
+      <model name="yellow_50">
         <static>true</static>
         <pose>-4.95012865665813 16.4016948398736 0.15 0 0 0</pose>
-        <link name="outer_50_link">
+        <link name="yellow_50_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -8866,10 +8862,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_51">
+      <model name="yellow_51">
         <static>true</static>
         <pose>-4.05317915721677 15.4107620877673 0.15 0 0 0</pose>
-        <link name="outer_51_link">
+        <link name="yellow_51_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -8911,10 +8907,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_52">
+      <model name="yellow_52">
         <static>true</static>
         <pose>0.49212153312725 12.4494087837712 0.15 0 0 0</pose>
-        <link name="outer_52_link">
+        <link name="yellow_52_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -8956,10 +8952,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_53">
+      <model name="yellow_53">
         <static>true</static>
         <pose>2.38653784056378 11.1712478467585 0.15 0 0 0</pose>
-        <link name="outer_53_link">
+        <link name="yellow_53_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -9001,10 +8997,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_54">
+      <model name="yellow_54">
         <static>true</static>
         <pose>4.26363974073903 9.48929957533922 0.15 0 0 0</pose>
-        <link name="outer_54_link">
+        <link name="yellow_54_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -9046,10 +9042,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_55">
+      <model name="yellow_55">
         <static>true</static>
         <pose>5.87263326747036 7.25460792254726 0.15 0 0 0</pose>
-        <link name="outer_55_link">
+        <link name="yellow_55_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -9091,10 +9087,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_56">
+      <model name="yellow_56">
         <static>true</static>
         <pose>6.83628597561633 4.68706884998182 0.15 0 0 0</pose>
-        <link name="outer_56_link">
+        <link name="yellow_56_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -9136,10 +9132,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_57">
+      <model name="yellow_57">
         <static>true</static>
         <pose>7.22868549746256 2.31823546262226 0.15 0 0 0</pose>
-        <link name="outer_57_link">
+        <link name="yellow_57_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -9181,10 +9177,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_58">
+      <model name="yellow_58">
         <static>true</static>
         <pose>7.60968340642873 -1.42149659832866 0.15 0 0 0</pose>
-        <link name="outer_58_link">
+        <link name="yellow_58_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -9226,10 +9222,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_59">
+      <model name="yellow_59">
         <static>true</static>
         <pose>7.9750905618407 -2.7261923758349 0.15 0 0 0</pose>
-        <link name="outer_59_link">
+        <link name="yellow_59_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -9271,10 +9267,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_60">
+      <model name="yellow_60">
         <static>true</static>
         <pose>8.54802041473498 -3.68009075055991 0.15 0 0 0</pose>
-        <link name="outer_60_link">
+        <link name="yellow_60_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -9316,10 +9312,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_61">
+      <model name="yellow_61">
         <static>true</static>
         <pose>10.6601317831479 -5.23084300440234 0.15 0 0 0</pose>
-        <link name="outer_61_link">
+        <link name="yellow_61_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -9361,10 +9357,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_62">
+      <model name="yellow_62">
         <static>true</static>
         <pose>12.1167992046948 -5.77254995615783 0.15 0 0 0</pose>
-        <link name="outer_62_link">
+        <link name="yellow_62_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -9406,10 +9402,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_63">
+      <model name="yellow_63">
         <static>true</static>
         <pose>13.7805173778787 -6.17261534649334 0.15 0 0 0</pose>
-        <link name="outer_63_link">
+        <link name="yellow_63_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -9451,10 +9447,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_64">
+      <model name="yellow_64">
         <static>true</static>
         <pose>17.6231089179688 -6.79114948102549 0.15 0 0 0</pose>
-        <link name="outer_64_link">
+        <link name="yellow_64_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -9496,10 +9492,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_65">
+      <model name="yellow_65">
         <static>true</static>
         <pose>19.7388585053217 -7.18913620702706 0.15 0 0 0</pose>
-        <link name="outer_65_link">
+        <link name="yellow_65_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -9541,10 +9537,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_66">
+      <model name="yellow_66">
         <static>true</static>
         <pose>21.8298950982966 -7.70159820373082 0.15 0 0 0</pose>
-        <link name="outer_66_link">
+        <link name="yellow_66_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -9586,10 +9582,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_67">
+      <model name="yellow_67">
         <static>true</static>
         <pose>23.8771264994103 -8.31301696223576 0.15 0 0 0</pose>
-        <link name="outer_67_link">
+        <link name="yellow_67_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -9631,10 +9627,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_68">
+      <model name="yellow_68">
         <static>true</static>
         <pose>25.8797524901441 -9.00938215804746 0.15 0 0 0</pose>
-        <link name="outer_68_link">
+        <link name="yellow_68_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -9676,10 +9672,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_69">
+      <model name="yellow_69">
         <static>true</static>
         <pose>27.8385154732156 -9.77726113305095 0.15 0 0 0</pose>
-        <link name="outer_69_link">
+        <link name="yellow_69_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -9721,10 +9717,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_70">
+      <model name="yellow_70">
         <static>true</static>
         <pose>33.4828656272925 -12.388525694689 0.15 0 0 0</pose>
-        <link name="outer_70_link">
+        <link name="yellow_70_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -9766,10 +9762,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_71">
+      <model name="yellow_71">
         <static>true</static>
         <pose>35.3884273243004 -13.4149776838374 0.15 0 0 0</pose>
-        <link name="outer_71_link">
+        <link name="yellow_71_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -9811,10 +9807,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_72">
+      <model name="yellow_72">
         <static>true</static>
         <pose>37.3243202944926 -14.6682383106842 0.15 0 0 0</pose>
-        <link name="outer_72_link">
+        <link name="yellow_72_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -9856,10 +9852,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_73">
+      <model name="yellow_73">
         <static>true</static>
         <pose>39.1922962154652 -16.2493960759111 0.15 0 0 0</pose>
-        <link name="outer_73_link">
+        <link name="yellow_73_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -9901,10 +9897,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_74">
+      <model name="yellow_74">
         <static>true</static>
         <pose>40.8455371260767 -18.2403341823979 0.15 0 0 0</pose>
-        <link name="outer_74_link">
+        <link name="yellow_74_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -9946,10 +9942,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_75">
+      <model name="yellow_75">
         <static>true</static>
         <pose>42.0705518955054 -20.6153105774461 0.15 0 0 0</pose>
-        <link name="outer_75_link">
+        <link name="yellow_75_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -9991,10 +9987,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_76">
+      <model name="yellow_76">
         <static>true</static>
         <pose>42.7346589897432 -23.1596769590206 0.15 0 0 0</pose>
-        <link name="outer_76_link">
+        <link name="yellow_76_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -10036,10 +10032,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_77">
+      <model name="yellow_77">
         <static>true</static>
         <pose>42.5147079384368 -28.247846055385 0.15 0 0 0</pose>
-        <link name="outer_77_link">
+        <link name="yellow_77_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -10081,10 +10077,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_78">
+      <model name="yellow_78">
         <static>true</static>
         <pose>41.753803677142 -30.6144579632713 0.15 0 0 0</pose>
-        <link name="outer_78_link">
+        <link name="yellow_78_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -10126,10 +10122,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_79">
+      <model name="yellow_79">
         <static>true</static>
         <pose>39.1831183440142 -34.8167170198948 0.15 0 0 0</pose>
-        <link name="outer_79_link">
+        <link name="yellow_79_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -10171,10 +10167,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_80">
+      <model name="yellow_80">
         <static>true</static>
         <pose>37.3770559671547 -36.5762176430613 0.15 0 0 0</pose>
-        <link name="outer_80_link">
+        <link name="yellow_80_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -10216,10 +10212,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_81">
+      <model name="yellow_81">
         <static>true</static>
         <pose>35.2523671945937 -37.9984770098583 0.15 0 0 0</pose>
-        <link name="outer_81_link">
+        <link name="yellow_81_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -10261,10 +10257,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_82">
+      <model name="yellow_82">
         <static>true</static>
         <pose>32.8791324240351 -38.993482644638 0.15 0 0 0</pose>
-        <link name="outer_82_link">
+        <link name="yellow_82_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -10306,10 +10302,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_83">
+      <model name="yellow_83">
         <static>true</static>
         <pose>28.1270516052592 -39.715335638822 0.15 0 0 0</pose>
-        <link name="outer_83_link">
+        <link name="yellow_83_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -10351,10 +10347,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_84">
+      <model name="yellow_84">
         <static>true</static>
         <pose>25.9046030197368 -39.6765956654354 0.15 0 0 0</pose>
-        <link name="outer_84_link">
+        <link name="yellow_84_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -10396,10 +10392,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_85">
+      <model name="yellow_85">
         <static>true</static>
         <pose>23.8121031317075 -39.5240911796868 0.15 0 0 0</pose>
-        <link name="outer_85_link">
+        <link name="yellow_85_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -10441,10 +10437,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_86">
+      <model name="yellow_86">
         <static>true</static>
         <pose>21.8464792201864 -39.3538830619781 0.15 0 0 0</pose>
-        <link name="outer_86_link">
+        <link name="yellow_86_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -10486,10 +10482,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_87">
+      <model name="yellow_87">
         <static>true</static>
         <pose>19.9742827992146 -39.2418187116909 0.15 0 0 0</pose>
-        <link name="outer_87_link">
+        <link name="yellow_87_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -10531,10 +10527,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_88">
+      <model name="yellow_88">
         <static>true</static>
         <pose>16.0937484438592 -39.1847191943436 0.15 0 0 0</pose>
-        <link name="outer_88_link">
+        <link name="yellow_88_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -10576,10 +10572,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_89">
+      <model name="yellow_89">
         <static>true</static>
         <pose>11.9928246424488 -39.1219447460144 0.15 0 0 0</pose>
-        <link name="outer_89_link">
+        <link name="yellow_89_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -10621,10 +10617,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_90">
+      <model name="yellow_90">
         <static>true</static>
         <pose>9.86352410414552 -38.9911216862446 0.15 0 0 0</pose>
-        <link name="outer_90_link">
+        <link name="yellow_90_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -10666,10 +10662,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_91">
+      <model name="yellow_91">
         <static>true</static>
         <pose>7.69014987529461 -38.7364552625087 0.15 0 0 0</pose>
-        <link name="outer_91_link">
+        <link name="yellow_91_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -10711,10 +10707,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_92">
+      <model name="yellow_92">
         <static>true</static>
         <pose>5.51782683234722 -38.3249002543397 0.15 0 0 0</pose>
-        <link name="outer_92_link">
+        <link name="yellow_92_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -10756,10 +10752,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_93">
+      <model name="yellow_93">
         <static>true</static>
         <pose>3.42382206323132 -37.786979727176 0.15 0 0 0</pose>
-        <link name="outer_93_link">
+        <link name="yellow_93_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -10801,10 +10797,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_94">
+      <model name="yellow_94">
         <static>true</static>
         <pose>1.40682879137184 -37.1663842455962 0.15 0 0 0</pose>
-        <link name="outer_94_link">
+        <link name="yellow_94_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -10846,10 +10842,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_95">
+      <model name="yellow_95">
         <static>true</static>
         <pose>-0.541821138011257 -36.5027177844325 0.15 0 0 0</pose>
-        <link name="outer_95_link">
+        <link name="yellow_95_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -10891,10 +10887,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_96">
+      <model name="yellow_96">
         <static>true</static>
         <pose>-4.34015621146816 -35.1410426555394 0.15 0 0 0</pose>
-        <link name="outer_96_link">
+        <link name="yellow_96_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -10936,10 +10932,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_97">
+      <model name="yellow_97">
         <static>true</static>
         <pose>-8.16436000121084 -33.6653461038145 0.15 0 0 0</pose>
-        <link name="outer_97_link">
+        <link name="yellow_97_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -10981,10 +10977,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_98">
+      <model name="yellow_98">
         <static>true</static>
         <pose>-10.0767778404464 -32.8530238495275 0.15 0 0 0</pose>
-        <link name="outer_98_link">
+        <link name="yellow_98_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -11026,10 +11022,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_99">
+      <model name="yellow_99">
         <static>true</static>
         <pose>-11.9792230934156 -31.9752972248347 0.15 0 0 0</pose>
-        <link name="outer_99_link">
+        <link name="yellow_99_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -11071,10 +11067,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_100">
+      <model name="yellow_100">
         <static>true</static>
         <pose>-13.8428086034457 -31.0410375539532 0.15 0 0 0</pose>
-        <link name="outer_100_link">
+        <link name="yellow_100_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -11116,10 +11112,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_101">
+      <model name="yellow_101">
         <static>true</static>
         <pose>-15.6623928384561 -30.0682796038662 0.15 0 0 0</pose>
-        <link name="outer_101_link">
+        <link name="yellow_101_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -11161,10 +11157,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_102">
+      <model name="yellow_102">
         <static>true</static>
         <pose>-19.1958077261686 -28.0638760232219 0.15 0 0 0</pose>
-        <link name="outer_102_link">
+        <link name="yellow_102_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -11206,10 +11202,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_103">
+      <model name="yellow_103">
         <static>true</static>
         <pose>-20.9238240938196 -27.0586776214187 0.15 0 0 0</pose>
-        <link name="outer_103_link">
+        <link name="yellow_103_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -11251,10 +11247,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_104">
+      <model name="yellow_104">
         <static>true</static>
         <pose>-22.6524765196268 -26.0537507263292 0.15 0 0 0</pose>
-        <link name="outer_104_link">
+        <link name="yellow_104_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -11296,10 +11292,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_105">
+      <model name="yellow_105">
         <static>true</static>
         <pose>-24.4077080359509 -25.0144494209715 0.15 0 0 0</pose>
-        <link name="outer_105_link">
+        <link name="yellow_105_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -11341,10 +11337,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_106">
+      <model name="yellow_106">
         <static>true</static>
         <pose>-27.9360780875981 -22.7317004681533 0.15 0 0 0</pose>
-        <link name="outer_106_link">
+        <link name="yellow_106_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -11386,10 +11382,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_107">
+      <model name="yellow_107">
         <static>true</static>
         <pose>-29.6698538901663 -21.4381474644069 0.15 0 0 0</pose>
-        <link name="outer_107_link">
+        <link name="yellow_107_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -11431,10 +11427,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_108">
+      <model name="yellow_108">
         <static>true</static>
         <pose>-32.9453564203185 -18.4316844689044 0.15 0 0 0</pose>
-        <link name="outer_108_link">
+        <link name="yellow_108_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -11476,10 +11472,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_109">
+      <model name="yellow_109">
         <static>true</static>
         <pose>-34.4107565227371 -16.6961594315364 0.15 0 0 0</pose>
-        <link name="outer_109_link">
+        <link name="yellow_109_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -11521,10 +11517,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_110">
+      <model name="yellow_110">
         <static>true</static>
         <pose>-35.7065080013589 -14.844566590386 0.15 0 0 0</pose>
-        <link name="outer_110_link">
+        <link name="yellow_110_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -11566,10 +11562,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_111">
+      <model name="yellow_111">
         <static>true</static>
         <pose>-36.8313109009813 -12.8998963192641 0.15 0 0 0</pose>
-        <link name="outer_111_link">
+        <link name="yellow_111_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -11611,10 +11607,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_112">
+      <model name="yellow_112">
         <static>true</static>
         <pose>-37.7878917266941 -10.8820330087871 0.15 0 0 0</pose>
-        <link name="outer_112_link">
+        <link name="yellow_112_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -11656,10 +11652,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_113">
+      <model name="yellow_113">
         <static>true</static>
         <pose>-38.5811746376266 -8.808929921604 0.15 0 0 0</pose>
-        <link name="outer_113_link">
+        <link name="yellow_113_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -11701,10 +11697,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_114">
+      <model name="yellow_114">
         <static>true</static>
         <pose>-39.2178699842561 -6.69652639898087 0.15 0 0 0</pose>
-        <link name="outer_114_link">
+        <link name="yellow_114_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -11746,10 +11742,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_115">
+      <model name="yellow_115">
         <static>true</static>
         <pose>-40.3011807339499 -0.309611756649864 0.15 0 0 0</pose>
-        <link name="outer_115_link">
+        <link name="yellow_115_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -11791,10 +11787,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_116">
+      <model name="yellow_116">
         <static>true</static>
         <pose>-40.4533406202231 1.78890139416343 0.15 0 0 0</pose>
-        <link name="outer_116_link">
+        <link name="yellow_116_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -11836,10 +11832,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_117">
+      <model name="yellow_117">
         <static>true</static>
         <pose>-40.5382789183978 3.86217286202336 0.15 0 0 0</pose>
-        <link name="outer_117_link">
+        <link name="yellow_117_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -11881,10 +11877,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_118">
+      <model name="yellow_118">
         <static>true</static>
         <pose>-40.5775538214583 5.90777727960811 0.15 0 0 0</pose>
-        <link name="outer_118_link">
+        <link name="yellow_118_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -11926,10 +11922,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_119">
+      <model name="yellow_119">
         <static>true</static>
         <pose>-40.5919497511314 7.92466131148779 0.15 0 0 0</pose>
-        <link name="outer_119_link">
+        <link name="yellow_119_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -11971,10 +11967,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_120">
+      <model name="yellow_120">
         <static>true</static>
         <pose>-40.6014196538181 9.91275631233656 0.15 0 0 0</pose>
-        <link name="outer_120_link">
+        <link name="yellow_120_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -12016,10 +12012,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_121">
+      <model name="yellow_121">
         <static>true</static>
         <pose>-40.6457557289961 13.8810850824754 0.15 0 0 0</pose>
-        <link name="outer_121_link">
+        <link name="yellow_121_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -12061,10 +12057,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_122">
+      <model name="yellow_122">
         <static>true</static>
         <pose>-40.674533449872 15.8753221224371 0.15 0 0 0</pose>
-        <link name="outer_122_link">
+        <link name="yellow_122_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -12106,10 +12102,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_123">
+      <model name="yellow_123">
         <static>true</static>
         <pose>-40.7017394704418 17.8763494567535 0.15 0 0 0</pose>
-        <link name="outer_123_link">
+        <link name="yellow_123_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -12151,10 +12147,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_124">
+      <model name="yellow_124">
         <static>true</static>
         <pose>-40.7332264185658 21.898935793423 0.15 0 0 0</pose>
-        <link name="outer_124_link">
+        <link name="yellow_124_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -12196,10 +12192,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_125">
+      <model name="yellow_125">
         <static>true</static>
         <pose>-40.7282871101318 23.9204396925825 0.15 0 0 0</pose>
-        <link name="outer_125_link">
+        <link name="yellow_125_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -12241,10 +12237,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_126">
+      <model name="yellow_126">
         <static>true</static>
         <pose>-40.7033369152928 25.948560300907 0.15 0 0 0</pose>
-        <link name="outer_126_link">
+        <link name="yellow_126_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -12286,10 +12282,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_127">
+      <model name="yellow_127">
         <static>true</static>
         <pose>-40.429160406945 30.2970202551981 0.15 0 0 0</pose>
-        <link name="outer_127_link">
+        <link name="yellow_127_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -12331,10 +12327,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_128">
+      <model name="yellow_128">
         <static>true</static>
         <pose>-39.9260632680985 32.6679289532538 0.15 0 0 0</pose>
-        <link name="outer_128_link">
+        <link name="yellow_128_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -12376,10 +12372,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_129">
+      <model name="yellow_129">
         <static>true</static>
         <pose>-38.9665731582284 35.0689826553948 0.15 0 0 0</pose>
-        <link name="outer_129_link">
+        <link name="yellow_129_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -12421,10 +12417,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_130">
+      <model name="yellow_130">
         <static>true</static>
         <pose>-37.4022554152914 37.3266934320522 0.15 0 0 0</pose>
-        <link name="outer_130_link">
+        <link name="yellow_130_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -12466,10 +12462,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_131">
+      <model name="yellow_131">
         <static>true</static>
         <pose>-35.2924298638551 39.105243893059 0.15 0 0 0</pose>
-        <link name="outer_131_link">
+        <link name="yellow_131_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -12511,10 +12507,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_132">
+      <model name="yellow_132">
         <static>true</static>
         <pose>-33.2056190082383 40.2549711124138 0.15 0 0 0</pose>
-        <link name="outer_132_link">
+        <link name="yellow_132_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -12556,10 +12552,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_133">
+      <model name="yellow_133">
         <static>true</static>
         <pose>-29.7935826692359 41.9483259837501 0.15 0 0 0</pose>
-        <link name="outer_133_link">
+        <link name="yellow_133_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -12601,10 +12597,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_134">
+      <model name="yellow_134">
         <static>true</static>
         <pose>-28.1179159337869 42.9113732230407 0.15 0 0 0</pose>
-        <link name="outer_134_link">
+        <link name="yellow_134_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -12646,10 +12642,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_135">
+      <model name="yellow_135">
         <static>true</static>
         <pose>-22.4882559681602 45.8771756304123 0.15 0 0 0</pose>
-        <link name="outer_135_link">
+        <link name="yellow_135_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -12691,10 +12687,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_136">
+      <model name="yellow_136">
         <static>true</static>
         <pose>-20.3655683666973 46.6715497668858 0.15 0 0 0</pose>
-        <link name="outer_136_link">
+        <link name="yellow_136_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -12736,10 +12732,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_137">
+      <model name="yellow_137">
         <static>true</static>
         <pose>-18.1093389106216 47.2629205744315 0.15 0 0 0</pose>
-        <link name="outer_137_link">
+        <link name="yellow_137_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -12781,10 +12777,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_138">
+      <model name="yellow_138">
         <static>true</static>
         <pose>-15.7909195473899 47.5854545071348 0.15 0 0 0</pose>
-        <link name="outer_138_link">
+        <link name="yellow_138_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -12826,10 +12822,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_139">
+      <model name="yellow_139">
         <static>true</static>
         <pose>-13.5681633690504 47.6776546092619 0.15 0 0 0</pose>
-        <link name="outer_139_link">
+        <link name="yellow_139_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -12871,10 +12867,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_140">
+      <model name="yellow_140">
         <static>true</static>
         <pose>-11.464425411051 47.6457593795914 0.15 0 0 0</pose>
-        <link name="outer_140_link">
+        <link name="yellow_140_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -12916,10 +12912,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_141">
+      <model name="yellow_141">
         <static>true</static>
         <pose>-7.51988574761303 47.5414613781388 0.15 0 0 0</pose>
-        <link name="outer_141_link">
+        <link name="yellow_141_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -12961,10 +12957,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_142">
+      <model name="yellow_142">
         <static>true</static>
         <pose>-5.55737846449435 47.5225493988029 0.15 0 0 0</pose>
-        <link name="outer_142_link">
+        <link name="yellow_142_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -13006,10 +13002,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_143">
+      <model name="yellow_143">
         <static>true</static>
         <pose>-3.5905890292448 47.5236739806379 0.15 0 0 0</pose>
-        <link name="outer_143_link">
+        <link name="yellow_143_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -13051,10 +13047,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_144">
+      <model name="yellow_144">
         <static>true</static>
         <pose>0.355197826404633 47.5753479114301 0.15 0 0 0</pose>
-        <link name="outer_144_link">
+        <link name="yellow_144_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -13096,10 +13092,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_145">
+      <model name="yellow_145">
         <static>true</static>
         <pose>2.33404449770947 47.6205092826547 0.15 0 0 0</pose>
-        <link name="outer_145_link">
+        <link name="yellow_145_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -13141,10 +13137,10 @@
           </inertial>
         </link>
       </model>
-      <model name="outer_146">
+      <model name="yellow_146">
         <static>true</static>
         <pose>4.31684977705784 47.6749328204622 0.15 0 0 0</pose>
-        <link name="outer_146_link">
+        <link name="yellow_146_link">
           <visual name="visual">
             <geometry>
               <mesh>
@@ -13186,7 +13182,7 @@
           </inertial>
         </link>
       </model>
-      <plugin filename="ignition-gazebo-pose-publisher-system" name="ignition::gazebo::systems::PosePublisher">
+      <plugin filename="gz-sim-pose-publisher-system" name="gz::sim::systems::PosePublisher">
         <use_pose_vector_msg>true</use_pose_vector_msg>
         <publish_model_pose>true</publish_model_pose>
         <publish_nested_model_pose>true</publish_nested_model_pose>
