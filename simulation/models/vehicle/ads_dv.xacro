@@ -1,6 +1,26 @@
 <?xml version="1.0" ?>
-<sdf version='1.11' xmlns:xacro="http://www.ros.org/wiki/xacro">
-    <model name='ads_dv' canonical_link='base_link'>
+<sdf version='1.9' xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <model name='ads_dv' canonical_link='base_footprint'>
+
+        <!-- Dummy root link to satisfy KDL (root link must not have inertia) -->
+        <link name='base_footprint'>
+            <inertial>
+                <mass>0.0</mass>
+                <inertia>
+                    <ixx>0.0</ixx>
+                    <ixy>0.0</ixy>
+                    <ixz>0.0</ixz>
+                    <iyy>0.0</iyy>
+                    <iyz>0.0</iyz>
+                    <izz>0.0</izz>
+                </inertia>
+            </inertial>
+        </link>
+        <joint name='base_footprint_to_base_link' type='fixed'>
+            <parent>base_footprint</parent>
+            <child>base_link</child>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+        </joint>
 
         <!-- Base Link -->
         <link name='base_link'>
@@ -126,7 +146,7 @@
 
 
         <!-- Ackermann Steering Plugin -->
-        <plugin filename="ignition-gazebo-ackermann-steering-system" name="ignition::gazebo::systems::AckermannSteering">
+        <plugin filename="gz-sim-ackermann-steering-system" name="gz::sim::systems::AckermannSteering">
             <steering_only>True</steering_only>
             <steer_p_gain>5.0</steer_p_gain>
             <left_joint>front_left_wheel_joint</left_joint>
@@ -149,20 +169,20 @@
             <frame_id>odom</frame_id>
             <child_frame_id>base_link</child_frame_id>
         </plugin>
-        <plugin filename="ignition-gazebo-joint-controller-system" name="ignition::gazebo::systems::JointController">
+        <plugin filename="gz-sim-joint-controller-system" name="gz::sim::systems::JointController">
             <joint_name>rear_left_wheel_joint</joint_name>
             <joint_name>rear_right_wheel_joint</joint_name>
             <topic>speed_cmd</topic>
         </plugin>
-        <plugin name="ignition::gazebo::systems::LogicalCamera" filename="ignition-gazebo-logical-camera-system">
+        <plugin name="gz::sim::systems::LogicalCamera" filename="gz-sim-logical-camera-system">
             <render_engine>ogre2</render_engine>
         </plugin>
-            <plugin name="ignition::gazebo::systems::JointStatePublisher" filename="ignition-gazebo-joint-state-publisher-system">
+            <plugin name="gz::sim::systems::JointStatePublisher" filename="gz-sim-joint-state-publisher-system">
             <topic>/model/ads_dv/joint_state</topic>
         </plugin>
-        <plugin filename="ignition-gazebo-imu-system" name="ignition::gazebo::systems::Imu">
+        <plugin filename="gz-sim-imu-system" name="gz::sim::systems::Imu">
         </plugin>
-        <plugin filename="ignition-gazebo-odometry-publisher-system" name="ignition::gazebo::systems::OdometryPublisher">
+        <plugin filename="gz-sim-odometry-publisher-system" name="gz::sim::systems::OdometryPublisher">
             <odom_frame>odom</odom_frame>
             <robot_base_frame>base_link</robot_base_frame>
             <odom_publish_frequency>600</odom_publish_frequency>

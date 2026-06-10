@@ -7,11 +7,9 @@
 
 #include <rclcpp/rclcpp.hpp>
 #include <ackermann_msgs/msg/ackermann_drive.hpp>
-#include <geometry_msgs/msg/twist.hpp>
 #include <std_msgs/msg/float64.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
 #include <string>
-#include <cmath>
 
 class AckermannToSpeedSteerNode : public rclcpp::Node {
 public:
@@ -22,13 +20,12 @@ public:
         steer_angle_topic_ = this->declare_parameter<std::string>("steer_angle_topic", "steer_angle");
         ackermann_cmd_topic_ = this->declare_parameter<std::string>("ackermann_cmd_topic", "ackermann_cmd");
         joint_states_topic_ = this->declare_parameter<std::string>("joint_states_topic", "joint_states");
-        cmd_vel_topic_ = this->declare_parameter<std::string>("cmd_vel_topic", "cmd_vel");
-        wheelbase_ = this->declare_parameter<double>("wheelbase", 1.6);
 
+        // Publishers for commands
         speed_cmd_publisher_ = this->create_publisher<std_msgs::msg::Float64>(speed_cmd_topic_, 10);
         steer_cmd_publisher_ = this->create_publisher<std_msgs::msg::Float64>(steer_cmd_topic_, 10);
+        // Publisher for current steering angle
         steer_angle_publisher_ = this->create_publisher<std_msgs::msg::Float64>(steer_angle_topic_, 10);
-        cmd_vel_publisher_ = this->create_publisher<geometry_msgs::msg::Twist>(cmd_vel_topic_, 10);
 
         ackermann_subscription_ = this->create_subscription<ackermann_msgs::msg::AckermannDrive>(
             ackermann_cmd_topic_, 10,
@@ -45,13 +42,10 @@ private:
     std::string steer_angle_topic_;
     std::string ackermann_cmd_topic_;
     std::string joint_states_topic_;
-    std::string cmd_vel_topic_;
-    double wheelbase_;
 
     std_msgs::msg::Float64 speed_cmd_msg_;
     std_msgs::msg::Float64 steer_cmd_msg_;
     std_msgs::msg::Float64 steer_angle_msg_;
-    geometry_msgs::msg::Twist cmd_vel_msg_;
     
     double left_angle_{0.0};
     double right_angle_{0.0};
@@ -64,17 +58,13 @@ private:
     const double wheel_radius_{0.2575};  // Wheel radius in meters
 
     void ackermannCallback(const ackermann_msgs::msg::AckermannDrive::SharedPtr msg) {
+        // Publish speed command
         speed_cmd_msg_.data = msg->speed / wheel_radius_;
         speed_cmd_publisher_->publish(speed_cmd_msg_);
-
+        
+        // Publish steering angle command
         steer_cmd_msg_.data = msg->steering_angle;
         steer_cmd_publisher_->publish(steer_cmd_msg_);
-
-        cmd_vel_msg_.linear.x = msg->speed;
-        cmd_vel_msg_.angular.z = (std::fabs(msg->speed) > eps_)
-            ? msg->speed * std::tan(msg->steering_angle) / wheelbase_
-            : 0.0;
-        cmd_vel_publisher_->publish(cmd_vel_msg_);
     }
 
     void jointStateCallback(const sensor_msgs::msg::JointState::SharedPtr msg) {
@@ -110,7 +100,6 @@ private:
     rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr speed_cmd_publisher_;
     rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr steer_cmd_publisher_;
     rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr steer_angle_publisher_;
-    rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_publisher_;
     rclcpp::Subscription<ackermann_msgs::msg::AckermannDrive>::SharedPtr ackermann_subscription_;
     rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_state_subscription_;
 };

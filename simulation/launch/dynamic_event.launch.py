@@ -8,8 +8,9 @@ from ament_index_python import get_package_share_directory
 
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
-from launch.actions import SetLaunchConfiguration, GroupAction
+from launch.actions import SetLaunchConfiguration, GroupAction, SetEnvironmentVariable
 from launch.substitutions import (
+    EnvironmentVariable,
     LaunchConfiguration,
     TextSubstitution,
     IfElseSubstitution,
@@ -26,7 +27,7 @@ def generate_launch_description():
     # vehicle model file (hard-coded, but can be extended to get path from user)
     model_file = os.path.join(get_package_share_directory('simulation'),
                                'models/vehicle/ads_dv.sdf')
-    
+
     # copy file contents
     with open(model_file, 'r') as infp:
         robot_desc = infp.read()
@@ -256,22 +257,28 @@ def generate_launch_description():
             )
     )
 
+    set_gz_resource_path = SetEnvironmentVariable(
+    name='GZ_SIM_RESOURCE_PATH',
+    value=[
+        os.path.join(get_package_share_directory('simulation'), 'models', 'tracks'),
+        ':',
+        os.path.join(get_package_share_directory('simulation'), 'models', 'vehicle'),
+        ':',
+        os.path.join(get_package_share_directory('simulation'), 'models', 'cones'),
+        ':',
+        os.path.join(get_package_share_directory('simulation'), 'models', 'world'),
+        ':',
+        os.path.join(get_package_share_directory('simulation'), 'models', 'sensors'),
+        EnvironmentVariable('GZ_SIM_RESOURCE_PATH', default_value='')
+    ]
+)
+
     set_gz_args = SetLaunchConfiguration(
         name='gz_args',
-        value=[
-            PathJoinSubstitution([
-                get_package_share_directory('simulation'),
-                'models',
-                'tracks',
-                LaunchConfiguration('map_file'),
-            ]),
-            ' ',
-            LaunchConfiguration('autostart_flag'),
-            ' ',
-            '-v ', LaunchConfiguration('verbosity')
-        ]
+        value=[LaunchConfiguration('map_file'), ' ',
+               LaunchConfiguration('autostart_flag'), ' ',
+               '-v ', LaunchConfiguration('verbosity')]
     )
-
 
     ros_gz_sim = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([os.path.join(
@@ -283,18 +290,18 @@ def generate_launch_description():
     spawn_vehicle = Node(
         package="ros_gz_sim",
         executable="create",
-        name="create_node",
+        name="spawn_vehicle_node", 
         output="both",
-        arguments=[
-            '-world', LaunchConfiguration('world'),
-            '-file', LaunchConfiguration('model_file'),
-            '-name', LaunchConfiguration('name'),
-            '-x', LaunchConfiguration('x'),
-            '-y', LaunchConfiguration('y'),
-            '-z', LaunchConfiguration('z'),
-            '-R', LaunchConfiguration('R'),
-            '-P', LaunchConfiguration('P'),
-            '-Y', LaunchConfiguration('Y'),
+        arguments=[                  
+            '-world', LaunchConfiguration('world'),   # 'map'
+            '-file',  model_file,                     # full absolute path to ads_dv.sdf
+            '-name',  LaunchConfiguration('name'),
+            '-x',     LaunchConfiguration('x'),
+            '-y',     LaunchConfiguration('y'),
+            '-z',     LaunchConfiguration('z'),
+            '-R',     LaunchConfiguration('R'),
+            '-P',     LaunchConfiguration('P'),
+            '-Y',     LaunchConfiguration('Y'),
         ]
     )
 
@@ -341,9 +348,7 @@ def generate_launch_description():
             {'steer_cmd_topic': '/steer_angle_cmd'},
             {'steer_angle_topic': '/steer_angle'},
             {'ackermann_cmd_topic': '/ackermann_cmd'},
-            {'joint_states_topic': '/joint_states'},
-            {'cmd_vel_topic': '/cmd_vel'},
-            {'wheelbase': 1.6}
+            {'joint_states_topic': '/joint_states'}
         ]
     )
 
@@ -360,6 +365,8 @@ def generate_launch_description():
         set_autocross,
         set_trackdrive,
         set_mppi_track,
+
+        # set_gz_resource_path,
         set_gz_args,
         
         ros_gz_sim,
