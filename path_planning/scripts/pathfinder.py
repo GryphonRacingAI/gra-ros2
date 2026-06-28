@@ -21,6 +21,9 @@ class CentrelineAlgorithm:
         self.max_gate_distance = 8.0
         self.smoothing_window = 3
         self.cone_vertical_tolerance = 1.5 
+        
+        # Last 2 Previously published /path values
+        self.path_buffer : np.ndarray
 
     def calculate_path(self, yellow_cones, blue_cones):
         """
@@ -79,10 +82,17 @@ class CentrelineAlgorithm:
         
         if len(filtered) == 0:
             return np.empty((0, 2))
-        
-        # sort by forward distance based on x coord
-        sorted_cones = filtered[np.argsort(filtered[:, 0])]
-        return sorted_cones
+
+    def _predict_next_midpoint(self) -> np.ndarray:
+        """
+        Takes last 2 midpoints gives next midpoint, assuming no directional change
+        """
+        if len(self.path_buffer) < 2:
+            return errno.EINVAL
+        p0 = self.path_buffer[0]
+        p1 = self.path_buffer[1]
+        return 2*p0 - p1
+            
 
     def _pair_and_midpoint(self, yellow_cones, blue_cones):
         """
@@ -163,7 +173,7 @@ class CentrelineTrackPathfinder(Node):
     
     def cone_callback(self, msg):
 
-        #Separate Cones by Color (car-local coordinates)
+        #Separate Cones by Color (global coordinates)
         yellow_cones = [[c.position.x, c.position.y] for c in msg.yellow_cones]
         blue_cones = [[c.position.x, c.position.y] for c in msg.blue_cones]
         
