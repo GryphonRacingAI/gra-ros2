@@ -1,23 +1,42 @@
-SEED: 7
-N: 512
-DT: 1.0
-THREADS: 128
-GPU_HEAP_SIZE_BYTES: 524288000 # 500 * 1024 * 1024
-THRESHOLD: 2.3
-CONTROL_VARIANCE:
-  - 0.0
-  - 0.0
-MAX_LANDMARKS: 600
-START_POSITION:
-  - 0.0
-  - 0.0
-  - 0.0
-sensor:
-  RANGE: 35
-  FOV: 2.199114857512855 # 0.7*np.pi
-  MISS_PROB: 0.05
-  VARIANCE:
-    - 0.0225
-    - 0.0003046174197867086 # np.deg2rad(1.0)**2
-  MAX_MEASUREMENTS: 50
+# --- FastSLAM 2.0 Endurance Configuration: Real Car Starting Point ---
+# This is a conservative starting point for real testing.
+# Tune with logs; do not assume these values are final.
 
+N: 1024
+THREADS: 256
+MAX_LANDMARKS: 800
+SEED: 42
+START_POSITION: [0.0, 0.0, 0.0]
+
+CONTROL_VARIANCE:
+  - 0.02      # Linear velocity variance; increase if wheel odom slips
+  - 0.01      # Angular velocity variance; increase if yaw estimate drifts
+
+THRESHOLD: 5.0
+
+sensor:
+  MAX_MEASUREMENTS: 60
+  RANGE: 18.0
+  MIN_RANGE: 1.0
+  FOV: 1.22173
+  LIDAR_X_OFFSET: 0.52
+
+  # Real perception is noisier than sim.
+  # Start wider, then tighten after measuring actual cone error.
+  VARIANCE:
+    - 0.09     # 0.30 m std dev
+    - 0.004    # 0.063 rad = 3.6 deg std dev
+
+endurance:
+  ENABLED: true
+  FREEZE_AFTER_LAPS: 1
+  MIN_FREEZE_TIME: 10.0
+
+  LOCALIZATION_THRESHOLD: 12.0
+  LOCALIZATION_CONTROL_NOISE_MULTIPLIER: 4.0
+  MAPPING_RESAMPLE_TRIGGER_RATIO: 0.3
+  LOCALIZATION_RESAMPLE_TRIGGER_RATIO: 0.6
+
+  LOCALIZATION_COVARIANCE:
+    - 0.36     # 0.60 m std dev
+    - 0.02     # 0.141 rad = 8.1 deg std dev
