@@ -622,7 +622,7 @@ class FastSLAMNode(Node):
 
         dt = current_time - self.last_time
         self.last_time = current_time
-        if abs(v_linear) < 0.03 and abs(omega_angular) < 0.02:
+        if abs(v_linear) < 0.03 and abs(omega_angular) < 0.02 and len(measurements_rb) == 0:
             return
 
         if dt <= 0.0 or dt > 0.5:
