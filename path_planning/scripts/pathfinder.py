@@ -121,6 +121,9 @@ class CentrelineAlgorithm:
         if len(filtered) == 0:
             return np.empty((0, 2))
 
+        order = np.argsort(filtered[:, 0])
+        return filtered[order]
+
     def _predict_next_midpoint(self) -> np.ndarray:
         """
         Takes last 2 midpoints gives next midpoint, assuming no directional change
