@@ -100,10 +100,16 @@ To select the track for the perfect path (must match the spawned world):
 | track | Track whose cone-pairs config is used | `acceleration`, `mppi_track` | `acceleration` |
 | config_file | Override with a custom cone-pairs file path | Any valid path | Derived from `track` |
 
-Example for MPPI track:
+Example for MPPI track (loads cone CSVs and publishes the full midline path on `/path`):
+
 ```bash
 ros2 run simulation perfect_path --ros-args -p use_sim_time:=true -p track:=mppi_track
 ```
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `inner_cones_csv` | Inner cone CSV for `mppi_track` | `share/simulation/tracks/mppi_track/inner_cones.csv` |
+| `outer_cones_csv` | Outer cone CSV for `mppi_track` | `share/simulation/tracks/mppi_track/outer_cones.csv` |
 
 ### Run Teleop 
 
@@ -123,7 +129,7 @@ ros2 launch simulation teleop.launch
 |------|--------|---------|-------------|
 | `perfect_SLAM` | `/logical_camera` (ros_gz_interfaces/msg/LogicalCameraImage) | `/perfect_cone_map` (common_msgs/msg/ConeArray)<br>`/perfect_cone_map_markers` (visualization_msgs/msg/MarkerArray)<br>`/perfect_odom` (nav_msgs/msg/Odometry) | Perfect SLAM simulation node |
 | `perfect_perception` | `/logical_camera` (ros_gz_interfaces/msg/LogicalCameraImage) | `/perfect_cone_array` (common_msgs/msg/ConeArray)<br>`/perfect_cone_array_markers` (visualization_msgs/msg/MarkerArray) | Perfect perception simulation node |
-| `perfect_path` | `/odom` (nav_msgs/msg/Odometry) | `/perfect_path` (nav_msgs/msg/Path)<br>`/perfect_path_markers` (visualization_msgs/msg/MarkerArray) | Publishes a hardcoded lookahead path from a cone-pairs config; use `track` param to choose acceleration or mppi_track |
+| `perfect_path` | `/odom` (nav_msgs/msg/Odometry) when `track!=mppi_track` | `/path` (nav_msgs/msg/Path) when `track=mppi_track`<br>`/perfect_path` (nav_msgs/msg/Path) otherwise<br>`/perfect_path_markers` (visualization_msgs/msg/MarkerArray) | For `mppi_track`, loads inner/outer cone CSVs and publishes the full midline path on `/path`. Otherwise publishes a lookahead path from a cone-pairs config file. |
 | `ackermann_to_speed_steer` | `/ackermann_cmd` (ackermann_msgs/msg/AckermannDrive)<br>`/joint_states` (sensor_msgs/msg/JointState) | `/speed_cmd` (std_msgs/msg/Float64)<br>`/steer_angle_cmd` (std_msgs/msg/Float64)<br>`/steer_angle` (std_msgs/msg/Float64) | Converts Ackermann commands to speed and steering commands, and publishes current steering angle
 
 **Note:** both perfect_perception and perfect_SLAM rely on TF to get some ground truth data (vehicle pose, cone poses, etc.), as this is how it is currently bridged from Gazebo to ROS.

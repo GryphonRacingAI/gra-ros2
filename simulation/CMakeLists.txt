@@ -83,7 +83,7 @@ install(TARGETS
 )
 
 # Install directories
-install(DIRECTORY config launch models
+install(DIRECTORY config launch models tracks
   DESTINATION share/${PROJECT_NAME}
 )
 
