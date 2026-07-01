@@ -53,26 +53,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -98,26 +78,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -143,26 +103,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -188,26 +128,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -233,26 +153,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -278,26 +178,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -323,26 +203,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -368,26 +228,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -413,26 +253,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -458,26 +278,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -503,26 +303,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -548,26 +328,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -593,26 +353,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -638,26 +378,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -683,26 +403,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -728,26 +428,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -773,26 +453,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -818,26 +478,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -863,26 +503,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -908,26 +528,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -953,26 +553,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -998,26 +578,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -1043,26 +603,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -1088,26 +628,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -1133,26 +653,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -1178,26 +678,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -1223,26 +703,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -1268,26 +728,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -1313,26 +753,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -1358,26 +778,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -1403,26 +803,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -1448,26 +828,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -1493,26 +853,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -1538,26 +878,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -1583,26 +903,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -1628,26 +928,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -1673,26 +953,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -1718,26 +978,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -1763,26 +1003,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -1808,26 +1028,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -1853,26 +1053,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -1898,26 +1078,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -1943,26 +1103,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -1988,26 +1128,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -2033,26 +1153,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -2078,26 +1178,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -2123,26 +1203,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -2168,26 +1228,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -2213,26 +1253,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -2258,26 +1278,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -2303,26 +1303,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -2348,26 +1328,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -2393,26 +1353,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -2438,26 +1378,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -2483,26 +1403,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -2528,26 +1428,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -2573,26 +1453,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -2618,26 +1478,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -2663,26 +1503,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -2708,26 +1528,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -2753,26 +1553,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -2798,26 +1578,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -2843,26 +1603,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -2888,26 +1628,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -2933,26 +1653,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -2978,26 +1678,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -3023,26 +1703,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -3068,26 +1728,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.22 0.23 0.3</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>0.45</mass>
@@ -3113,27 +1753,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <pose>0 0 0.232 0 0 0</pose>
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.26 0.26 0.53</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>1.05</mass>
@@ -3160,27 +1779,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <pose>0 0 0.232 0 0 0</pose>
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.26 0.26 0.53</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>1.05</mass>
@@ -3207,27 +1805,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <pose>0 0 0.232 0 0 0</pose>
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.26 0.26 0.53</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>1.05</mass>
@@ -3254,27 +1831,6 @@
               </mesh>
             </geometry>
           </visual>
-          <collision name="collision">
-            <pose>0 0 0.232 0 0 0</pose>
-            <geometry>
-              <!-- Simpler collision model for performance boost -->
-              <box>
-                <size>0.26 0.26 0.53</size>
-              </box>
-            </geometry>
-            <surface>
-              <!-- Big performance boost by ignoring the friction of the cones-->
-              <friction>
-                <ode>
-                  <mu>0</mu>
-                </ode>
-                <bullet>
-                  <friction>0</friction>
-                  <friction2>0</friction2>
-                </bullet>
-              </friction>
-            </surface>
-          </collision>
           <!-- Different inertial properties for different types of cones -->
           <inertial>
             <mass>1.05</mass>

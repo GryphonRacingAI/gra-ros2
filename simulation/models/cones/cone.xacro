@@ -14,38 +14,6 @@
                     </mesh>
                 </geometry>
             </visual>
-            <collision name="collision">
-                <xacro:if value="${type == 'large_orange'}">
-                    <pose>0 0 0.232 0 0 0</pose>
-                    <geometry>
-                        <!-- Simpler collision model for performance boost -->
-                        <box>
-                            <size>0.26 0.26 0.53</size>
-                        </box>
-                    </geometry>
-                </xacro:if>
-                <xacro:unless value="${type == 'large_orange'}">
-                    <geometry>
-                        <!-- Simpler collision model for performance boost -->
-                        <box>
-                            <size>0.22 0.23 0.3</size>
-                        </box>
-                    </geometry>
-                </xacro:unless>
-
-                <surface>
-                    <!-- Big performance boost by ignoring the friction of the cones-->
-                    <friction>
-                        <ode>
-                            <mu>0</mu>
-                        </ode>
-                        <bullet>
-                            <friction>0</friction>
-                            <friction2>0</friction2>
-                        </bullet>
-                    </friction>
-                </surface>
-            </collision>
 
             <!-- Different inertial properties for different types of cones -->
             <inertial>
