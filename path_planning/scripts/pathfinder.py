@@ -7,7 +7,9 @@ from rclpy.node import Node
 import numpy as np
 from geometry_msgs.msg import PoseStamped
 from nav_msgs.msg import Odometry, Path
-from std_msgs.msg import Header
+from std_msgs.msg import Header, ColorRGBA
+from visualization_msgs.msg import Marker, MarkerArray
+from geometry_msgs.msg import Point
 from common_msgs.msg import ConeArray
 
 
@@ -43,6 +45,17 @@ def base_link_to_odom(points, ox, oy, yaw):
     c, s = math.cos(yaw), math.sin(yaw)
     out_x = ox + pts[:, 0] * c - pts[:, 1] * s
     out_y = oy + pts[:, 0] * s + pts[:, 1] * c
+    return np.column_stack((out_x, out_y))
+
+
+def base_link_to_map(points, rx, ry, yaw):
+    """Transform (N, 2) points from base_link to map frame using /slam/pose."""
+    if len(points) == 0:
+        return np.empty((0, 2))
+    pts = np.asarray(points, dtype=float)
+    c, s = math.cos(yaw), math.sin(yaw)
+    out_x = rx + pts[:, 0] * c - pts[:, 1] * s
+    out_y = ry + pts[:, 0] * s + pts[:, 1] * c
     return np.column_stack((out_x, out_y))
 
 
@@ -204,9 +217,14 @@ class CentrelineTrackPathfinder(Node):
         self.output_frame = self.declare_parameter('output_frame', 'odom').value
         self.cone_map_topic = self.declare_parameter('cone_map_topic', '/slam/cone_map').value
         lookahead = self.declare_parameter('lookahead_distance', 20.0).value
+        self.test_mode = bool(self.declare_parameter('test_mode', True).value)
+        self.viz_frame = self.declare_parameter('viz_frame', 'map').value
+        self.marker_scale = float(self.declare_parameter('marker_scale', 0.25).value)
+        self.line_width = float(self.declare_parameter('line_width', 0.15).value)
 
         self.slam_pose = None
         self.odom_pose = None
+        self.last_odom_stamp = None
 
         self.create_subscription(ConeArray, self.cone_map_topic, self.cone_callback, 10)
         self.create_subscription(Odometry, '/odom', self.odom_callback, 10)
@@ -215,9 +233,16 @@ class CentrelineTrackPathfinder(Node):
         self.get_logger().info(
             f"PATHFINDER: map cones -> base_link planning -> {self.output_frame} path"
         )
+        if self.test_mode:
+            self.get_logger().info(
+                f"PATHFINDER: test_mode enabled, publishing /viz/path and "
+                f"/viz/path_markers in {self.viz_frame}"
+            )
 
         self.centreline_planner = CentrelineAlgorithm(self.get_logger(), lookahead_distance=lookahead)
         self.path_pub = self.create_publisher(Path, '/path', 10)
+        self.viz_path_pub = self.create_publisher(Path, '/viz/path', 10) if self.test_mode else None
+        self.marker_pub = self.create_publisher(MarkerArray, '/viz/path_markers', 1) if self.test_mode else None
 
     def slam_pose_callback(self, msg):
         q = msg.pose.orientation
@@ -232,6 +257,7 @@ class CentrelineTrackPathfinder(Node):
             msg.pose.pose.position.y,
             yaw,
         )
+        self.last_odom_stamp = msg.header.stamp
 
     def cone_callback(self, msg):
         if self.slam_pose is None or self.odom_pose is None:
@@ -283,7 +309,10 @@ class CentrelineTrackPathfinder(Node):
                 self.get_logger().info(
                     f"  First 5: {[f'({p[0]:.2f}, {p[1]:.2f})' for p in path_out[:5]]}"
                 )
-                self.publish_path(path_out, self.output_frame)
+                self.publish_path(path_out, self.output_frame, msg.header.stamp)
+                if self.test_mode:
+                    path_viz = base_link_to_map(path_local, rx, ry, r_yaw)
+                    self.publish_viz(path_viz, self.viz_frame, msg.header.stamp)
             else:
                 self.get_logger().warn(
                     "[PATHFINDER OUTPUT] No valid path generated (insufficient cones or waypoints)"
@@ -291,24 +320,93 @@ class CentrelineTrackPathfinder(Node):
         except Exception as e:
             self.get_logger().error(f"Planning Error: {e}")
     
-    def publish_path(self, waypoints, frame_id):
-        ros_path = Path()
-        ros_path.header = Header()
-        ros_path.header.stamp = self.get_clock().now().to_msg()
-        ros_path.header.frame_id = frame_id
+    def _path_stamp(self, preferred_stamp):
+        if preferred_stamp.sec != 0 or preferred_stamp.nanosec != 0:
+            return preferred_stamp
+        if self.last_odom_stamp is not None:
+            return self.last_odom_stamp
+        return self.get_clock().now().to_msg()
 
+    def _make_path_msg(self, waypoints, frame_id, stamp):
+        ros_path = Path()
+        ros_path.header.stamp = self._path_stamp(stamp)
+        ros_path.header.frame_id = frame_id
         for point in waypoints:
             pose = PoseStamped()
             pose.header = ros_path.header
             pose.pose.position.x = float(point[0])
             pose.pose.position.y = float(point[1])
             ros_path.poses.append(pose)
+        return ros_path
 
-        self.path_pub.publish(ros_path)
+    def publish_path(self, waypoints, frame_id, stamp):
+        self.path_pub.publish(self._make_path_msg(waypoints, frame_id, stamp))
+
+    def publish_viz(self, waypoints, frame_id, stamp):
+        ros_path = self._make_path_msg(waypoints, frame_id, stamp)
+        self.viz_path_pub.publish(ros_path)
+        self.publish_path_markers(ros_path)
+
+    def publish_path_markers(self, ros_path: Path):
+        stamp = ros_path.header.stamp
+        frame_id = ros_path.header.frame_id
+        arr = MarkerArray()
+
+        delete_all = Marker()
+        delete_all.header.frame_id = frame_id
+        delete_all.header.stamp = stamp
+        delete_all.ns = 'pathfinder'
+        delete_all.id = 0
+        delete_all.action = Marker.DELETEALL
+        arr.markers.append(delete_all)
+
+        points = Marker()
+        points.header.frame_id = frame_id
+        points.header.stamp = stamp
+        points.ns = 'pathfinder'
+        points.id = 1
+        points.type = Marker.SPHERE_LIST
+        points.action = Marker.ADD
+        points.scale.x = self.marker_scale
+        points.scale.y = self.marker_scale
+        points.scale.z = self.marker_scale
+        points.color = ColorRGBA(r=1.0, g=0.55, b=0.0, a=0.9)
+        for pose in ros_path.poses:
+            pt = Point()
+            pt.x = pose.pose.position.x
+            pt.y = pose.pose.position.y
+            pt.z = 0.1
+            points.points.append(pt)
+        arr.markers.append(points)
+
+        line = Marker()
+        line.header.frame_id = frame_id
+        line.header.stamp = stamp
+        line.ns = 'pathfinder'
+        line.id = 2
+        line.type = Marker.LINE_STRIP
+        line.action = Marker.ADD
+        line.scale.x = self.line_width
+        line.color = ColorRGBA(r=0.9, g=0.2, b=0.9, a=0.9)
+        for pose in ros_path.poses:
+            pt = Point()
+            pt.x = pose.pose.position.x
+            pt.y = pose.pose.position.y
+            pt.z = 0.1
+            line.points.append(pt)
+        arr.markers.append(line)
+
+        self.marker_pub.publish(arr)
+
 
 def main(args=None):
     rclpy.init(args=args)
     node = CentrelineTrackPathfinder()
+    if not node.get_parameter('use_sim_time').value:
+        node.get_logger().warn(
+            "use_sim_time is false; in Gazebo set --ros-args -p use_sim_time:=true "
+            "and launch RViz the same way to avoid TF timestamp errors"
+        )
     rclpy.spin(node)
     node.destroy_node()
     rclpy.shutdown()
