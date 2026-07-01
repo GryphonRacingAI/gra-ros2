@@ -1,0 +1,7 @@
+fastslam_node:
+  ros__parameters:
+    use_sim: true
+
+    # Periodic status logs from SLAM/localisation node.
+    enable_status_logging: true
+    status_log_period: 1.0

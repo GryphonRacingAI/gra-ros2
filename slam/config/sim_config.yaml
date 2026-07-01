@@ -1,23 +1,44 @@
-SEED: 7
-N: 512
-DT: 1.0
-THREADS: 128
-GPU_HEAP_SIZE_BYTES: 524288000
-THRESHOLD: 2
-CONTROL_VARIANCE:
-  - 0.0872665    // 5 degrees in radians squared
-  - 0.15**2      // 0.15 meters squared
-MAX_LANDMARKS: 600
-START_POSITION:
-  - 0.0
-  - 0.0
-  - 0.0
-sensor:
-  RANGE: 35
-  FOV: 2.199114857512855
-  MISS_PROB: 0.05
-  VARIANCE:
-    - 0.0225
-    - 0.0003046174197867086
-  MAX_MEASUREMENTS: 50
+# --- Stable FastSLAM 2.0 Endurance Config: Simulation ---
+# Minimal YAML. Most advanced tuning defaults are inside fastslam_node.py.
 
+N: 512
+THREADS: 256
+MAX_LANDMARKS: 600
+SEED: 42
+START_POSITION: [0.0, 0.0, 0.0]
+
+CONTROL_VARIANCE:
+  - 0.0
+  - 0
+
+THRESHOLD: 2.0
+
+sensor:
+  MAX_MEASUREMENTS: 30
+  RANGE: 20
+  MIN_RANGE: 2
+  FOV: 1.22173
+  LIDAR_X_OFFSET: 0.52
+  VARIANCE:
+    - 0.09
+    - 0.004
+
+endurance:
+  ENABLED: true
+
+  # Use 2 if your /laps becomes 1 after the first completed lap
+  # and you want to freeze after lap 2.
+  FREEZE_AFTER_LAPS: 2
+
+  # Prevents accidental freeze immediately after startup.
+  MIN_FREEZE_TIME: 5.0
+
+  # Prevents freezing a bad/empty map.
+  MIN_LANDMARKS_TO_FREEZE: 40
+
+  # After freeze, use smoother update gating and covariance.
+  # These are the only extra localisation settings exposed.
+  LOCALIZATION_THRESHOLD: 12
+  LOCALIZATION_COVARIANCE:
+    - 0.2
+    - 0.01
