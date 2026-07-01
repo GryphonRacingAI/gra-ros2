@@ -73,9 +73,6 @@ class MPPIController(Node):
         super().__init__('mppi_controller')
 
         self.path_topic = self.declare_parameter('path_topic', '/path').value
-        self.test_mode = self.declare_parameter('test_mode', '').value
-        self.inner_cones_csv = self.declare_parameter('inner_cones_csv', '').value
-        self.outer_cones_csv = self.declare_parameter('outer_cones_csv', '').value
 
         # MPPI Core Parameters
         self.dt = self.declare_parameter('dt', 0.05).value
@@ -121,24 +118,13 @@ class MPPIController(Node):
         # Noise Smoothing
         self.alpha = self.declare_parameter('alpha', 0.5).value
 
-        inner_cones = np.empty((0, 2))
-        outer_cones = np.empty((0, 2))
-
-        n = min(len(inner_cones), len(outer_cones))
-        inner_cones = inner_cones[:n]
-        outer_cones = outer_cones[:n]
-        r1 = 0.2 * np.ones(len(inner_cones))
-        r2 = 0.2 * np.ones(len(outer_cones))
-
         self.get_logger().info(f"[MPPI] Using path topic: {self.path_topic}")
 
         self.sub_odom = self.create_subscription(
            Odometry, '/odom', self.odom_callback, 10)
 
-        self.sub_path = None
-        if self.test_mode != 'static_test':
-            self.sub_path = self.create_subscription(
-               Path, self.path_topic, self.path_callback, 10)
+        self.sub_path = self.create_subscription(
+           Path, self.path_topic, self.path_callback, 10)
 
         self.sub_cones = self.create_subscription(
            PointCloud2, '/slam/cones', self.cone_callback, 10)
@@ -162,59 +148,12 @@ class MPPIController(Node):
         self.path_heading = None
         self.path_v_ref = None
         self.obstacles = np.empty((0, 3))
-        if n > 0:
-            self.obstacles = np.vstack([
-                np.hstack([inner_cones, r1[:, None]]),
-                np.hstack([outer_cones, r2[:, None]])
-            ])
 
         self.u0 = np.zeros((self.horizon, 2))
         self.u0[:, 0] = 1.0
         self.path_idx = 0
-        self.initialized = False
-
-        if self.test_mode == 'static_test':
-            self.get_logger().info("[MPPI] Running in static test mode")
-            inner_cones, outer_cones = self._load_cones()
-            self._generate_static_path(inner_cones, outer_cones)
-        else:
-            # TODO: Implement path loading from topic
-            pass
 
         self.get_logger().info("MPPI Controller Initialized")
-
-    ###
-    #  static_test methods
-    ###
-    def _load_cones(self):
-        if self.inner_cones_csv and self.outer_cones_csv:
-            inner = np.loadtxt(self.inner_cones_csv, delimiter=',')
-            outer = np.loadtxt(self.outer_cones_csv, delimiter=',')
-            self.get_logger().info(f"Loaded {len(inner)} inner cones and {len(outer)} outer cones")
-            return inner, outer
-        else:
-            self.get_logger().warn("Cones CSV files not specified!")
-            return np.empty((0, 2)), np.empty((0, 2))
-
-    def _generate_static_path(self, inner_cones, outer_cones):
-        n = min(len(inner_cones), len(outer_cones))
-        if n < 2:
-            self.get_logger().warn("Not enough cones for static path generation")
-            return
-
-        midline = (inner_cones[:n] + outer_cones[:n]) / 2.0
-        result = self.path_processor(midline)
-        self.path_arr = result.points
-        self.path_v_ref = result.speed_ref
-        self.path_heading = result.heading
-
-        self.vehicle_state = np.array([
-            result.points[0, 0], result.points[0, 1], result.heading[0], 0.0
-        ], dtype=float)
-
-        self.get_logger().info(
-            f"Static path generated: {len(result.points)} points from {n} cone pairs"
-        )
 
     def odom_callback(self, msg):
         """ Update vehicle state from Odometry """
@@ -234,9 +173,6 @@ class MPPIController(Node):
         Receive global path, calculate curvature and speed profile.
         Assumes path doesn't change drastically every frame.
         """
-        if self.test_mode == 'static_test':
-            return
-        
         n_points = len(msg.poses)
         if n_points < 2:
             return

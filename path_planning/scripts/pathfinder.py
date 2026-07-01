@@ -1,12 +1,50 @@
 #!/usr/bin/env python3
 
+import math
+
 import rclpy
 from rclpy.node import Node
 import numpy as np
 from geometry_msgs.msg import PoseStamped
-from nav_msgs.msg import Path
+from nav_msgs.msg import Odometry, Path
 from std_msgs.msg import Header
 from common_msgs.msg import ConeArray
+
+
+def quaternion_to_yaw(qx, qy, qz, qw):
+    siny_cosp = 2.0 * (qw * qz + qx * qy)
+    cosy_cosp = 1.0 - 2.0 * (qy * qy + qz * qz)
+    return math.atan2(siny_cosp, cosy_cosp)
+
+
+def map_to_base_link(points, rx, ry, yaw):
+    """Transform (N, 2) points from map frame to base_link (car-local).
+
+    Car pose (rx, ry, yaw) must be in map. +x is forward, +y is left.
+    Uses the same rotation as fastslam_node._process_cones.
+    """
+    if len(points) == 0:
+        return np.empty((0, 2))
+    pts = np.asarray(points, dtype=float)
+    dx = pts[:, 0] - rx
+    dy = pts[:, 1] - ry
+    c, s = math.cos(yaw), math.sin(yaw)
+    return np.column_stack((dx * c + dy * s, -dx * s + dy * c))
+
+
+def base_link_to_odom(points, ox, oy, yaw):
+    """Transform (N, 2) points from base_link to odom frame.
+
+    Car pose (ox, oy, yaw) is from /odom. Output matches MPPI vehicle_state frame.
+    """
+    if len(points) == 0:
+        return np.empty((0, 2))
+    pts = np.asarray(points, dtype=float)
+    c, s = math.cos(yaw), math.sin(yaw)
+    out_x = ox + pts[:, 0] * c - pts[:, 1] * s
+    out_y = oy + pts[:, 0] * s + pts[:, 1] * c
+    return np.column_stack((out_x, out_y))
+
 
 class CentrelineAlgorithm:
     """
@@ -28,8 +66,8 @@ class CentrelineAlgorithm:
     def calculate_path(self, yellow_cones, blue_cones):
         """
         Calculate centreline using geometric midpoint + smoothing
-        Input: yellow_cones, blue_cones as [[x, y], [x, y], ...]
-        Output: smoothed waypoints [[x, y], [x, y], ...] or None
+        Input: yellow_cones, blue_cones as [[x, y], ...] in base_link (car-local)
+        Output: smoothed waypoints [[x, y], ...] in base_link or None
         
         Algorithm:
         1. Filter cones ahead of car
@@ -157,43 +195,96 @@ class CentrelineAlgorithm:
         return smoothed
 
 class CentrelineTrackPathfinder(Node):
-    """ 
-    Pathfinder
-    """
-    
     def __init__(self):
         super().__init__('centreline_track_pathfinder')
 
-        self.create_subscription(ConeArray, '/slam/cone_map', self.cone_callback, 10)
-        
-        self.get_logger().info("PATHFINDER: Centreline Algorithm (Car-Local Coordinates)")
-        
-        self.centreline_planner = CentrelineAlgorithm(self.get_logger(), lookahead_distance=20.0)
-        self.path_pub = self.create_publisher(Path, '/path', 10)
-    
-    def cone_callback(self, msg):
+        self.output_frame = self.declare_parameter('output_frame', 'odom').value
+        self.cone_map_topic = self.declare_parameter('cone_map_topic', '/slam/cone_map').value
+        lookahead = self.declare_parameter('lookahead_distance', 20.0).value
 
-        #Separate Cones by Color (global coordinates)
-        yellow_cones = [[c.position.x, c.position.y] for c in msg.yellow_cones]
-        blue_cones = [[c.position.x, c.position.y] for c in msg.blue_cones]
-        
-        self.get_logger().info(f"[PATHFINDER INPUT] Yellow cones: {len(yellow_cones)}, Blue cones: {len(blue_cones)}, Frame: {msg.header.frame_id}")
-        if len(yellow_cones) > 0:
-            self.get_logger().info(f"  Yellow range - X: [{min(y[0] for y in yellow_cones):.2f}, {max(y[0] for y in yellow_cones):.2f}], Y: [{min(y[1] for y in yellow_cones):.2f}, {max(y[1] for y in yellow_cones):.2f}]")
-        if len(blue_cones) > 0:
-            self.get_logger().info(f"  Blue range - X: [{min(b[0] for b in blue_cones):.2f}, {max(b[0] for b in blue_cones):.2f}], Y: [{min(b[1] for b in blue_cones):.2f}, {max(b[1] for b in blue_cones):.2f}]")
-        
-        # Plan Path (in car coordinates)
+        self.slam_pose = None
+        self.odom_pose = None
+
+        self.create_subscription(ConeArray, self.cone_map_topic, self.cone_callback, 10)
+        self.create_subscription(Odometry, '/odom', self.odom_callback, 10)
+        self.create_subscription(PoseStamped, '/slam/pose', self.slam_pose_callback, 10)
+
+        self.get_logger().info(
+            f"PATHFINDER: map cones -> base_link planning -> {self.output_frame} path"
+        )
+
+        self.centreline_planner = CentrelineAlgorithm(self.get_logger(), lookahead_distance=lookahead)
+        self.path_pub = self.create_publisher(Path, '/path', 10)
+
+    def slam_pose_callback(self, msg):
+        q = msg.pose.orientation
+        yaw = quaternion_to_yaw(q.x, q.y, q.z, q.w)
+        self.slam_pose = (msg.pose.position.x, msg.pose.position.y, yaw)
+
+    def odom_callback(self, msg):
+        q = msg.pose.pose.orientation
+        yaw = quaternion_to_yaw(q.x, q.y, q.z, q.w)
+        self.odom_pose = (
+            msg.pose.pose.position.x,
+            msg.pose.pose.position.y,
+            yaw,
+        )
+
+    def cone_callback(self, msg):
+        if self.slam_pose is None or self.odom_pose is None:
+            self.get_logger().warn("[PATHFINDER] Waiting for /slam/pose and /odom")
+            return
+
+        if msg.header.frame_id != 'map':
+            self.get_logger().warn(
+                f"[PATHFINDER] Expected cone_map in map frame, got '{msg.header.frame_id}'"
+            )
+
+        yellow_map = [[c.position.x, c.position.y] for c in msg.yellow_cones]
+        blue_map = [[c.position.x, c.position.y] for c in msg.blue_cones]
+
+        rx, ry, r_yaw = self.slam_pose
+        yellow_local = map_to_base_link(yellow_map, rx, ry, r_yaw)
+        blue_local = map_to_base_link(blue_map, rx, ry, r_yaw)
+
+        self.get_logger().info(
+            f"[PATHFINDER INPUT] Yellow: {len(yellow_local)}, Blue: {len(blue_local)}, "
+            f"cone_map frame: {msg.header.frame_id}"
+        )
+        if len(yellow_local) > 0:
+            self.get_logger().info(
+                f"  Yellow local - X: [{yellow_local[:, 0].min():.2f}, {yellow_local[:, 0].max():.2f}], "
+                f"Y: [{yellow_local[:, 1].min():.2f}, {yellow_local[:, 1].max():.2f}]"
+            )
+        if len(blue_local) > 0:
+            self.get_logger().info(
+                f"  Blue local - X: [{blue_local[:, 0].min():.2f}, {blue_local[:, 0].max():.2f}], "
+                f"Y: [{blue_local[:, 1].min():.2f}, {blue_local[:, 1].max():.2f}]"
+            )
+
         try:
-            path_points = self.centreline_planner.calculate_path(yellow_cones, blue_cones)
-            
-            if path_points is not None:
-                self.get_logger().info(f"[PATHFINDER OUTPUT] Generated {len(path_points)} waypoints, Frame: {msg.header.frame_id}")
-                self.get_logger().info(f"  Waypoint range - X: [{min(p[0] for p in path_points):.2f}, {max(p[0] for p in path_points):.2f}], Y: [{min(p[1] for p in path_points):.2f}, {max(p[1] for p in path_points):.2f}]")
-                self.get_logger().info(f"  First 5 waypoints: {[f'({p[0]:.2f}, {p[1]:.2f})' for p in path_points[:5]]}")
-                self.publish_path(path_points, msg.header.frame_id)
+            path_local = self.centreline_planner.calculate_path(
+                yellow_local.tolist(), blue_local.tolist()
+            )
+
+            if path_local is not None:
+                ox, oy, o_yaw = self.odom_pose
+                path_out = base_link_to_odom(path_local, ox, oy, o_yaw)
+                self.get_logger().info(
+                    f"[PATHFINDER OUTPUT] {len(path_out)} waypoints in {self.output_frame}"
+                )
+                self.get_logger().info(
+                    f"  Range - X: [{path_out[:, 0].min():.2f}, {path_out[:, 0].max():.2f}], "
+                    f"Y: [{path_out[:, 1].min():.2f}, {path_out[:, 1].max():.2f}]"
+                )
+                self.get_logger().info(
+                    f"  First 5: {[f'({p[0]:.2f}, {p[1]:.2f})' for p in path_out[:5]]}"
+                )
+                self.publish_path(path_out, self.output_frame)
             else:
-                self.get_logger().warn("[PATHFINDER OUTPUT] No valid path generated (insufficient cones or waypoints)")
+                self.get_logger().warn(
+                    "[PATHFINDER OUTPUT] No valid path generated (insufficient cones or waypoints)"
+                )
         except Exception as e:
             self.get_logger().error(f"Planning Error: {e}")
     
