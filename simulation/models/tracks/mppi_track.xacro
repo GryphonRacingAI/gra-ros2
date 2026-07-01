@@ -28,7 +28,7 @@
     <xacro:include filename="$(find simulation)/models/cones/cone.xacro"/>
 
     <model name="cones">
-      <xacro:cone name="orange_1" type="orange" pose="6.49447171658257 41.7389113024907 0.15 0 0 0"/>
+      <xacro:cone name="large_orange_1" type="large_orange" pose="6.49447171658257 41.7389113024907 0.15 0 0 0"/>
       <xacro:cone name="blue_2" type="blue" pose="8.49189149682204 41.8037451937836 0.15 0 0 0"/>
       <xacro:cone name="blue_3" type="blue" pose="10.4848751821667 41.8690573815958 0.15 0 0 0"/>
       <xacro:cone name="blue_4" type="blue" pose="12.473517040832 41.9319164105607 0.15 0 0 0"/>
@@ -174,7 +174,7 @@
       <xacro:cone name="blue_144" type="blue" pose="-1.53976115651896 41.5427010208205 0.15 0 0 0"/>
       <xacro:cone name="blue_145" type="blue" pose="0.4754310943428 41.5765527022834 0.15 0 0 0"/>
       <xacro:cone name="blue_146" type="blue" pose="2.48619653317858 41.622438779726 0.15 0 0 0"/>
-      <xacro:cone name="orange_2" type="orange" pose="8.29483356036796 47.8005083348189 0.15 0 0 0"/>
+      <xacro:cone name="large_orange_2" type="large_orange" pose="8.29483356036796 47.8005083348189 0.15 0 0 0"/>
       <xacro:cone name="yellow_2" type="yellow" pose="10.2903642978411 47.8659036790991 0.15 0 0 0"/>
       <xacro:cone name="yellow_3" type="yellow" pose="12.2903853701921 47.9291209919643 0.15 0 0 0"/>
       <xacro:cone name="yellow_4" type="yellow" pose="14.2949817462715 47.9871977358879 0.15 0 0 0"/>
