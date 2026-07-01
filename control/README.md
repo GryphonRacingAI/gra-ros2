@@ -25,21 +25,17 @@ source install/setup.bash
 Model Predictive Path Integral controller that consumes a planned path, odometry, and cone obstacles to publish Ackermann commands.
 
 ```bash
-ros2 run control mppi_ros_modified.py --ros-args --params-file ~/colcon_ws/src/control/config/mppi_params.yaml -p test_mode:=static_test -p inner_cones_csv:=src/simulation/tracks/mppi_track/inner_cones.csv -p outer_cones_csv:=src/simulation/tracks/mppi_track/outer_cones.csv
-
+ros2 run control mppi_ros_modified.py --ros-args --params-file ~/colcon_ws/src/control/config/mppi_params.yaml
 ```
 
 ### ROS Parameters
 
-Most parameters are loaded from the YAML config file. Additional parameters (e.g. for `static_test` mode and mppi_track) are set via command-line `-p` args as shown in the usage example above.
+Most parameters are loaded from the YAML config file.
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| **Launch / Static Test** ||||
-| `path_topic` | string | `/path` | Topic to subscribe for reference path (ignored when `test_mode=static_test`) |
-| `test_mode` | string | (empty) | Set to `static_test` to load inner/outer cone CSVs and auto-generate a static reference path (bypasses /path subscription) |
-| `inner_cones_csv` | string | (empty) | Absolute path to inner cones CSV for static_test (see mppi_track example) |
-| `outer_cones_csv` | string | (empty) | Absolute path to outer cones CSV for static_test (see mppi_track example) |
+| **Path following** ||||
+| `path_topic` | string | `/path` | Topic to subscribe for reference path |
 | **MPPI Core** ||||
 | `dt` | float | 0.05 | Control loop period in seconds (20Hz) |
 | `horizon` | int | 12 | Planning horizon in steps (H × dt = 0.6s lookahead) |

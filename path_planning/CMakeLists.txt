@@ -23,11 +23,6 @@ install(PROGRAMS
   DESTINATION lib/${PROJECT_NAME}
 )
 
-# --- C++ --- 
-add_executable(path_finder src/pathfinder.cpp)
-ament_target_dependencies( rclcpp)
-# install(TARGETS cpp_node DESTINATION lib/${PROJECT_NAME})
-
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   # the following line skips the linter which checks for copyrights

@@ -9,6 +9,7 @@
 #include <tf2_ros/transform_listener.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
+#include <algorithm>
 #include <fstream>
 #include <sstream>
 #include <string>
@@ -23,18 +24,23 @@ public:
     tf_buffer_(this->get_clock()),
     tf_listener_(tf_buffer_)
   {
-    const auto share_dir =
-      ament_index_cpp::get_package_share_directory("simulation") + "/config";
+    const auto pkg_share = ament_index_cpp::get_package_share_directory("simulation");
+    const auto config_dir = pkg_share + "/config";
+    const auto mppi_track_dir = pkg_share + "/tracks/mppi_track";
 
     track_ = this->declare_parameter<std::string>("track", "acceleration");
     std::string default_config;
     if (track_ == "mppi_track") {
-      default_config = share_dir + "/perfect_path_mppi_track_pairs.txt";
+      default_config = config_dir + "/perfect_path_mppi_track_pairs.txt";
     } else {
-      default_config = share_dir + "/perfect_path_acceleration_pairs.txt";
+      default_config = config_dir + "/perfect_path_acceleration_pairs.txt";
     }
 
     config_file_ = this->declare_parameter<std::string>("config_file", default_config);
+    inner_cones_csv_ = this->declare_parameter<std::string>(
+      "inner_cones_csv", mppi_track_dir + "/inner_cones.csv");
+    outer_cones_csv_ = this->declare_parameter<std::string>(
+      "outer_cones_csv", mppi_track_dir + "/outer_cones.csv");
     lookahead_distance_ = this->declare_parameter<double>("lookahead_distance", 30.0);
     max_points_ = this->declare_parameter<int>("max_points", 200);
     publish_rate_hz_ = this->declare_parameter<double>("publish_rate_hz", 20.0);
@@ -42,13 +48,18 @@ public:
     marker_scale_ = this->declare_parameter<double>("marker_scale", 0.25);
     line_width_ = this->declare_parameter<double>("line_width", 0.15);
 
-    path_pub_ = this->create_publisher<nav_msgs::msg::Path>("/perfect_path", 10);
+    use_csv_midline_ = (track_ == "mppi_track");
+    const std::string path_topic = use_csv_midline_ ? "/path" : "/perfect_path";
+    path_pub_ = this->create_publisher<nav_msgs::msg::Path>(path_topic, 10);
     marker_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("/perfect_path_markers", 1);
 
-    odom_sub_ = this->create_subscription<nav_msgs::msg::Odometry>(
-      "/odom", 10, std::bind(&PerfectPathNode::odom_callback, this, std::placeholders::_1));
-
-    load_midpoints_from_config();
+    if (use_csv_midline_) {
+      load_midpoints_from_csvs();
+    } else {
+      odom_sub_ = this->create_subscription<nav_msgs::msg::Odometry>(
+        "/odom", 10, std::bind(&PerfectPathNode::odom_callback, this, std::placeholders::_1));
+      load_midpoints_from_config();
+    }
 
     const auto period = std::chrono::duration<double>(1.0 / std::max(1e-3, publish_rate_hz_));
     timer_ = this->create_wall_timer(
@@ -65,6 +76,70 @@ private:
   void odom_callback(const nav_msgs::msg::Odometry::SharedPtr msg) {
     last_odom_ = *msg;
     has_odom_ = true;
+  }
+
+  static std::vector<Pt2> load_csv_points(const std::string &csv_path) {
+    std::vector<Pt2> pts;
+    std::ifstream in(csv_path);
+    if (!in.is_open()) {
+      return pts;
+    }
+
+    std::string line;
+    while (std::getline(in, line)) {
+      if (line.empty()) {
+        continue;
+      }
+      const auto comma = line.find(',');
+      if (comma == std::string::npos) {
+        continue;
+      }
+      try {
+        const double x = std::stod(line.substr(0, comma));
+        const double y = std::stod(line.substr(comma + 1));
+        pts.push_back(Pt2{x, y});
+      } catch (const std::exception &) {
+        continue;
+      }
+    }
+    return pts;
+  }
+
+  void load_midpoints_from_csvs() {
+    const auto inner = load_csv_points(inner_cones_csv_);
+    const auto outer = load_csv_points(outer_cones_csv_);
+
+    if (inner.empty() || outer.empty()) {
+      RCLCPP_ERROR(
+        this->get_logger(),
+        "Failed to load cone CSVs (inner=%zu outer=%zu): %s, %s",
+        inner.size(), outer.size(),
+        inner_cones_csv_.c_str(), outer_cones_csv_.c_str());
+      return;
+    }
+
+    const std::size_t n = std::min(inner.size(), outer.size());
+    std::vector<Pt2> mids;
+    mids.reserve(n);
+    for (std::size_t i = 0; i < n; ++i) {
+      mids.push_back(Pt2{
+        0.5 * (inner[i].x + outer[i].x),
+        0.5 * (inner[i].y + outer[i].y)
+      });
+    }
+
+    if (mids.size() < 2) {
+      RCLCPP_ERROR(this->get_logger(), "CSV midline produced too few points: %zu", mids.size());
+      return;
+    }
+
+    midpoints_map_ = std::move(mids);
+    RCLCPP_INFO(
+      this->get_logger(),
+      "Loaded %zu midline points from %s and %s",
+      midpoints_map_.size(),
+      inner_cones_csv_.c_str(),
+      outer_cones_csv_.c_str());
   }
 
   void load_midpoints_from_config() {
@@ -154,6 +229,26 @@ private:
     return out;
   }
 
+  static nav_msgs::msg::Path make_path(
+    const rclcpp::Time &stamp,
+    const std::vector<Pt2> &pts)
+  {
+    nav_msgs::msg::Path path;
+    path.header.stamp = stamp;
+    path.header.frame_id = "odom";
+    path.poses.reserve(pts.size());
+    for (const auto &p : pts) {
+      geometry_msgs::msg::PoseStamped ps;
+      ps.header = path.header;
+      ps.pose.position.x = p.x;
+      ps.pose.position.y = p.y;
+      ps.pose.position.z = 0.0;
+      ps.pose.orientation.w = 1.0;
+      path.poses.push_back(ps);
+    }
+    return path;
+  }
+
   void publish_markers(const rclcpp::Time &stamp, const std::vector<Pt2> &all_pts, const std::vector<Pt2> &seg) {
     visualization_msgs::msg::MarkerArray arr;
 
@@ -215,11 +310,21 @@ private:
   }
 
   void publish() {
-    if (!has_odom_) return;
     if (midpoints_map_.empty()) return;
 
     std::vector<Pt2> mids_odom;
     if (!transform_midpoints_to_odom(mids_odom)) return;
+
+    const auto stamp = this->get_clock()->now();
+
+    if (use_csv_midline_) {
+      if (mids_odom.size() < 2) return;
+      path_pub_->publish(make_path(stamp, mids_odom));
+      publish_markers(stamp, mids_odom, mids_odom);
+      return;
+    }
+
+    if (!has_odom_) return;
 
     const auto &odom = last_odom_;
     const double cx = odom.pose.pose.position.x;
@@ -228,31 +333,20 @@ private:
     const auto seg = slice_lookahead(mids_odom, cx, cy);
     if (seg.size() < 2) return;
 
-    nav_msgs::msg::Path path;
-    path.header.stamp = this->get_clock()->now();
-    path.header.frame_id = "odom";
-    path.poses.reserve(seg.size());
-    for (const auto &p : seg) {
-      geometry_msgs::msg::PoseStamped ps;
-      ps.header = path.header;
-      ps.pose.position.x = p.x;
-      ps.pose.position.y = p.y;
-      ps.pose.position.z = 0.0;
-      ps.pose.orientation.w = 1.0;
-      path.poses.push_back(ps);
-    }
-    path_pub_->publish(path);
-
-    publish_markers(path.header.stamp, mids_odom, seg);
+    path_pub_->publish(make_path(stamp, seg));
+    publish_markers(stamp, mids_odom, seg);
   }
 
   std::string track_;
   std::string config_file_;
+  std::string inner_cones_csv_;
+  std::string outer_cones_csv_;
   double lookahead_distance_{30.0};
   int max_points_{200};
   double publish_rate_hz_{20.0};
   double marker_scale_{0.25};
   double line_width_{0.15};
+  bool use_csv_midline_{false};
 
   rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr path_pub_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_pub_;
