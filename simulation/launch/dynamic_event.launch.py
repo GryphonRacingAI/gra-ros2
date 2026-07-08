@@ -8,7 +8,7 @@ from ament_index_python import get_package_share_directory
 
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
-from launch.actions import SetLaunchConfiguration, GroupAction, SetEnvironmentVariable
+from launch.actions import SetLaunchConfiguration, GroupAction, SetEnvironmentVariable, TimerAction
 from launch.substitutions import (
     EnvironmentVariable,
     LaunchConfiguration,
@@ -84,7 +84,7 @@ def generate_launch_description():
         ),
         SetLaunchConfiguration(
             name='world',
-            value='sim_world'
+            value='map'
         ),
         SetLaunchConfiguration(
             name='map_file',
@@ -124,7 +124,7 @@ def generate_launch_description():
         ),
         SetLaunchConfiguration(
             name='world',
-            value='sim_world'
+            value='map'
         ),
         SetLaunchConfiguration(
             name='map_file',
@@ -164,7 +164,7 @@ def generate_launch_description():
         ),
         SetLaunchConfiguration(
             name='world',
-            value='sim_world'
+            value='map'
         ),
         SetLaunchConfiguration(
             name='map_file',
@@ -204,7 +204,7 @@ def generate_launch_description():
         ),
         SetLaunchConfiguration(
             name='world',
-            value='sim_world'
+            value='map'
         ),
         SetLaunchConfiguration(
             name='map_file',
@@ -244,7 +244,7 @@ def generate_launch_description():
         ),
         SetLaunchConfiguration(
             name='world',
-            value='sim_world'
+            value='map'
         ),
         SetLaunchConfiguration(
             name='map_file',
@@ -257,25 +257,23 @@ def generate_launch_description():
             )
     )
 
+    # model://simulation/... URIs resolve against the parent of the package share dir
+    sim_resource_root = os.path.dirname(get_package_share_directory('simulation'))
+
     set_gz_resource_path = SetEnvironmentVariable(
-    name='GZ_SIM_RESOURCE_PATH',
-    value=[
-        os.path.join(get_package_share_directory('simulation'), 'models', 'tracks'),
-        ':',
-        os.path.join(get_package_share_directory('simulation'), 'models', 'vehicle'),
-        ':',
-        os.path.join(get_package_share_directory('simulation'), 'models', 'cones'),
-        ':',
-        os.path.join(get_package_share_directory('simulation'), 'models', 'world'),
-        ':',
-        os.path.join(get_package_share_directory('simulation'), 'models', 'sensors'),
-        EnvironmentVariable('GZ_SIM_RESOURCE_PATH', default_value='')
-    ]
-)
+        name='GZ_SIM_RESOURCE_PATH',
+        value=[
+            sim_resource_root, ':',
+            EnvironmentVariable('GZ_SIM_RESOURCE_PATH', default_value='')
+        ]
+    )
+
+    tracks_dir = os.path.join(
+        get_package_share_directory('simulation'), 'models', 'tracks')
 
     set_gz_args = SetLaunchConfiguration(
         name='gz_args',
-        value=[LaunchConfiguration('map_file'), ' ',
+        value=[tracks_dir, '/', LaunchConfiguration('map_file'), ' ',
                LaunchConfiguration('autostart_flag'), ' ',
                '-v ', LaunchConfiguration('verbosity')]
     )
@@ -288,21 +286,21 @@ def generate_launch_description():
         )
     
     spawn_vehicle = Node(
-        package="ros_gz_sim",
-        executable="create",
-        name="spawn_vehicle_node", 
-        output="both",
-        arguments=[                  
-            '-world', LaunchConfiguration('world'),   # 'map'
-            '-file',  model_file,                     # full absolute path to ads_dv.sdf
-            '-name',  LaunchConfiguration('name'),
-            '-x',     LaunchConfiguration('x'),
-            '-y',     LaunchConfiguration('y'),
-            '-z',     LaunchConfiguration('z'),
-            '-R',     LaunchConfiguration('R'),
-            '-P',     LaunchConfiguration('P'),
-            '-Y',     LaunchConfiguration('Y'),
-        ]
+            package="ros_gz_sim",
+            executable="create",
+            name="spawn_vehicle_node",
+            output="both",
+            arguments=[
+                '-world', LaunchConfiguration('world'),
+                '-file',  model_file,
+                '-name',  LaunchConfiguration('name'),
+                '-x',     LaunchConfiguration('x'),
+                '-y',     LaunchConfiguration('y'),
+                '-z',     LaunchConfiguration('z'),
+                '-R',     LaunchConfiguration('R'),
+                '-P',     LaunchConfiguration('P'),
+                '-Y',     LaunchConfiguration('Y'),
+            ]
     )
 
     robot_state_publisher = Node(
@@ -366,7 +364,7 @@ def generate_launch_description():
         set_trackdrive,
         set_mppi_track,
 
-        # set_gz_resource_path,
+        set_gz_resource_path,
         set_gz_args,
         
         ros_gz_sim,

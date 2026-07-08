@@ -31,6 +31,13 @@ Leeds Gryphon Racing AI Gazebo simulation environment with an ADS-DV model, sens
    source install/setup.bash
    ```
 
+4. **Setup relevant environment variables**
+   ```bash
+   export GZ_SIM_RESOURCE_PATH=$HOME/colcon_ws/install/simulation/share/
+   export GZ_SIM_RESOURCE_PATH="$(ros2 pkg prefix --share simulation)/models/tracks:$(ros2 pkg prefix --share simulation)/models/vehicle:$(ros2 pkg prefix --share simulation)/models/cones:$(ros2 pkg prefix --share simulation)/models/world:$(ros2 pkg prefix --share simulation)/models/sensors:${GZ_SIM_RESOURCE_PATH:-}"
+   ```
+
+
 ## Usage
 
 ### Launch the Simulator
