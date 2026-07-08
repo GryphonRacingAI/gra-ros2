@@ -84,7 +84,7 @@ def generate_launch_description():
         ),
         SetLaunchConfiguration(
             name='world',
-            value='map'
+            value='sim_world'
         ),
         SetLaunchConfiguration(
             name='map_file',
@@ -124,7 +124,7 @@ def generate_launch_description():
         ),
         SetLaunchConfiguration(
             name='world',
-            value='map'
+            value='sim_world'
         ),
         SetLaunchConfiguration(
             name='map_file',
@@ -164,7 +164,7 @@ def generate_launch_description():
         ),
         SetLaunchConfiguration(
             name='world',
-            value='map'
+            value='sim_world'
         ),
         SetLaunchConfiguration(
             name='map_file',
@@ -204,7 +204,7 @@ def generate_launch_description():
         ),
         SetLaunchConfiguration(
             name='world',
-            value='map'
+            value='sim_world'
         ),
         SetLaunchConfiguration(
             name='map_file',
@@ -244,7 +244,7 @@ def generate_launch_description():
         ),
         SetLaunchConfiguration(
             name='world',
-            value='map'
+            value='sim_world'
         ),
         SetLaunchConfiguration(
             name='map_file',
@@ -316,10 +316,10 @@ def generate_launch_description():
         ]
     )
 
-    initial_map_odom_tf = Node(
+    initial_sim_world_odom_tf = Node(
         package="tf2_ros",
         executable="static_transform_publisher",
-        name="initial_map_odom_tf",
+        name="initial_sim_world_odom_tf",
         arguments=[
             "--x", "0",
             "--y", "0",
@@ -372,7 +372,7 @@ def generate_launch_description():
         ros_gz_sim,
         spawn_vehicle,
         robot_state_publisher,
-        initial_map_odom_tf,
+        initial_sim_world_odom_tf,
         ros_gz_bridge,
         ackermann_to_speed_steer_node
     ])
