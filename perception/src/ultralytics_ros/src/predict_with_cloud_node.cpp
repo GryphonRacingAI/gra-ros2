@@ -210,6 +210,10 @@ void PredictWithCloudNode::projectCloud(const pcl::PointCloud<pcl::PointXYZ>::Pt
 
       // Extract the closest cluster
       pcl::PointCloud<pcl::PointXYZ>::Ptr closest_detection_cloud = euclideanClusterExtraction(detection_cloud);
+      if (closest_detection_cloud->points.empty()) {
+        RCLCPP_WARN(this->get_logger(), "Detection %zu: No valid cluster, skipping.", i);
+        continue;
+      }
       RCLCPP_DEBUG(this->get_logger(), "Detection %zu cluster size: %zu", i, closest_detection_cloud->points.size());
 
       *combine_detection_cloud += *closest_detection_cloud;
