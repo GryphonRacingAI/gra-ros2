@@ -36,10 +36,12 @@ Override a single parameter:
 ```bash
 ros2 run path_planning pathfinder.py --ros-args \
   --params-file $(ros2 pkg prefix path_planning)/share/path_planning/config/pathfinder_params.yaml \
-  -p event:=trackdrive
+  -p mpc_path_length:=15.0
 ```
 
 In simulation, also set `use_sim_time:=true`.
+
+The planner always uses **`MissionTypes.trackdrive`** (live cone sort → match → centreline). There is no `event` / mission selector: acceleration and skidpad library modes use relocalizers that skip live cones and are unsuitable for this body-frame node.
 
 ### Node Parameters
 
@@ -49,7 +51,6 @@ ROS defaults are in `config/pathfinder_params.yaml` (node name `track_pathfinder
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
-| `event` | Mission type: `acceleration`, `skidpad`, `autocross`, `trackdrive` | `trackdrive` |
 | `experimental_performance_improvements` | Faster cone sorting (experimental); also passed into `cone_sorting` | `false` |
 
 #### cone_sorting (`ConeSorting`)

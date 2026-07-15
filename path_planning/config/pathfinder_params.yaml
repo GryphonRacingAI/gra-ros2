@@ -1,6 +1,6 @@
 track_pathfinder:
   ros__parameters:
-    event: trackdrive
+    # Mission is fixed to trackdrive in pathfinder.py (live cone centreline).
     experimental_performance_improvements: false
 
     # Cone sorting

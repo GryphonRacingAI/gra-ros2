@@ -19,7 +19,6 @@ class TrackPathfinder(Node):
     def __init__(self):
         super().__init__('track_pathfinder')
 
-        self.declare_parameter('event', 'trackdrive')
         self.declare_parameter('experimental_performance_improvements', False)
         # Cone Sorting
         self.declare_parameter('max_n_neighbors', 5)
@@ -42,21 +41,10 @@ class TrackPathfinder(Node):
         self.declare_parameter('predict_every', 0.1)
         self.declare_parameter('max_deg', 3)
 
-        event = self.get_parameter('event').get_parameter_value().string_value
-        if event.lower() == 'acceleration':
-            mission_type = MissionTypes.acceleration
-        elif event.lower() == 'skidpad':
-            mission_type = MissionTypes.skidpad
-        elif event.lower() == 'autocross':
-            mission_type = MissionTypes.autocross
-        elif event.lower() == 'trackdrive':
-            mission_type = MissionTypes.trackdrive
-        else:
-            self.get_logger().error(f"Invalid mission_type: '{event}'. Defaulting to 'acceleration'.")
-            mission_type = MissionTypes.acceleration
-
+        # Always use trackdrive: live cone sort/match/centreline, no mission
+        # relocalizer (acceleration/skidpad skip sorting and freeze a map path).
         experimental = self.get_parameter('experimental_performance_improvements').value
-        self.path_planner = PathPlanner(mission_type, experimental)
+        self.path_planner = PathPlanner(MissionTypes.trackdrive, experimental)
         self._configure_path_planner(experimental)
 
         self.path_pub = self.create_publisher(Path, '/path', 10)
@@ -69,7 +57,9 @@ class TrackPathfinder(Node):
         self.final_lap = False
         self.final_path_published = False
         self.latest_odom = None
-        self.get_logger().info("TrackPathfinder node initialized.")
+        self.get_logger().info(
+            "TrackPathfinder initialized (mission=trackdrive, body frame: car at origin, +x forward)."
+        )
 
     def _configure_path_planner(self, experimental):
         self.path_planner.cone_sorting = ConeSorting(
