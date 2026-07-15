@@ -1,5 +1,11 @@
 mppi_controller:
   ros__parameters:
+    # Frame contract: track_pathfinder publishes /path in velodyne (body-local).
+    # use_local_frame=true → vehicle state is (0,0,0,v); odom pose is ignored.
+    use_local_frame: true
+    path_frame: velodyne
+    path_topic: /path
+
     # MPPI Core Parameters
     dt: 0.05
     horizon: 12

@@ -1,5 +1,20 @@
 Path following / vehicle control nodes.
 
+## Frame contract (local / velodyne)
+
+`track_pathfinder` publishes `/path` with `frame_id=velodyne` and treats the car as the origin
+(+x forward). Both controllers default to **local-frame mode**:
+
+| Topic | Role |
+|-------|------|
+| `/path` | Body-relative centreline (do **not** transform to odom) |
+| `/odom` | **Speed only** (`twist.linear.x`); pose is ignored when `use_local_frame:=true` |
+| Planner state | Always `(x, y, θ) = (0, 0, 0)`, `v` from odom |
+| `/ackermann_cmd` | Body-frame speed + steering → sim / VCU |
+
+Set `use_local_frame:=false` on MPPI only if you intentionally feed an **odom-frame** path
+(e.g. `perfect_path` on `mppi_track`). Pure pursuit supports local frame only.
+
 ## Installation
 
 ### Python dependencies
@@ -10,95 +25,114 @@ pip install numpy tf-transformations
 ```
 
 ### Build
-Build just this package:
-
 ```bash
 cd ~/colcon_ws
 colcon build --packages-select control
 source install/setup.bash
 ```
 
-# Usage
+## Controllers
 
-## MPPI Controller (`mppi_ros_modified.py`)
+### 1. MPPI (`mppi_ros_modified.py`) — node name `mppi_controller`
 
-Model Predictive Path Integral controller that consumes a planned path, odometry, and cone obstacles to publish Ackermann commands.
+Model Predictive Path Integral controller.
 
 ```bash
-ros2 run control mppi_ros_modified.py --ros-args --params-file ~/colcon_ws/src/control/config/mppi_params.yaml
+ros2 run control mppi_ros_modified.py --ros-args \
+  --params-file $(ros2 pkg prefix control)/share/control/config/mppi_params.yaml \
+  -p use_sim_time:=true
 ```
 
-### ROS Parameters
+### 2. Pure pursuit (`pure_pursuit.py`) — node name `pure_pursuit_controller`
 
-Most parameters are loaded from the YAML config file.
+Geometric pure pursuit on the same local `/path` contract (last-year-style baseline).
+
+```bash
+ros2 run control pure_pursuit.py --ros-args \
+  --params-file $(ros2 pkg prefix control)/share/control/config/pure_pursuit_params.yaml \
+  -p use_sim_time:=true
+```
+
+### Side-by-side test with pathfinder
+
+```bash
+# From workspace root — CONTROLLER=mppi|pp
+CONTROLLER=mppi ./tmux/control_path_test.sh
+CONTROLLER=pp   ./tmux/control_path_test.sh
+```
+
+## ROS Parameters (MPPI)
+
+Most parameters are loaded from `config/mppi_params.yaml`.
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| **Path following** ||||
-| `path_topic` | string | `/path` | Topic to subscribe for reference path |
+| **Frame** ||||
+| `use_local_frame` | bool | `true` | Vehicle pose forced to origin; path is body-relative |
+| `path_frame` | string | `velodyne` | Expected `/path` frame (warns if mismatched) |
+| `path_topic` | string | `/path` | Reference path topic |
 | **MPPI Core** ||||
-| `dt` | float | 0.05 | Control loop period in seconds (20Hz) |
-| `horizon` | int | 12 | Planning horizon in steps (H × dt = 0.6s lookahead) |
-| `num_rollouts` | int | 500 | Number of Monte Carlo rollouts (K). More = better sampling but slower |
-| `lambda` | float | 2.0 | MPPI temperature. Lower = more aggressive exploitation |
-| `sigma_u_base` | float[2] | [0.6, 0.15] | Base noise std dev for [acceleration, steering] |
-| `sigma_u_min` | float[2] | [0.2, 0.05] | Minimum noise std dev |
+| `dt` | float | 0.05 | Control loop period (s) |
+| `horizon` | int | 12 | Planning horizon steps |
+| `num_rollouts` | int | 500 | Monte Carlo rollouts |
+| `lambda` | float | 2.0 | MPPI temperature |
+| `sigma_u_base` | float[2] | [0.6, 0.15] | Noise std [accel, steer] |
 | **Cost Weights** ||||
-| `w_path` | float | 40.0 | Weight for path deviation cost |
-| `w_heading` | float | 5.0 | Weight for heading error cost |
-| `w_speed` | float | 2.0 | Weight for overspeed penalty |
-| `w_control` | float | 4.5 | Weight for control effort (smoothness) |
-| `w_terminal` | float | 1.0 | Weight for terminal position error |
-| `w_obstacle` | float | 150.0 | Weight for obstacle avoidance (high = safety priority) |
-| **Vehicle Limits** ||||
-| `max_accel` | float | 3.0 | Maximum acceleration in m/s² |
-| `min_vel` | float | -1.0 | Minimum velocity in m/s (allows small reverse) |
-| `max_vel` | float | 8.0 | Maximum velocity in m/s |
-| `max_steer` | float | 0.524 | Maximum steering angle in radians (~30°) |
-| **Vehicle Geometry** ||||
-| `wheelbase` | float | 1.6 | Distance between front and rear axles in meters |
-| **Path Following** ||||
-| `search_window` | int | 50 | Number of path points to search for closest point |
-| `safety_distance` | float | 0.6 | Minimum safe distance from obstacles in meters |
-| `cone_radius` | float | 0.2 | Assumed radius of cone obstacles in meters |
-| **Speed Profile** ||||
-| `a_lat_max` | float | 2.0 | Maximum lateral acceleration for curvature-based speed limits |
-| `v_max_straight` | float | 7.0 | Maximum speed on straight sections in m/s |
-| `v_min` | float | 1.0 | Minimum reference speed (prevents stalling in sharp turns) |
-| **Noise Smoothing** ||||
-| `alpha` | float | 0.5 | Exponential smoothing for noise correlation (0=uncorrelated, 1=fully correlated) |
+| `w_path` / `w_heading` / `w_speed` / `w_control` / `w_terminal` / `w_obstacle` | float | see yaml | Cost terms |
+| **Limits** ||||
+| `max_accel` / `min_vel` / `max_vel` / `max_steer` | float | see yaml | Vehicle limits |
+| `wheelbase` | float | 1.6 | Wheelbase (m) |
+| **Speed profile** ||||
+| `a_lat_max` / `v_max_straight` / `v_min` | float | see yaml | Curvature-limited v_ref |
+
+## ROS Parameters (Pure pursuit)
+
+Loaded from `config/pure_pursuit_params.yaml`.
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `use_local_frame` | `true` | Required true (body-relative path) |
+| `lookahead_distance` | `3.0` | Lookahead Ld (m) |
+| `wheelbase` | `1.6` | L for δ = atan2(2 L sin α, Ld) |
+| `max_steer` | ~30° | Steering clamp (rad) |
+| `target_speed` | `3.0` | Used if curvature speed disabled |
+| `use_curvature_speed` | `true` | Use PathProcessor speed profile |
+| `min_speed` / `max_speed` | 1.0 / 6.0 | Speed clamps |
 
 # Interface
 
 ```mermaid
 flowchart LR
     subgraph Inputs
-        ODOM["/odom<br>nav_msgs/Odometry"]
-        PATH["/path<br>nav_msgs/Path"]
-        CONES["/slam/cones<br>sensor_msgs/PointCloud2"]
+        ODOM["/odom speed only"]
+        PATH["/path body-local / velodyne"]
+        CONES["/slam/cones optional MPPI"]
     end
 
     MPPI[mppi_controller]
+    PP[pure_pursuit_controller]
 
     subgraph Outputs
-        DRIVE["/drive<br>ackermann_msgs/AckermannDriveStamped"]
-        ACK["/ackermann_cmd<br>ackermann_msgs/AckermannDrive"]
-        VIZ["/viz/mppi_path<br>nav_msgs/Path"]
+        DRIVE["/drive"]
+        ACK["/ackermann_cmd"]
     end
 
     ODOM --> MPPI
     PATH --> MPPI
     CONES --> MPPI
+    ODOM --> PP
+    PATH --> PP
     MPPI --> DRIVE
     MPPI --> ACK
-    MPPI -.-> VIZ
+    PP --> DRIVE
+    PP --> ACK
 ```
 
 | Topic | Type | Direction | Description |
 |-------|------|-----------|-------------|
-| `/odom` | `nav_msgs/Odometry` | Input | Vehicle pose and velocity from odometry |
-| `/path` | `nav_msgs/Path` | Input | Reference path to follow (configurable via `path_topic` param) |
-| `/slam/cones` | `sensor_msgs/PointCloud2` | Input | Detected cone positions for obstacle avoidance |
-| `/drive` | `ackermann_msgs/AckermannDriveStamped` | Output | Primary drive command with timestamp |
-| `/ackermann_cmd` | `ackermann_msgs/AckermannDrive` | Output | Ackermann command (alternative interface) |
-| `/viz/mppi_path` | `nav_msgs/Path` | Output | (Optional) Visualization of planned trajectory |
+| `/odom` | `nav_msgs/Odometry` | Input | Speed (`twist.linear.x`); pose ignored in local mode |
+| `/path` | `nav_msgs/Path` | Input | Body-relative path from track_pathfinder |
+| `/slam/cones` | `sensor_msgs/PointCloud2` | Input | Optional MPPI obstacles |
+| `/drive` | `ackermann_msgs/AckermannDriveStamped` | Output | Stamped drive command |
+| `/ackermann_cmd` | `ackermann_msgs/AckermannDrive` | Output | Sim / VCU command |
+| `/viz/pure_pursuit_lookahead` | `nav_msgs/Path` | Output | PP lookahead segment (local) |
