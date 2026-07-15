@@ -1,0 +1,20 @@
+pure_pursuit_controller:
+  ros__parameters:
+    # Frame contract: track_pathfinder publishes /path in velodyne (body-local).
+    use_local_frame: true
+    path_frame: velodyne
+    path_topic: /path
+
+    dt: 0.05
+    lookahead_distance: 3.0
+    wheelbase: 1.53
+    max_steer: 0.5235987756  # pi/6
+
+    # Speed
+    min_speed: 0.8
+    max_speed: 1.8
+    target_speed: 1.5
+    use_curvature_speed: true
+    a_lat_max: 2.0
+    v_max_straight: 7.0
+    v_min: 1.0

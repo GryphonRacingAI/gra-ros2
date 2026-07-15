@@ -73,6 +73,10 @@ class MPPIController(Node):
         super().__init__('mppi_controller')
 
         self.path_topic = self.declare_parameter('path_topic', '/path').value
+        # Local-frame mode: /path is body-relative (e.g. velodyne), car at origin.
+        # Pose from odom is ignored; only speed is used. Matches track_pathfinder.
+        self.use_local_frame = self.declare_parameter('use_local_frame', True).value
+        self.expected_path_frame = self.declare_parameter('path_frame', 'velodyne').value
 
         # MPPI Core Parameters
         self.dt = self.declare_parameter('dt', 0.05).value
@@ -143,55 +147,70 @@ class MPPIController(Node):
 
         self.timer = self.create_timer(self.dt, self.control_loop)
         
+        # In local frame mode vehicle_state pose is always (0,0,0); only v is live.
+        self.speed_mps = None
         self.vehicle_state = None
         self.path_arr = None
         self.path_heading = None
         self.path_v_ref = None
         self.obstacles = np.empty((0, 3))
+        self._path_frame_warned = False
 
         self.u0 = np.zeros((self.horizon, 2))
         self.u0[:, 0] = 1.0
         self.path_idx = 0
 
-        self.get_logger().info("MPPI Controller Initialized")
+        mode = "local/velodyne" if self.use_local_frame else "odom-global"
+        self.get_logger().info(f"MPPI Controller Initialized ({mode} frame mode)")
 
     def odom_callback(self, msg):
-        """ Update vehicle state from Odometry """
-        p = msg.pose.pose.position
-        q = msg.pose.pose.orientation
-        
-        # Convert Quaternion to Euler (Yaw)
-        _, _, yaw = euler_from_quaternion([q.x, q.y, q.z, q.w])
-        
-        # Get speed (assuming forward velocity is x-component of twist in base_link)
-        v = msg.twist.twist.linear.x
-        
-        self.vehicle_state = np.array([p.x, p.y, yaw, v], dtype=float)
+        """Update speed from odometry. Pose is only used in non-local mode."""
+        v = float(msg.twist.twist.linear.x)
+        self.speed_mps = v
+
+        if self.use_local_frame:
+            # Path is body-relative (track_pathfinder: car at origin, +x forward).
+            self.vehicle_state = np.array([0.0, 0.0, 0.0, v], dtype=float)
+        else:
+            p = msg.pose.pose.position
+            q = msg.pose.pose.orientation
+            _, _, yaw = euler_from_quaternion([q.x, q.y, q.z, q.w])
+            self.vehicle_state = np.array([p.x, p.y, yaw, v], dtype=float)
 
     def path_callback(self, msg):
-        """ 
-        Receive global path, calculate curvature and speed profile.
-        Assumes path doesn't change drastically every frame.
+        """
+        Receive path, calculate curvature and speed profile.
+        In local-frame mode the path is already vehicle-relative (e.g. velodyne).
         """
         n_points = len(msg.poses)
         if n_points < 2:
             return
 
+        frame = msg.header.frame_id or ''
+        if self.use_local_frame and not self._path_frame_warned:
+            if frame and frame not in (self.expected_path_frame, 'base_link', 'velodyne', ''):
+                self.get_logger().warn(
+                    f"use_local_frame=true but /path frame_id='{frame}' "
+                    f"(expected '{self.expected_path_frame}' or body-local). "
+                    f"Tracking assumes car at origin in the path frame.")
+            self._path_frame_warned = True
+
         path_x = [p.pose.position.x for p in msg.poses]
         path_y = [p.pose.position.y for p in msg.poses]
-        
-        # Stack into (N, 2)
+
         new_path = np.column_stack((path_x, path_y))
         result = self.path_processor(new_path)
 
-        # Update member variables
         self.path_arr = result.points
         self.path_v_ref = result.speed_ref
         self.path_heading = result.heading
-        
-        # Reset index if path changes significantly (optional logic)
-        # For now, we rely on the search window in the control loop
-        self.get_logger().info(f"Path received with {n_points} points.")
+        # Local paths are re-published relative to the car each cycle — restart search.
+        if self.use_local_frame:
+            self.path_idx = 0
+
+        self.get_logger().info(
+            f"Path received with {n_points} points (frame='{frame or 'unset'}').",
+            throttle_duration_sec=2.0)
 
     def cone_callback(self, msg):
         """ Parse PointCloud2 cones into obstacle array """
@@ -211,14 +230,17 @@ class MPPIController(Node):
         
         # 1. Check if ready
         if self.vehicle_state is None:
-            self.get_logger().info("Waiting for vehicle state")
-            self.get_clock().sleep_for(rclpy.duration.Duration(seconds=3))
+            self.get_logger().info("Waiting for vehicle state (odom speed)", throttle_duration_sec=2.0)
             return
         if self.path_arr is None:
-            self.get_logger().info("Waiting for path")
-            self.get_clock().sleep_for(rclpy.duration.Duration(seconds=3))
+            self.get_logger().info("Waiting for path", throttle_duration_sec=2.0)
             return
-        
+
+        # Re-assert local origin each tick (path is body-relative)
+        if self.use_local_frame:
+            v = 0.0 if self.speed_mps is None else self.speed_mps
+            self.vehicle_state = np.array([0.0, 0.0, 0.0, v], dtype=float)
+
         x = self.vehicle_state.copy()
         N_path = self.path_arr.shape[0]
 

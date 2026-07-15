@@ -12,6 +12,7 @@ ament_python_install_package(${PROJECT_NAME})
 
 install(PROGRAMS
 	control/mppi_ros_modified.py
+	control/pure_pursuit.py
 	DESTINATION lib/${PROJECT_NAME}
 )
 
