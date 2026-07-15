@@ -178,8 +178,10 @@ class VcuSim:
                 self.ready_time = now
 
         elif self.as_state == AS_READY:
-            if self.sdc_open or self.ai_estop:
+            if self.sdc_open:
                 self.enter_emergency(now, 'shutdown circuit open')
+            elif self.ai_estop:
+                self.enter_emergency(now, 'AI estop request')
             elif not self.asms:
                 self.as_state = AS_OFF
             elif (go_rising and (now - self.ready_time) >= READY_HOLD_s
@@ -193,8 +195,10 @@ class VcuSim:
             wheels_moving = self.wheel_rpm > WHEEL_STOPPED_rpm
             comms_lost = (self.ai_status_rx_time is None
                           or (now - self.ai_status_rx_time) > AI_COMMS_TIMEOUT_s)
-            if self.sdc_open or self.ai_estop:
+            if self.sdc_open:
                 self.enter_emergency(now, 'shutdown circuit open')
+            elif self.ai_estop:
+                self.enter_emergency(now, 'AI estop request')
             elif not self.go_switch:
                 self.enter_emergency(now, 'RES go signal off')
             elif not self.asms:
