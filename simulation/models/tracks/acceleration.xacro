@@ -28,35 +28,36 @@
     <xacro:include filename="$(find simulation)/models/cones/cone.xacro"/>
 
     <model name='cones'>
+      <!-- Odd pairs: y = ±1.5; even pairs: +0.1 m y-offset (zig-zag). Δx = 4 m -->
       <xacro:cone name="blue_1" type="blue" pose="-45 1.5 0.15 0 0 0"/>
-      <xacro:cone name="blue_2" type="blue" pose="-40 1.5 0.15 0 0 0"/>
-      <xacro:cone name="blue_3" type="blue" pose="-35 1.5 0.15 0 0 0"/>
-      <xacro:cone name="blue_4" type="blue" pose="-30 1.5 0.15 0 0 0"/>
-      <xacro:cone name="blue_5" type="blue" pose="-25 1.5 0.15 0 0 0"/>
-      <xacro:cone name="blue_6" type="blue" pose="-20 1.5 0.15 0 0 0"/>
-      <xacro:cone name="blue_7" type="blue" pose="-15 1.5 0.15 0 0 0"/>
-      <xacro:cone name="blue_8" type="blue" pose="-10 1.5 0.15 0 0 0"/>
-      <xacro:cone name="blue_9" type="blue" pose="-5 1.5 0.15 0 0 0"/>
-      <xacro:cone name="blue_10" type="blue" pose="0 1.5 0.15 0 0 0"/>
-      <xacro:cone name="blue_11" type="blue" pose="5 1.5 0.15 0 0 0"/>
-      <xacro:cone name="blue_12" type="blue" pose="10 1.5 0.15 0 0 0"/>
-      <xacro:cone name="blue_13" type="blue" pose="15 1.5 0.15 0 0 0"/>
-      <xacro:cone name="blue_14" type="blue" pose="20 1.5 0.15 0 0 0"/>
+      <xacro:cone name="blue_2" type="blue" pose="-41 1.6 0.15 0 0 0"/>
+      <xacro:cone name="blue_3" type="blue" pose="-37 1.5 0.15 0 0 0"/>
+      <xacro:cone name="blue_4" type="blue" pose="-33 1.6 0.15 0 0 0"/>
+      <xacro:cone name="blue_5" type="blue" pose="-29 1.5 0.15 0 0 0"/>
+      <xacro:cone name="blue_6" type="blue" pose="-25 1.6 0.15 0 0 0"/>
+      <xacro:cone name="blue_7" type="blue" pose="-21 1.5 0.15 0 0 0"/>
+      <xacro:cone name="blue_8" type="blue" pose="-17 1.6 0.15 0 0 0"/>
+      <xacro:cone name="blue_9" type="blue" pose="-13 1.5 0.15 0 0 0"/>
+      <xacro:cone name="blue_10" type="blue" pose="-9 1.6 0.15 0 0 0"/>
+      <xacro:cone name="blue_11" type="blue" pose="-5 1.5 0.15 0 0 0"/>
+      <xacro:cone name="blue_12" type="blue" pose="-1 1.6 0.15 0 0 0"/>
+      <xacro:cone name="blue_13" type="blue" pose="3 1.5 0.15 0 0 0"/>
+      <xacro:cone name="blue_14" type="blue" pose="7 1.6 0.15 0 0 0"/>
 
       <xacro:cone name="yellow_1" type="yellow" pose="-45 -1.5 0.15 0 0 0"/>
-      <xacro:cone name="yellow_2" type="yellow" pose="-40 -1.5 0.15 0 0 0"/>
-      <xacro:cone name="yellow_3" type="yellow" pose="-35 -1.5 0.15 0 0 0"/>
-      <xacro:cone name="yellow_4" type="yellow" pose="-30 -1.5 0.15 0 0 0"/>
-      <xacro:cone name="yellow_5" type="yellow" pose="-25 -1.5 0.15 0 0 0"/>
-      <xacro:cone name="yellow_6" type="yellow" pose="-20 -1.5 0.15 0 0 0"/>
-      <xacro:cone name="yellow_7" type="yellow" pose="-15 -1.5 0.15 0 0 0"/>
-      <xacro:cone name="yellow_8" type="yellow" pose="-10 -1.5 0.15 0 0 0"/>
-      <xacro:cone name="yellow_9" type="yellow" pose="-5 -1.5 0.15 0 0 0"/>
-      <xacro:cone name="yellow_10" type="yellow" pose="0 -1.5 0.15 0 0 0"/>
-      <xacro:cone name="yellow_11" type="yellow" pose="5 -1.5 0.15 0 0 0"/>
-      <xacro:cone name="yellow_12" type="yellow" pose="10 -1.5 0.15 0 0 0"/>
-      <xacro:cone name="yellow_13" type="yellow" pose="15 -1.5 0.15 0 0 0"/>
-      <xacro:cone name="yellow_14" type="yellow" pose="20 -1.5 0.15 0 0 0"/>
+      <xacro:cone name="yellow_2" type="yellow" pose="-41 -1.4 0.15 0 0 0"/>
+      <xacro:cone name="yellow_3" type="yellow" pose="-37 -1.5 0.15 0 0 0"/>
+      <xacro:cone name="yellow_4" type="yellow" pose="-33 -1.4 0.15 0 0 0"/>
+      <xacro:cone name="yellow_5" type="yellow" pose="-29 -1.5 0.15 0 0 0"/>
+      <xacro:cone name="yellow_6" type="yellow" pose="-25 -1.4 0.15 0 0 0"/>
+      <xacro:cone name="yellow_7" type="yellow" pose="-21 -1.5 0.15 0 0 0"/>
+      <xacro:cone name="yellow_8" type="yellow" pose="-17 -1.4 0.15 0 0 0"/>
+      <xacro:cone name="yellow_9" type="yellow" pose="-13 -1.5 0.15 0 0 0"/>
+      <xacro:cone name="yellow_10" type="yellow" pose="-9 -1.4 0.15 0 0 0"/>
+      <xacro:cone name="yellow_11" type="yellow" pose="-5 -1.5 0.15 0 0 0"/>
+      <xacro:cone name="yellow_12" type="yellow" pose="-1 -1.4 0.15 0 0 0"/>
+      <xacro:cone name="yellow_13" type="yellow" pose="3 -1.5 0.15 0 0 0"/>
+      <xacro:cone name="yellow_14" type="yellow" pose="7 -1.4 0.15 0 0 0"/>
 
       <xacro:cone name="orange_1" type="orange" pose="30 1.5 0.15 0 0 0"/>
       <xacro:cone name="orange_2" type="orange" pose="30 -1.5 0.15 0 0 0"/>

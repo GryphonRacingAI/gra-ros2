@@ -108,28 +108,35 @@ class TrackPathfinder(Node):
         2. Input this into fsd_path_planning.PathPlanner
         """        
 
-        # velodyne -> odom
-        # 
-
-        global_cones_temp = [
+        cones_temp = [
             np.array([[cone.position.x, cone.position.y] for cone in msg.unknown_cones], dtype=np.float32).reshape(-1, 2),
             np.array([[cone.position.x, cone.position.y] for cone in msg.yellow_cones], dtype=np.float32).reshape(-1, 2),
             np.array([[cone.position.x, cone.position.y] for cone in msg.blue_cones], dtype=np.float32).reshape(-1, 2),
             np.array([[cone.position.x, cone.position.y] for cone in msg.orange_cones], dtype=np.float32).reshape(-1, 2),
             np.array([[cone.position.x, cone.position.y] for cone in msg.large_orange_cones], dtype=np.float32).reshape(-1, 2),
         ]
-        global_cones = global_cones_temp  # Preserve fixed order: [unknown, yellow, blue, orange, large_orange]
+        local_cones = cones_temp  # Preserve fixed order: [unknown, yellow, blue, orange, large_orange]
 
-        if all(c.shape[0] == 0 for c in global_cones):
+        if all(c.shape[0] == 0 for c in local_cones):
             self.get_logger().warn("All cone arrays are empty, skipping path planning.")
             return
+
+        n_unknown, n_yellow, n_blue, n_orange, n_large_orange = (
+            c.shape[0] for c in local_cones
+        )
+        n_cones = n_unknown + n_yellow + n_blue + n_orange + n_large_orange
+        self.get_logger().info(
+            f"Calculating path using {n_cones} cones from cone_array "
+            f"(unknown={n_unknown}, yellow={n_yellow}, blue={n_blue}, "
+            f"orange={n_orange}, large_orange={n_large_orange})"
+        )
 
         car_position = np.array([0.0, 0.0])
         car_direction = np.array([1.0, 0.0])
 
         # Calculate the path
         try:
-            path = self.path_planner.calculate_path_in_global_frame(global_cones, car_position, car_direction)
+            path = self.path_planner.calculate_path_in_global_frame(local_cones, car_position, car_direction)
             self.publish_path(path)
         except Exception as e:
             self.get_logger().warn(f"Path planning failed: {e}")
