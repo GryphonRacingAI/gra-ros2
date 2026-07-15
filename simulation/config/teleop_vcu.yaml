@@ -1,0 +1,49 @@
+# Teleop config for testing ackermann_can + VCU simulator (vcu_sim.py)
+# Publishes to the topics that ackermann_can subscribes to:
+#   /ackermann_cmd (ackermann_msgs/msg/AckermannDrive)   <--- direct to ackermann_can
+#   /brake, /emergency_brake, /chequered_flag (std_msgs/msg/Bool)
+#
+# Usage:
+#   ros2 launch simulation teleop.launch config:=$(ros2 pkg prefix simulation)/share/simulation/config/teleop_vcu.yaml
+#
+# With vcu_sim.sh (see tmux/vcu_sim.sh), this lets you drive the steering/speed visible
+# in vcu_sim.py stdout (the "steer=xx.xdeg" field) once the VCU state machine reaches
+# AS_DRIVING (use keys in vcu_sim pane: a t 1-7 g etc. to bring up the car).
+#
+# Note: the vcu_sim.sh disables wheel_speed_controller for this session so that
+# direct /ackermann_cmd commands are not overwritten.
+
+ackermann_cmd:
+  type: ackermann_msgs/msg/AckermannDrive
+  # Steering in radians. ~0.47 rad ~= 27 deg max (per vcu_sim)
+  steering_angle:
+    min: -0.5
+    max: 0.5
+    default: 0.0
+  # Speed in m/s. Negative speed is treated specially by ackermann_can (may trigger finish)
+  speed:
+    min: 0.0
+    max: 6.0
+    default: 0.0
+  # Fixed/zeroed fields (can be overridden by publishing constants)
+  steering_angle_velocity: 0.0
+  acceleration: 0.0
+  jerk: 0.0
+
+brake:
+  type: std_msgs/msg/Bool
+  # Checkbox: when checked, sends brake=true (used by ackermann_can to cut torque + apply brake)
+  active:
+    to: data
+
+emergency_brake:
+  type: std_msgs/msg/Bool
+  # Sends ESTOP request to VCU when checked
+  active:
+    to: data
+
+chequered_flag:
+  type: std_msgs/msg/Bool
+  # Signals mission finished; ackermann_can will brake then finish
+  active:
+    to: data

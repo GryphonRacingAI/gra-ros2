@@ -52,6 +52,7 @@ install(TARGETS
 # Install Python scripts
 install(PROGRAMS
     scripts/wheel_speed_controller.py
+    scripts/vcu_sim.py
     DESTINATION lib/${PROJECT_NAME}
 )
 

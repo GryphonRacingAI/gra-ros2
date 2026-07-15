@@ -130,6 +130,18 @@ Launch:
 ros2 launch simulation teleop.launch
 ```
 
+There are two configs:
+
+- Default (`teleop.yaml`): publishes `speed_cmd` / `steer_angle_cmd` (Float64) — used with the Gazebo simulation.
+- VCU test config (`teleop_vcu.yaml`): publishes `/ackermann_cmd` (ackermann_msgs/msg/AckermannDrive) + `/brake`, `/emergency_brake`, `/chequered_flag` (Bool). This is what `ackermann_can` expects.
+
+Example — launch the VCU teleop config directly:
+```bash
+ros2 launch simulation teleop.launch config:=$(ros2 pkg prefix simulation)/share/simulation/config/teleop_vcu.yaml
+```
+
+This is used by `tmux/vcu_sim.sh` (together with `vcu_sim.py` on vcan0 + `ackermann_can vcan0` + `wheel_speed_controller`) to verify that steering commands flow through to the VCU simulator (watch the `steer=...deg` line in the vcu_sim pane).
+
 ## Interface
 
 | Node | Inputs | Outputs | Description |

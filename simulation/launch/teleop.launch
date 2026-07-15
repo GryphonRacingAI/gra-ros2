@@ -1,6 +1,15 @@
 <?xml version="1.0"?>
 <launch>
+    <!--
+      Teleop using slider_publisher.
+      Default config: basic speed/steer Float64 for direct Gazebo control (via ackermann_to_speed_steer).
+
+      For VCU testing (ackermann_can + vcu_sim.py), use the ackermann + brake flags config:
+        ros2 launch simulation teleop.launch config:=$(ros2 pkg prefix simulation)/share/simulation/config/teleop_vcu.yaml
+    -->
+    <arg name="config" default="$(find-pkg-share simulation)/config/teleop.yaml" />
+
     <node pkg="slider_publisher" exec="slider_publisher" name="teleop" output="screen">
-        <param name="config" value="$(find-pkg-share simulation)/config/teleop.yaml"/>
+        <param name="config" value="$(var config)"/>
     </node>
 </launch>
