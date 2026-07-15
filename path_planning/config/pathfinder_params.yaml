@@ -1,0 +1,27 @@
+track_pathfinder:
+  ros__parameters:
+    event: trackdrive
+    experimental_performance_improvements: false
+
+    # Cone sorting
+    max_n_neighbors: 5
+    max_dist: 6.5
+    max_dist_to_first: 6.0
+    max_length: 12
+    threshold_directional_angle_deg: 40.0
+    threshold_absolute_angle_deg: 65.0
+    use_unknown_cones: true
+
+    # Cone matching
+    min_track_width: 3.0
+    max_search_range: 5.0
+    max_search_angle_deg: 50.0
+    matches_should_be_monotonic: false
+
+    # Path calculation / cone fitting
+    maximal_distance_for_valid_path: 5.0
+    mpc_path_length: 20.0
+    mpc_prediction_horizon: 40
+    smoothing: 0.2
+    predict_every: 0.1
+    max_deg: 3

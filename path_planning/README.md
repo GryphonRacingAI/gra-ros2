@@ -1,8 +1,8 @@
 # path_planning
-Generates the centreline of the track based on the selected event
+Generates a body-relative track centreline from cone detections using [`fsd_path_planning`](https://github.com/GryphonRacingAI/ft-fsd-path-planning).
 
 ## Installation
-1. Create and/or source your virtual environment if you haven't already
+1. Create and/or source your virtual environment if you haven't already:
 
 ```bash
 cd ~/colcon_ws
@@ -10,35 +10,82 @@ python3 -m venv ros_venv
 source ros_venv/bin/activate
 ```
 
-## Usage
-1. Source your virtual environment
-2. Run the path planning node:
-    ```bash
-    ros2 run path_planning pathfinder.py --ros-args -p event:=trackdrive
-    ```
-
-### Node Parameters
-The following parameters are provided for `pathfinder.py`:
-
-| Parameter | Description | Default |
-|----------|-------------|---------|
-| `output_frame` | Frame for published `/path` | `odom` |
-| `cone_map_topic` | SLAM cone map input topic | `/slam/cone_map` |
-| `lookahead_distance` | Max forward cone distance (m) | `20.0` |
-| `test_mode` | Publish `/viz/path` and `/viz/path_markers` for RViz | `true` |
-| `viz_frame` | Frame for test-mode visualization topics | `map` |
-| `marker_scale` | Waypoint sphere size in test mode | `0.25` |
-| `line_width` | Path line width in test mode | `0.15` |
-
-In simulation, run with `use_sim_time:=true` and set RViz **Fixed Frame** to `map`. Test-mode viz is published in `map` so it aligns with `/slam/cone_map_markers` without needing an `odom`→`map` lookup.
+2. Install the forked path planner:
 
 ```bash
-ros2 run path_planning pathfinder.py --ros-args -p use_sim_time:=true
-rviz2 --ros-args -p use_sim_time:=true
+pip install git+https://github.com/GryphonRacingAI/ft-fsd-path-planning.git
 ```
+
+3. Build the package:
+
+```bash
+cd ~/colcon_ws
+colcon build --packages-select path_planning
+source install/setup.bash
+```
+
+## Usage
+
+```bash
+ros2 run path_planning pathfinder.py --ros-args \
+  --params-file $(ros2 pkg prefix path_planning)/share/path_planning/config/pathfinder_params.yaml
+```
+
+Override a single parameter:
+
+```bash
+ros2 run path_planning pathfinder.py --ros-args \
+  --params-file $(ros2 pkg prefix path_planning)/share/path_planning/config/pathfinder_params.yaml \
+  -p event:=trackdrive
+```
+
+In simulation, also set `use_sim_time:=true`.
+
+### Node Parameters
+
+ROS defaults are in `config/pathfinder_params.yaml` (node name `track_pathfinder`). Those values match the library defaults from [`fsd_path_planning/config.py`](https://github.com/GryphonRacingAI/ft-fsd-path-planning/blob/main/fsd_path_planning/config.py) (`get_cone_sorting_config`, `get_default_matching_kwargs`, `get_path_calculation_config`, `get_cone_fitting_config`). Angle parameters are exposed in degrees here and converted to radians before being passed into `PathPlanner`.
+
+#### PathPlanner
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `event` | Mission type: `acceleration`, `skidpad`, `autocross`, `trackdrive` | `trackdrive` |
+| `experimental_performance_improvements` | Faster cone sorting (experimental); also passed into `cone_sorting` | `false` |
+
+#### cone_sorting (`ConeSorting`)
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `max_n_neighbors` | Max neighbors per cone during sorting | `5` |
+| `max_dist` | Max neighbor distance (m) | `6.5` |
+| `max_dist_to_first` | Max distance to first cone (m) | `6.0` |
+| `max_length` | Max sorted trace length | `12` |
+| `threshold_directional_angle_deg` | Directional angle threshold (deg) | `40.0` |
+| `threshold_absolute_angle_deg` | Absolute angle threshold (deg) | `65.0` |
+| `use_unknown_cones` | Include unknown-color cones in sorting | `true` |
+
+#### cone_matching (`ConeMatching`)
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `min_track_width` | Min track width for matching (m) | `3.0` |
+| `max_search_range` | Max match search range (m) | `5.0` |
+| `max_search_angle_deg` | Max match search angle (deg) | `50.0` |
+| `matches_should_be_monotonic` | Require monotonic left/right matches | `false` |
+
+#### pathing (`CalculatePath`)
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `maximal_distance_for_valid_path` | Max car-to-path distance for a valid update (m) | `5.0` |
+| `mpc_path_length` | Desired path length (m) | `20.0` |
+| `mpc_prediction_horizon` | Number of path waypoints | `40` |
+| `smoothing` | Cone-boundary spline smoothing | `0.2` |
+| `predict_every` | Spline sample spacing (m) | `0.1` |
+| `max_deg` | Max spline degree | `3` |
 
 ## Interface
 
 | Node | Inputs | Outputs | Description |
-|------|-------------|---------|---------|
-| `pathfinder.py` | `/slam/cone_map` (`common_msgs/ConeArray`)<br>`/slam/pose` (`geometry_msgs/PoseStamped`)<br>`/odom` (`nav_msgs/Odometry`) | `/path` (`nav_msgs/Path`)<br>`/viz/path` (`nav_msgs/Path`, test mode)<br>`/viz/path_markers` (`visualization_msgs/MarkerArray`, test mode) | Centreline from SLAM cone map; test-mode viz mirrors `perfect_path` markers |
+|------|--------|---------|-------------|
+| `track_pathfinder` (`pathfinder.py`) | `/cone_array` (`common_msgs/ConeArray`)<br>`/odom` (`nav_msgs/Odometry`) | `/path` (`nav_msgs/Path`, `frame_id=velodyne`) | Centreline in body frame (car at origin, +x forward) |
