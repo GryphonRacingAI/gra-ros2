@@ -69,7 +69,7 @@
       </model>
       <model name="blue_2">
         <static>true</static>
-        <pose>-40 1.5 0.15 0 0 0</pose>
+        <pose>-41 1.6 0.15 0 0 0</pose>
         <link name="blue_2_link">
           <visual name="visual">
             <geometry>
@@ -94,7 +94,7 @@
       </model>
       <model name="blue_3">
         <static>true</static>
-        <pose>-35 1.5 0.15 0 0 0</pose>
+        <pose>-37 1.5 0.15 0 0 0</pose>
         <link name="blue_3_link">
           <visual name="visual">
             <geometry>
@@ -119,7 +119,7 @@
       </model>
       <model name="blue_4">
         <static>true</static>
-        <pose>-30 1.5 0.15 0 0 0</pose>
+        <pose>-33 1.6 0.15 0 0 0</pose>
         <link name="blue_4_link">
           <visual name="visual">
             <geometry>
@@ -144,7 +144,7 @@
       </model>
       <model name="blue_5">
         <static>true</static>
-        <pose>-25 1.5 0.15 0 0 0</pose>
+        <pose>-29 1.5 0.15 0 0 0</pose>
         <link name="blue_5_link">
           <visual name="visual">
             <geometry>
@@ -169,7 +169,7 @@
       </model>
       <model name="blue_6">
         <static>true</static>
-        <pose>-20 1.5 0.15 0 0 0</pose>
+        <pose>-25 1.6 0.15 0 0 0</pose>
         <link name="blue_6_link">
           <visual name="visual">
             <geometry>
@@ -194,7 +194,7 @@
       </model>
       <model name="blue_7">
         <static>true</static>
-        <pose>-15 1.5 0.15 0 0 0</pose>
+        <pose>-21 1.5 0.15 0 0 0</pose>
         <link name="blue_7_link">
           <visual name="visual">
             <geometry>
@@ -219,7 +219,7 @@
       </model>
       <model name="blue_8">
         <static>true</static>
-        <pose>-10 1.5 0.15 0 0 0</pose>
+        <pose>-17 1.6 0.15 0 0 0</pose>
         <link name="blue_8_link">
           <visual name="visual">
             <geometry>
@@ -244,7 +244,7 @@
       </model>
       <model name="blue_9">
         <static>true</static>
-        <pose>-5 1.5 0.15 0 0 0</pose>
+        <pose>-13 1.5 0.15 0 0 0</pose>
         <link name="blue_9_link">
           <visual name="visual">
             <geometry>
@@ -269,7 +269,7 @@
       </model>
       <model name="blue_10">
         <static>true</static>
-        <pose>0 1.5 0.15 0 0 0</pose>
+        <pose>-9 1.6 0.15 0 0 0</pose>
         <link name="blue_10_link">
           <visual name="visual">
             <geometry>
@@ -294,7 +294,7 @@
       </model>
       <model name="blue_11">
         <static>true</static>
-        <pose>5 1.5 0.15 0 0 0</pose>
+        <pose>-5 1.5 0.15 0 0 0</pose>
         <link name="blue_11_link">
           <visual name="visual">
             <geometry>
@@ -319,7 +319,7 @@
       </model>
       <model name="blue_12">
         <static>true</static>
-        <pose>10 1.5 0.15 0 0 0</pose>
+        <pose>-1 1.6 0.15 0 0 0</pose>
         <link name="blue_12_link">
           <visual name="visual">
             <geometry>
@@ -344,7 +344,7 @@
       </model>
       <model name="blue_13">
         <static>true</static>
-        <pose>15 1.5 0.15 0 0 0</pose>
+        <pose>3 1.5 0.15 0 0 0</pose>
         <link name="blue_13_link">
           <visual name="visual">
             <geometry>
@@ -369,7 +369,7 @@
       </model>
       <model name="blue_14">
         <static>true</static>
-        <pose>20 1.5 0.15 0 0 0</pose>
+        <pose>7 1.6 0.15 0 0 0</pose>
         <link name="blue_14_link">
           <visual name="visual">
             <geometry>
@@ -419,7 +419,7 @@
       </model>
       <model name="yellow_2">
         <static>true</static>
-        <pose>-40 -1.5 0.15 0 0 0</pose>
+        <pose>-41 -1.4 0.15 0 0 0</pose>
         <link name="yellow_2_link">
           <visual name="visual">
             <geometry>
@@ -444,7 +444,7 @@
       </model>
       <model name="yellow_3">
         <static>true</static>
-        <pose>-35 -1.5 0.15 0 0 0</pose>
+        <pose>-37 -1.5 0.15 0 0 0</pose>
         <link name="yellow_3_link">
           <visual name="visual">
             <geometry>
@@ -469,7 +469,7 @@
       </model>
       <model name="yellow_4">
         <static>true</static>
-        <pose>-30 -1.5 0.15 0 0 0</pose>
+        <pose>-33 -1.4 0.15 0 0 0</pose>
         <link name="yellow_4_link">
           <visual name="visual">
             <geometry>
@@ -494,7 +494,7 @@
       </model>
       <model name="yellow_5">
         <static>true</static>
-        <pose>-25 -1.5 0.15 0 0 0</pose>
+        <pose>-29 -1.5 0.15 0 0 0</pose>
         <link name="yellow_5_link">
           <visual name="visual">
             <geometry>
@@ -519,7 +519,7 @@
       </model>
       <model name="yellow_6">
         <static>true</static>
-        <pose>-20 -1.5 0.15 0 0 0</pose>
+        <pose>-25 -1.4 0.15 0 0 0</pose>
         <link name="yellow_6_link">
           <visual name="visual">
             <geometry>
@@ -544,7 +544,7 @@
       </model>
       <model name="yellow_7">
         <static>true</static>
-        <pose>-15 -1.5 0.15 0 0 0</pose>
+        <pose>-21 -1.5 0.15 0 0 0</pose>
         <link name="yellow_7_link">
           <visual name="visual">
             <geometry>
@@ -569,7 +569,7 @@
       </model>
       <model name="yellow_8">
         <static>true</static>
-        <pose>-10 -1.5 0.15 0 0 0</pose>
+        <pose>-17 -1.4 0.15 0 0 0</pose>
         <link name="yellow_8_link">
           <visual name="visual">
             <geometry>
@@ -594,7 +594,7 @@
       </model>
       <model name="yellow_9">
         <static>true</static>
-        <pose>-5 -1.5 0.15 0 0 0</pose>
+        <pose>-13 -1.5 0.15 0 0 0</pose>
         <link name="yellow_9_link">
           <visual name="visual">
             <geometry>
@@ -619,7 +619,7 @@
       </model>
       <model name="yellow_10">
         <static>true</static>
-        <pose>0 -1.5 0.15 0 0 0</pose>
+        <pose>-9 -1.4 0.15 0 0 0</pose>
         <link name="yellow_10_link">
           <visual name="visual">
             <geometry>
@@ -644,7 +644,7 @@
       </model>
       <model name="yellow_11">
         <static>true</static>
-        <pose>5 -1.5 0.15 0 0 0</pose>
+        <pose>-5 -1.5 0.15 0 0 0</pose>
         <link name="yellow_11_link">
           <visual name="visual">
             <geometry>
@@ -669,7 +669,7 @@
       </model>
       <model name="yellow_12">
         <static>true</static>
-        <pose>10 -1.5 0.15 0 0 0</pose>
+        <pose>-1 -1.4 0.15 0 0 0</pose>
         <link name="yellow_12_link">
           <visual name="visual">
             <geometry>
@@ -694,7 +694,7 @@
       </model>
       <model name="yellow_13">
         <static>true</static>
-        <pose>15 -1.5 0.15 0 0 0</pose>
+        <pose>3 -1.5 0.15 0 0 0</pose>
         <link name="yellow_13_link">
           <visual name="visual">
             <geometry>
@@ -719,7 +719,7 @@
       </model>
       <model name="yellow_14">
         <static>true</static>
-        <pose>20 -1.5 0.15 0 0 0</pose>
+        <pose>7 -1.4 0.15 0 0 0</pose>
         <link name="yellow_14_link">
           <visual name="visual">
             <geometry>
