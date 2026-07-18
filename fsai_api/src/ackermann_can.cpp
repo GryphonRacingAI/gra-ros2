@@ -108,7 +108,6 @@ private:
             // Temporary: set finish on negative speed
             if (wheel_rpm < 0) {
                 wheel_rpm = 0;
-                chequered_flag_ = true;
             }
 
             // Convert steering angle from radians to degrees
@@ -120,12 +119,6 @@ private:
                 ai2vcu_data_.AI2VCU_AXLE_SPEED_REQUEST_rpm = wheel_rpm;
                 ai2vcu_data_.AI2VCU_AXLE_TORQUE_REQUEST_Nm = 195;
             }
-        }
-        else{
-                ai2vcu_data_.AI2VCU_STEER_ANGLE_REQUEST_deg = 0;
-                ai2vcu_data_.AI2VCU_AXLE_SPEED_REQUEST_rpm = 0;
-                ai2vcu_data_.AI2VCU_AXLE_TORQUE_REQUEST_Nm = 0;
-                ai2vcu_data_.AI2VCU_BRAKE_PRESS_REQUEST_pct = 0;
         }
     }
 
@@ -206,7 +199,6 @@ private:
                 else{
                     RCLCPP_INFO(this->get_logger(), "Finished");
                     ai2vcu_data_.AI2VCU_MISSION_STATUS = MISSION_FINISHED;
-                    braking_ = false;
                 }
             }
 
@@ -223,7 +215,6 @@ private:
             if (vcu2ai_data.VCU2AI_AS_STATE == AS_FINISHED || vcu2ai_data.VCU2AI_AS_STATE == AS_EMERGENCY_BRAKE){
                 chequered_flag_ = false;
                 drive_enabled_ = false;
-                braking_ = false;
                 ai2vcu_data_.AI2VCU_MISSION_STATUS = MISSION_NOT_SELECTED;
                 ai2vcu_data_.AI2VCU_DIRECTION_REQUEST = DIRECTION_NEUTRAL;
                 ai2vcu_data_.AI2VCU_ESTOP_REQUEST = ESTOP_NO;

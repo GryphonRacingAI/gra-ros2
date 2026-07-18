@@ -102,7 +102,9 @@ class StaticInspectionA(Node):
         if self.mission_started:
             return
         self.mission_started = True
-
+        # Explicitly clear any previous AI E-stop request
+        self.emergency_brake_publisher.publish(Bool(data=False))
+        self.get_logger().info("Emergency-brake request cleared at start of mission")
         try:
             time.sleep(3.0)
             self.sweep_steering()

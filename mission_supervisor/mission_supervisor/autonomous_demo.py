@@ -102,7 +102,7 @@ class AutonomousDemoStateWait(Node):
             self.accelerate_10m()
             time.sleep(2.5)  # Small delay between phases
             self.brake_10m()
-            time.sleep(2.5)  # Small delay between phases
+            time.sleep(5.0)  # Small delay between phases
             self.accelerate_10m()
             time.sleep(2.5)  # Small delay before emergency brake
             self.emergency_brake()
@@ -286,7 +286,7 @@ class AutonomousDemoStateWait(Node):
                     break
             else:
                 # Fallback: brake for a fixed time if no wheel speed data
-                if elapsed_brake_time < 12.0:  # Brake for 3 seconds
+                if elapsed_brake_time < 14.0:  # Brake for 3 seconds
                     brake_msg = Bool()
                     brake_msg.data = True
                     self.brake_publisher.publish(brake_msg)

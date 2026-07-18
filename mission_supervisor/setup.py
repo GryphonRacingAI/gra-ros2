@@ -28,7 +28,8 @@ setup(
             'autonomous_demo = mission_supervisor.autonomous_demo:main',
             'lap_counter = mission_supervisor.lap_counter:main',
             'static_a = mission_supervisor.static_a:main',
-            'static_b = mission_supervisor.static_b:main'
+            'static_a_ros_can = mission_supervisor.static_a_ros_can:main',
+            'static_b = mission_supervisor.static_b:main',
         ],
     },
 )
