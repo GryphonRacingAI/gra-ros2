@@ -525,27 +525,69 @@ PredictWithCloudNode::createMarkerArray(const vision_msgs::msg::Detection3DArray
 
   for (size_t i = 0; i < detection3d_array_msg.detections.size(); i++)
   {
-    if (std::isfinite(detection3d_array_msg.detections[i].bbox.size.x) &&
-        std::isfinite(detection3d_array_msg.detections[i].bbox.size.y) &&
-        std::isfinite(detection3d_array_msg.detections[i].bbox.size.z))
+    const auto& detection = detection3d_array_msg.detections[i];
+    if (std::isfinite(detection.bbox.size.x) &&
+        std::isfinite(detection.bbox.size.y) &&
+        std::isfinite(detection.bbox.size.z))
     {
       visualization_msgs::msg::Marker marker_msg;
       marker_msg.header = detection3d_array_msg.header;
       marker_msg.ns = "detection";
-      marker_msg.id = i;
-      marker_msg.type = visualization_msgs::msg::Marker::CUBE;
+      marker_msg.id = static_cast<int>(i);
+      marker_msg.type = visualization_msgs::msg::Marker::CYLINDER;
       marker_msg.action = visualization_msgs::msg::Marker::ADD;
-      marker_msg.pose = detection3d_array_msg.detections[i].bbox.center;
-      marker_msg.scale.x = detection3d_array_msg.detections[i].bbox.size.x;
-      marker_msg.scale.y = detection3d_array_msg.detections[i].bbox.size.y;
-      marker_msg.scale.z = detection3d_array_msg.detections[i].bbox.size.z;
-      marker_msg.color.r = 0.0;
-      marker_msg.color.g = 1.0;
-      marker_msg.color.b = 0.0;
-      marker_msg.color.a = 0.5;
+      marker_msg.pose.position = detection.bbox.center.position;
+      marker_msg.pose.orientation.w = 1.0;
+      // Fixed cone-sized cylinder (bbox extents are often tiny/noisy in RViz)
+      marker_msg.scale.x = 0.25;
+      marker_msg.scale.y = 0.25;
+      marker_msg.scale.z = 0.5;
+
+      std::string class_id = "UNKNOWN";
+      if (!detection.results.empty())
+      {
+        class_id = detection.results[0].hypothesis.class_id;
+      }
+
+      marker_msg.color.a = 0.9f;
+      if (class_id == "YELLOW")
+      {
+        marker_msg.color.r = 1.0f;
+        marker_msg.color.g = 1.0f;
+        marker_msg.color.b = 0.0f;
+      }
+      else if (class_id == "BLUE")
+      {
+        marker_msg.color.r = 0.0f;
+        marker_msg.color.g = 0.4f;
+        marker_msg.color.b = 1.0f;
+      }
+      else if (class_id == "ORANGE")
+      {
+        marker_msg.color.r = 1.0f;
+        marker_msg.color.g = 0.5f;
+        marker_msg.color.b = 0.0f;
+      }
+      else if (class_id == "LARGE_ORANGE")
+      {
+        marker_msg.color.r = 1.0f;
+        marker_msg.color.g = 0.3f;
+        marker_msg.color.b = 0.0f;
+        marker_msg.scale.x = 0.35;
+        marker_msg.scale.y = 0.35;
+        marker_msg.scale.z = 0.7;
+      }
+      else
+      {
+        marker_msg.color.r = 0.5f;
+        marker_msg.color.g = 0.5f;
+        marker_msg.color.b = 0.5f;
+      }
+
       marker_msg.lifetime = rclcpp::Duration(std::chrono::duration<double>(duration));
       marker_array_msg.markers.push_back(marker_msg);
-      RCLCPP_DEBUG(this->get_logger(), "Created marker id %zu with lifetime %.2f sec", i, duration);
+      RCLCPP_DEBUG(this->get_logger(), "Created %s cylinder marker id %zu with lifetime %.2f sec",
+                   class_id.c_str(), i, duration);
     }
     else
     {
