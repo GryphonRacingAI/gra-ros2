@@ -13,3 +13,7 @@ build/
 *.egg
 
 .pytest_cache/
+
+# colcon workspace artifacts
+install/
+log/
