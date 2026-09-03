@@ -3393,6 +3393,56 @@
           </inertial>
         </link>
       </model>
+      <model name="yellow_134_1">
+        <static>true</static>
+        <pose>-26.1395 39.6973 0.15 0 0 0</pose>
+        <link name="yellow_134_1_link">
+          <visual name="visual">
+            <geometry>
+              <mesh>
+                <uri>model://simulation/models/cones/cone_yellow/mesh.dae</uri>
+              </mesh>
+            </geometry>
+          </visual>
+          <!-- Different inertial properties for different types of cones -->
+          <inertial>
+            <mass>0.45</mass>
+            <inertia>
+              <ixx>0.013</ixx>
+              <ixy>0.0</ixy>
+              <ixz>0.0</ixz>
+              <iyy>0.013</iyy>
+              <iyz>0.0</iyz>
+              <izz>0.006</izz>
+            </inertia>
+          </inertial>
+        </link>
+      </model>
+      <model name="yellow_134_2">
+        <static>true</static>
+        <pose>-24.43299 41.6273 0.15 0 0 0</pose>
+        <link name="yellow_134_2_link">
+          <visual name="visual">
+            <geometry>
+              <mesh>
+                <uri>model://simulation/models/cones/cone_yellow/mesh.dae</uri>
+              </mesh>
+            </geometry>
+          </visual>
+          <!-- Different inertial properties for different types of cones -->
+          <inertial>
+            <mass>0.45</mass>
+            <inertia>
+              <ixx>0.013</ixx>
+              <ixy>0.0</ixy>
+              <ixz>0.0</ixz>
+              <iyy>0.013</iyy>
+              <iyz>0.0</iyz>
+              <izz>0.006</izz>
+            </inertia>
+          </inertial>
+        </link>
+      </model>
       <model name="yellow_135">
         <static>true</static>
         <pose>-22.143865377879276 42.89700866842411 0.15 0 0 0</pose>

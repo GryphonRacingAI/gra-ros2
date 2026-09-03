@@ -224,7 +224,7 @@ def generate_launch_description():
         ),
         SetLaunchConfiguration(
             name='y',
-            value='44.0'
+            value='46.0'
         ),
         SetLaunchConfiguration(
              name='z',

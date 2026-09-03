@@ -162,6 +162,10 @@
       <xacro:cone name="yellow_132" type="yellow" pose="-32.637887887516726 37.309180662540584 0.15 0 0 0"/>
       <xacro:cone name="yellow_133" type="yellow" pose="-29.316114169093105 38.98656572482106 0.15 0 0 0"/>
       <xacro:cone name="yellow_134" type="yellow" pose="-27.528072554880104 39.96993058576901 0.15 0 0 0"/>
+
+      <xacro:cone name="yellow_134_1" type="yellow" pose="-26.1395 39.6973 0.15 0 0 0"/>
+        <xacro:cone name="yellow_134_2" type="yellow" pose="-24.43299 41.6273 0.15 0 0 0"/>
+
       <xacro:cone name="yellow_135" type="yellow" pose="-22.143865377879276 42.89700866842411 0.15 0 0 0"/>
       <xacro:cone name="yellow_136" type="yellow" pose="-20.259387492849125 43.673429418729505 0.15 0 0 0"/>
       <xacro:cone name="yellow_137" type="yellow" pose="-18.30845719924904 44.26953588362845 0.15 0 0 0"/>
