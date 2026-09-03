@@ -3,7 +3,7 @@
   <arg name="use_sim_time" default="false"/>
   <arg name="debug" default="false"/>
   <arg name="yolo_model" default="yolov8m-seg.pt"/>
-  <arg name="input_topic" default="/image_raw"/>
+  <arg name="input_topic" default="/zed/zed_node/left/image_rect_color"/>
   <arg name="result_topic" default="/yolo_result"/>
   <arg name="result_image_topic" default="/yolo_image"/>
   <arg name="conf_thres" default="0.25"/>
@@ -16,6 +16,7 @@
   <arg name="result_font" default="Arial.ttf"/>
   <arg name="result_labels" default="true"/>
   <arg name="result_boxes" default="true"/>
+  <arg name="imgsz" default="640"/>
 
   <set_parameter name="use_sim_time" value="$(var use_sim_time)"/>
 
@@ -35,6 +36,7 @@
     <param name="result_boxes" value="$(var result_boxes)"/>
     <!--<param name="classes" value="0, 1, 2" value-sep=", "/>-->
     <param name="device" value="$(var device)"/>
+    <param name="imgsz" value="$(var imgsz)"/>
   </node>
 
   <node if="$(var debug)" pkg="image_view" exec="image_view" output="screen">

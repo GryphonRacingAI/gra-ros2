@@ -33,7 +33,7 @@ class PredictNode(Node):
     def __init__(self):
         super().__init__("predict_node")
         self.declare_parameter("yolo_model", "yolov8n.pt")
-        self.declare_parameter("input_topic", "image_raw")
+        self.declare_parameter("input_topic", "/zed/zed_node/left/image_rect_color")
         self.declare_parameter("result_topic", "yolo_result")
         self.declare_parameter("result_image_topic", "yolo_image")
         self.declare_parameter("conf_thres", 0.25)
@@ -47,11 +47,14 @@ class PredictNode(Node):
         self.declare_parameter("result_font", "Arial.ttf")
         self.declare_parameter("result_labels", True)
         self.declare_parameter("result_boxes", True)
+        self.declare_parameter("imgsz", 640)
 
         path = get_package_share_directory("ultralytics_ros")
         yolo_model = self.get_parameter("yolo_model").get_parameter_value().string_value
-        self.model = YOLO(f"{path}/models/{yolo_model}")
-        self.model.fuse()
+        self.model = YOLO(model=f"{path}/models/{yolo_model}")
+        # TensorRT engines cannot be fused
+        if not yolo_model.endswith(".engine"):
+            self.model.fuse()
 
         self.bridge = cv_bridge.CvBridge()
         self.use_segmentation = yolo_model.endswith("-seg.pt")
@@ -79,11 +82,13 @@ class PredictNode(Node):
             self.get_parameter("classes").get_parameter_value().integer_array_value
         )
         device = self.get_parameter("device").get_parameter_value().string_value or None
+        imgsz = self.get_parameter("imgsz").get_parameter_value().integer_value
         results = self.model.track(
             source=cv_image,
             conf=conf_thres,
             iou=iou_thres,
             max_det=max_det,
+            imgsz=imgsz,
             classes=classes,
             device=device,
             verbose=True,
