@@ -7,22 +7,22 @@
   <model canonical_link="base_footprint" name="ads_dv">
     <!-- Dummy root link to satisfy KDL (root link must not have inertia) -->
     <link name="base_footprint">
-      <inertial>
-        <mass>0.0</mass>
-        <inertia>
-          <ixx>0.0</ixx>
-          <ixy>0.0</ixy>
-          <ixz>0.0</ixz>
-          <iyy>0.0</iyy>
-          <iyz>0.0</iyz>
-          <izz>0.0</izz>
-        </inertia>
-      </inertial>
+      <!-- <inertial>
+                <mass>0.0</mass>
+                <inertia>
+                    <ixx>0.0</ixx>
+                    <ixy>0.0</ixy>
+                    <ixz>0.0</ixz>
+                    <iyy>0.0</iyy>
+                    <iyz>0.0</iyz>
+                    <izz>0.0</izz>
+                </inertia>
+            </inertial> -->
     </link>
     <joint name="base_footprint_to_base_link" type="fixed">
       <parent>base_footprint</parent>
       <child>base_link</child>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <pose>0 0 0 0 0 0</pose>
     </joint>
     <!-- Base Link -->
     <link name="base_link">

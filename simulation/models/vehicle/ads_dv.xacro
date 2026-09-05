@@ -4,7 +4,7 @@
 
         <!-- Dummy root link to satisfy KDL (root link must not have inertia) -->
         <link name='base_footprint'>
-            <inertial>
+        <!-- <inertial>
                 <mass>0.0</mass>
                 <inertia>
                     <ixx>0.0</ixx>
@@ -14,12 +14,12 @@
                     <iyz>0.0</iyz>
                     <izz>0.0</izz>
                 </inertia>
-            </inertial>
+            </inertial> -->
         </link>
         <joint name='base_footprint_to_base_link' type='fixed'>
             <parent>base_footprint</parent>
             <child>base_link</child>
-            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <pose>0 0 0 0 0 0</pose>
         </joint>
 
         <!-- Base Link -->
