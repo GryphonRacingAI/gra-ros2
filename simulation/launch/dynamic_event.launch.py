@@ -17,7 +17,7 @@ from launch.substitutions import (
     EqualsSubstitution,
     PathJoinSubstitution,
 )
-from launch.conditions import IfCondition
+from launch.conditions import IfCondition, UnlessCondition
 from launch_ros.actions import Node
 from launch.actions import IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
@@ -302,6 +302,15 @@ def generate_launch_description():
                 '-Y',     LaunchConfiguration('Y'),
             ]
     )
+    # Other events still spawn via /world/map/create. Delay so the world
+    # service exists (immediate create times out on heavy maps).
+    # mppi_track embeds ads_dv in the SDF instead — see mppi_track.xacro.
+    delayed_spawn = GroupAction(
+        [TimerAction(period=12.0, actions=[spawn_vehicle])],
+        condition=UnlessCondition(
+            EqualsSubstitution(LaunchConfiguration('event'), 'mppi_track')
+        ),
+    )
 
     robot_state_publisher = Node(
         package='robot_state_publisher',
@@ -368,7 +377,7 @@ def generate_launch_description():
         set_gz_args,
         
         ros_gz_sim,
-        spawn_vehicle,
+        delayed_spawn,
         robot_state_publisher,
         initial_sim_world_odom_tf,
         ros_gz_bridge,

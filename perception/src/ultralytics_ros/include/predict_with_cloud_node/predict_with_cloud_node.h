@@ -35,8 +35,8 @@
 #include <vision_msgs/msg/object_hypothesis_with_pose.hpp>
 #include <visualization_msgs/msg/marker.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
-#include <cv_bridge/cv_bridge.hpp>
-#include <image_geometry/pinhole_camera_model.hpp>
+#include <cv_bridge/cv_bridge.h>
+#include <image_geometry/pinhole_camera_model.h>
 #include <message_filters/subscriber.h>
 #include <message_filters/sync_policies/approximate_time.h>
 #include <pcl_conversions/pcl_conversions.h>

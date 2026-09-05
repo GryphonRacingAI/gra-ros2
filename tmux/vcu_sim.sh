@@ -49,9 +49,9 @@ tmux send-keys -t $SESSION:monitor "cd $WS" C-m
 tmux send-keys -t $SESSION:monitor "$(source_overlay)" C-m
 
 # Second arg "1" auto-runs the command (sends Enter). Empty leaves it typed for manual start.
-# Gazebo + planner + CAN is ./tmux/startup.sh (no --auto-drive; arm VCU in the vcu pane).
-# This script is the VCU bench: virtual CAN + teleop, no Gazebo. --auto-drive is OK here.
-start_component "vcu_sim"       1  "python3 $WS/src/fsai_api/scripts/vcu_sim.py vcan0 --auto-drive"			""
+# Gazebo + planner + CAN is ./tmux/startup.sh (arm VCU in the vcu pane).
+# This script is the VCU bench: virtual CAN + teleop, no Gazebo.
+start_component "vcu_sim"       1  "python3 $WS/src/fsai_api/scripts/vcu_sim.py vcan0"			""
 start_component "ackermann_can" 1  "ros2 run fsai_api ackermann_can vcan0"			""
 # NOTE: wheel_speed_controller listens on /ackermann_cmd_controller and publishes to /ackermann_cmd.
 # For direct testing of ackermann_can we publish to /ackermann_cmd from teleop and do not run the

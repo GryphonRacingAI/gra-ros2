@@ -16,6 +16,7 @@
    <depend>std_msgs</depend>
    <depend>nav_msgs</depend>
    <depend>geometry_msgs</depend>
+   <depend>ackermann_msgs</depend>
    <depend>ultralytics_ros</depend>
    <depend>fsai_api</depend>
    <depend>common_msgs</depend>

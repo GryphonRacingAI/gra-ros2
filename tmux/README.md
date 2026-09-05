@@ -83,7 +83,7 @@ In the `vcu` pane, keys (see `[fsai_api](../fsai_api/README.md)`):
 | `q`      | quit `vcu_sim`                                          |
 
 
-`startup.sh` does **not** pass `--auto-drive`. `vcu_sim.sh` still does, because that bench is for CAN without a mission stack.
+`startup.sh` and `vcu_sim.sh` do **not** auto-arm the VCU. Arm it in the `vcu` pane.
 
 ---
 

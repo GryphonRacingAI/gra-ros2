@@ -231,7 +231,7 @@ else
 	exit 1
 fi
 
-# --- Virtual CAN / VCU (manual AS arming — no --auto-drive) ---
+# --- Virtual CAN / VCU (manual AS arming) ---
 if [ "$CAN" != "0" ]; then
 	start_component "vcu" 1 \
 		"python3 \"$WS/src/fsai_api/scripts/vcu_sim.py\" ${CAN_IFACE}"

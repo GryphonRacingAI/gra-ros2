@@ -24,6 +24,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
+            'mission_supervisor = mission_supervisor.supervisor:main',
             'mission_supervisor_node = mission_supervisor.mission_supervisor_node:main',
             'autonomous_demo = mission_supervisor.autonomous_demo:main',
             'lap_counter = mission_supervisor.lap_counter:main',
