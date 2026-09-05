@@ -206,26 +206,19 @@ ros2 run slam fastslam_node.py --ros-args -p use_sim_time:=true
 ros2 run control mppi_ros_modified.py
 ```
 
-> [!TIP]
-> Helpful advice for automating launching 5 nodes and monitoring each of them
+## Launch the full sim stack (tmux)
+
+Do **not** use the old gist `run_nodes.sh`. Launchers live in [`tmux/`](./tmux/README.md) (git) and `~/colcon_ws/tmux/` (overlay wrappers).
+
 ```bash
-sudo apt install tmux
+cd ~/colcon_ws
+# once: sudo modprobe vcan && sudo ip link add dev vcan0 type vcan && sudo ip link set vcan0 up
+./tmux/startup.sh
+tmux attach -t fsai    # if you launched with DETACH=1
 ```
 
-Get the tmux automated [gist](https://gist.github.com/PrabodhGyawali/ff1444eb6042faefe5beabe3d6b0bb50). 
-```bash
-chmod u+x run_nodes.sh
-```
+Defaults: Gazebo `mppi_track`, YOLO → pathfinder, pure pursuit, virtual CAN, mission supervisor. VCU starts **AS_OFF**; arm in the `vcu` pane (`a`, `t`, `4`, wait 5 s, `g`). Planner commands reach the car only in **AS_DRIVING**.
 
-> Run the script and attach the tmux session
-```bash
-./run_nodes.sh
-tmux attach -t fsai
-```
+Logs: `~/colcon_ws/logs/<stamp>/` (see [tmux logging](./tmux/README.md#logging)). Cleanup: `./clean_gz.sh`.
 
-> Detatch tmux session
-```bash
-tmux kill-session -t fsai
-```
-
-> Edit the tmux script according to your monitoring needs
+Full env, window list, and command graph: **[`tmux/README.md`](./tmux/README.md)**.

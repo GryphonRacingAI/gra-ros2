@@ -39,7 +39,7 @@ Model Predictive Path Integral controller.
 
 ```bash
 ros2 run control mppi_ros_modified.py --ros-args \
-  --params-file $(ros2 pkg prefix control)/share/control/config/mppi_params.yaml \
+  --params-file $(ros2 pkg prefix control)/share/control/config/mppip.yaml \
   -p use_sim_time:=true
 ```
 
@@ -49,17 +49,21 @@ Geometric pure pursuit on the same local `/path` contract (last-year-style basel
 
 ```bash
 ros2 run control pure_pursuit.py --ros-args \
-  --params-file $(ros2 pkg prefix control)/share/control/config/pure_pursuit_params.yaml \
+  --params-file $(ros2 pkg prefix control)/share/control/config/ppp.yaml \
   -p use_sim_time:=true
 ```
 
 ### Side-by-side test with pathfinder
 
+From the colcon overlay. See [`tmux/README.md`](../tmux/README.md).
+
 ```bash
-# From workspace root — CONTROLLER=mppi|pp
-CONTROLLER=mppi ./tmux/control_path_test.sh
-CONTROLLER=pp   ./tmux/control_path_test.sh
+cd ~/colcon_ws
+./tmux/startup.sh            # default CONTROLLER=pp, EVENT=mppi_track
+CONTROLLER=mppi ./tmux/startup.sh
 ```
+
+With `CAN=1` (default) the controller is remapped to `/ackermann_cmd_planner`. [`mission_supervisor`](../mission_supervisor/README.md) forwards that to `/ackermann_cmd_controller` **only while AS_DRIVING**.
 
 ## ROS Parameters (MPPI)
 

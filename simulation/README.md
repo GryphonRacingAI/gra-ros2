@@ -140,7 +140,7 @@ Example — launch the VCU teleop config directly:
 ros2 launch simulation teleop.launch config:=$(ros2 pkg prefix simulation)/share/simulation/config/teleop_vcu.yaml
 ```
 
-This is used by `tmux/vcu_sim.sh` (together with `vcu_sim.py` on vcan0 + `ackermann_can vcan0` + `wheel_speed_controller`) to verify that steering commands flow through to the VCU simulator (watch the `steer=...deg` line in the vcu_sim pane).
+This is used by [`tmux/vcu_sim.sh`](../tmux/README.md) (together with `vcu_sim.py` on vcan0 + `ackermann_can vcan0`) to verify that steering commands flow through to the VCU simulator (watch the `steer=...deg` line in the vcu_sim pane). Full Gazebo + planner + CAN is `./tmux/startup.sh` (`event:=mppi_track` by default).
 
 ## Interface
 

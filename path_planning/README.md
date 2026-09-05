@@ -85,6 +85,10 @@ ROS defaults are in `config/pathfinder_params.yaml` (node name `track_pathfinder
 | `predict_every` | Spline sample spacing (m) | `0.1` |
 | `max_deg` | Max spline degree | `3` |
 
+## Sim stack
+
+`track_pathfinder` is started by [`tmux/startup.sh`](../tmux/README.md) (`CONES=yolo`). It subscribes to `/cone_array` from `predict_with_cloud_node`, not to `perfect_path`. In simulation use `-p use_sim_time:=true`.
+
 ## Interface
 
 | Node | Inputs | Outputs | Description |

@@ -106,7 +106,9 @@ source install/setup.bash
 python3 test_vcu_state_machine.py --spawn
 ```
 
-Or use the interactive tmux session: `./tmux/vcu_sim.sh` with teleop_vcu sliders for `/ackermann_cmd` + brake flags.
+Or use the interactive tmux session: [`./tmux/vcu_sim.sh`](../tmux/README.md) with teleop_vcu sliders for `/ackermann_cmd` + brake flags.
+
+Full sim (Gazebo + YOLO + pathfinder + controller) uses the same VCU sim **without** `--auto-drive`: `./tmux/startup.sh`. Arm ASMS/TSMS/AMI/RES in the `vcu` pane. `mission_supervisor` forwards `/ackermann_cmd_planner` onto `/ackermann_cmd_controller` only in `AS_DRIVING`. `/vcu2ai` is teed through `run_logged` into `~/colcon_ws/logs/<stamp>/vcu2ai.log`.
 
 ## Notes
 - `vcu_sim.py` implements the ADS-DV autonomous-system state machine on vcan0 (see above).

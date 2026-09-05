@@ -46,6 +46,8 @@ Refer to the individual config files for detailed parameter descriptions and def
 
 ## Startup script setup
 
+This file is **Jetson / car boot** (`can0`, no Gazebo). Gazebo + virtual CAN on a desktop is [`tmux/startup.sh`](../tmux/README.md), not `startup_tmux.sh`.
+
 Steps to run startup_tmux.sh on boot:
 
 1. Make the script executable
