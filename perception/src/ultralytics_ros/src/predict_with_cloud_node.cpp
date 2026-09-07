@@ -491,6 +491,11 @@ PredictWithCloudNode::euclideanClusterExtraction(const pcl::PointCloud<pcl::Poin
   ec.setInputCloud(cloud);
   ec.extract(cluster_indices);
 
+  RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 2000,
+                       "[fusion] box cloud %zu pts -> %zu clusters (min_cluster_size=%d)%s",
+                       cloud->size(), cluster_indices.size(), min_cluster_size_,
+                       cluster_indices.empty() ? " ALL-REJECTED" : "");
+
   float min_distance = std::numeric_limits<float>::max();
   pcl::PointCloud<pcl::PointXYZ>::Ptr closest_cluster(new pcl::PointCloud<pcl::PointXYZ>());
 
@@ -513,7 +518,12 @@ PredictWithCloudNode::euclideanClusterExtraction(const pcl::PointCloud<pcl::Poin
       *closest_cluster = *cloud_cluster;
     }
   }
-  RCLCPP_DEBUG(this->get_logger(), "Selected cluster with distance: %.2f", min_distance);
+  if (!cluster_indices.empty())
+  {
+    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 2000,
+                         "[fusion] selected cluster: %zu pts at %.2f m",
+                         closest_cluster->size(), min_distance);
+  }
   return closest_cluster;
 }
 

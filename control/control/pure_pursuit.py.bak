@@ -36,13 +36,13 @@ class PurePursuitController(Node):
         self.lookahead_distance = self.declare_parameter('lookahead_distance', 3.0).value
         self.wheelbase = self.declare_parameter('wheelbase', 1.6).value
         self.max_steer = self.declare_parameter('max_steer', math.pi / 6).value
-        self.min_speed = self.declare_parameter('min_speed', 0.8).value
-        self.max_speed = self.declare_parameter('max_speed', 1.5).value
-        self.target_speed = self.declare_parameter('target_speed', 1.5).value
+        self.min_speed = self.declare_parameter('min_speed', 1.0).value
+        self.max_speed = self.declare_parameter('max_speed', 6.0).value
+        self.target_speed = self.declare_parameter('target_speed', 3.0).value
         self.use_curvature_speed = self.declare_parameter('use_curvature_speed', True).value
         self.a_lat_max = self.declare_parameter('a_lat_max', 2.0).value
-        self.v_max_straight = self.declare_parameter('v_max_straight', 1.5).value
-        self.v_min = self.declare_parameter('v_min', 0.8).value
+        self.v_max_straight = self.declare_parameter('v_max_straight', 7.0).value
+        self.v_min = self.declare_parameter('v_min', 1.0).value
 
         self.path_processor = PathProcessor(PathProcessorConfig(
             a_lat_max=self.a_lat_max,

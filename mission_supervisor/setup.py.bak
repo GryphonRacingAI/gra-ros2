@@ -24,10 +24,11 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'mission_supervisor_node = mission_supervisor.supervisor_node_main:main',
+            'mission_supervisor_node = mission_supervisor.mission_supervisor_node:main',
             'autonomous_demo = mission_supervisor.autonomous_demo:main',
             'lap_counter = mission_supervisor.lap_counter:main',
             'static_a = mission_supervisor.static_a:main',
+            'static_a_ros_can = mission_supervisor.static_a_ros_can:main',
             'static_b = mission_supervisor.static_b:main',
         ],
     },

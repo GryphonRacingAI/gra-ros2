@@ -49,7 +49,7 @@ class TrackPathfinder(Node):
 
         self.path_pub = self.create_publisher(Path, '/path', 10)
         self.create_subscription(ConeArray, '/cone_array', self.cone_callback, 10)
-        self.create_subscription(Odometry, '/odom', self.odom_callback, 10)
+        self.create_subscription(Odometry, '/zed/zed_node/odom', self.odom_callback, 10)
         
         self.tf_buffer = Buffer()
         self.tf_listener = TransformListener(self.tf_buffer, self)

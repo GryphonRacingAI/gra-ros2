@@ -11,6 +11,7 @@ from launch.actions import IncludeLaunchDescription
 from launch.substitutions import LaunchConfiguration
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import TextSubstitution
+from launch_ros.actions import Node
 
 def generate_launch_description():
 
@@ -18,14 +19,14 @@ def generate_launch_description():
     # common_stereo.yaml or zed2i.yaml in zed_wrapper/config
 
     # NOTE: if running on a new device and you are using any of the NERUAL depth modes in common_stereo.yaml, it will take a while to optimize
-    # do not use any NEURAL depth mode at the dynamic events because we have only a limited time per run. 
+    # do not use any NEURAL depth mode at the dynamic events because we have only a limited time per run.
     # that is unless the model is already optimized for the compute platform on the vehicle so that the camera can start immediately.
 
     # if you want to change velodyne configs,
     # VLP16-velodyne_driver_node-params.yaml in velodyne_driver/config
-    # or 
+    # or
     # VLP16-velodyne_transform_node-params.yaml in velodyne_pointcloud/config
-    # or 
+    # or
     # default-velodyne_laserscan_node-params.yaml in velodyne_laserscan/config
     # or
     # velodyne-all-nodes-VLP16-launch.py in velodyne/launch (IMPORTANT: make sure to use VLP_hires_db.yaml instead of VLP16_db.yaml in calibration params)
@@ -33,10 +34,10 @@ def generate_launch_description():
     # NOTE: If this is your first time using the VLP16 on this device, follow the instructions in the link below.
     # https://wiki.ros.org/velodyne/Tutorials/Getting%20Started%20with%20the%20Velodyne%20VLP16
 
-    
+
     zed_wrapper_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([os.path.join(
-                get_package_share_directory('zed-ros2-wrapper'), 'launch'),
+                get_package_share_directory('zed_wrapper'), 'launch'),
                 '/zed_camera.launch.py']),
         launch_arguments={'camera_model': 'zed2i', 'serial_number': '36485776'}.items(),
     )
@@ -47,7 +48,24 @@ def generate_launch_description():
                 '/velodyne-all-nodes-VLP16-launch.py'])
     )
 
+    # Static TF: velodyne mounted relative to the ZED (camera is the root of the
+    # tree). Values measured/validated on the real car (2026-07-19 trackdrive
+    # test): the earlier sim-derived offset from ads_dv.sdf projected the lidar
+    # cloud outside the YOLO boxes and /cone_array stayed empty.
+    velodyne_zed_static_tf = Node(
+        package='tf2_ros',
+        executable='static_transform_publisher',
+        name='velodyne_zed_static_tf',
+        arguments=[
+            '--x', '-0.08', '--y', '0', '--z', '-0.1',
+            '--roll', '0', '--pitch', '0', '--yaw', '0',
+            '--frame-id', 'zed_camera_center',
+            '--child-frame-id', 'velodyne',
+        ],
+    )
+
     return LaunchDescription([
         velodyne_launch,
-        zed_wrapper_launch
+        zed_wrapper_launch,
+        velodyne_zed_static_tf
     ])

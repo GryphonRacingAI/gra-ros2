@@ -79,21 +79,8 @@ class LapCounter(Node):
         return best
 
     def cone_callback(self, msg):
-        n_orange = len(msg.large_orange_cones)
         pair = self.select_gate_pair([cone.position for cone in msg.large_orange_cones])
         now = self.get_clock().now()
-
-        # Where each orange cone is (even a single one, which never forms a gate).
-        cone_pts = [c.position for c in msg.large_orange_cones]
-        cones_str = "; ".join(
-            f"({p.x:.2f}, {p.y:.2f}, z={p.z:.2f}) d={math.hypot(p.x, p.y):.2f}m"
-            for p in cone_pts
-        ) or "(none)"
-        self.get_logger().info(
-            f"[cones] {n_orange} orange in view: {cones_str} | "
-            f"gate pair {'selected' if pair else 'NOT found (need 2 forming a gate)'}",
-            throttle_duration_sec=1.0,
-        )
 
         if not self.locked:
             if pair and min(math.hypot(p.x, p.y) for p in pair) >= self.handoff_distance:
@@ -103,12 +90,6 @@ class LapCounter(Node):
                 self.pair_time = now
                 s = A.x * B.y - A.y * B.x
                 self.pair_sign = s if abs(s) > 1e-6 else 0.0
-                self.get_logger().info(
-                    f"[gate] tracking orange gate in {self.cone_frame}: "
-                    f"A=({A.x:.2f}, {A.y:.2f}) B=({B.x:.2f}, {B.y:.2f}), "
-                    f"nearest {min(math.hypot(A.x, A.y), math.hypot(B.x, B.y)):.2f} m",
-                    throttle_duration_sec=1.0,
-                )
             elif self.pair and (now - self.pair_time).nanoseconds / 1e9 >= 0.7:
                 # gate close or detection gone for a while: freeze the estimate
                 # and dead-reckon to the crossing, ignoring close-range detections
@@ -125,14 +106,6 @@ class LapCounter(Node):
         A = Point(x=A0.x - vx * dt, y=A0.y - vy * dt)
         B = Point(x=B0.x - vx * dt, y=B0.y - vy * dt)
         s_now = A.x * B.y - A.y * B.x
-
-        # Where the (now out-of-sight) gate is believed to be, dead-reckoned.
-        self.get_logger().info(
-            f"[gate] LOCKED, dead-reckoned {dt:.1f}s (v=({vx:.2f}, {vy:.2f}) m/s): "
-            f"A=({A.x:.2f}, {A.y:.2f}) B=({B.x:.2f}, {B.y:.2f}), "
-            f"mid_x={(A.x + B.x) / 2:.2f} m (car crosses at mid_x=0)",
-            throttle_duration_sec=1.0,
-        )
 
         if self.pair_sign * s_now < 0 and abs(s_now) > 1e-3:
             self.lap_count += 1
@@ -156,37 +129,6 @@ class LapCounter(Node):
         msg = UInt16()
         msg.data = self.lap_count
         self.lap_counter_pub.publish(msg)
-
-        # Periodic @1Hz status, always printed. NOTE: this runs in the velodyne
-        # frame, so the car itself is the origin and the gate coords below are the
-        # gate's position *relative to the car*. While LOCKED they are dead-
-        # reckoned from odom velocity -> where the gate is believed to be even
-        # with the cones out of sight.
-        vx, vy = self.car_vel
-        if self.pair is None:
-            self.get_logger().info(
-                f"[status] SEARCHING for orange gate (none tracked) | "
-                f"car_vel=({vx:.2f}, {vy:.2f}) m/s | laps={self.lap_count}"
-            )
-            return
-
-        now = self.get_clock().now()
-        dt = (now - self.pair_time).nanoseconds / 1e9
-        A0, B0 = self.pair
-        if self.locked:
-            A = Point(x=A0.x - vx * dt, y=A0.y - vy * dt)
-            B = Point(x=B0.x - vx * dt, y=B0.y - vy * dt)
-            mode = f"LOCKED (dead-reckoned {dt:.1f}s)"
-        else:
-            A, B = A0, B0
-            mode = "tracking (from detections)"
-        nearest = min(math.hypot(A.x, A.y), math.hypot(B.x, B.y))
-        self.get_logger().info(
-            f"[status] {mode} | orange gate in {self.cone_frame} rel. to car: "
-            f"A=({A.x:.2f}, {A.y:.2f}) B=({B.x:.2f}, {B.y:.2f}) | "
-            f"nearest={nearest:.2f} m, mid_x={(A.x + B.x) / 2:.2f} m | "
-            f"car_vel=({vx:.2f}, {vy:.2f}) m/s | laps={self.lap_count}"
-        )
 
 
 def main(args=None):

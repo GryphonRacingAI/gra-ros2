@@ -53,7 +53,7 @@ class SpeedController(Node):
     def controlled_ackermann_publish(self):
         cmd = AckermannDrive()
         cmd.steering_angle = self.desired_steering
-        if self.desired_speed > 0.5:
+        if self.desired_speed > 0.05:
             # PID control
             error = self.desired_speed - self.actual_speed_mps
 
@@ -61,14 +61,13 @@ class SpeedController(Node):
             # derivative = error - self.previous_error
             output_with_feedback = self.desired_speed + Kp * error + Ki * self.integral  # + Kd * derivative
             # self.previous_error = error
-            output_with_feedback = self.constrain(output_with_feedback, 0.0, 5.0)
+            # output_with_feedback = self.constrain(output_with_feedback, 0.0, 5.0)
             # Create and publish the new AckermannDrive message
             cmd.speed = output_with_feedback
             self.get_logger().info(f"e: {error:.2f} \t x: {self.desired_speed:.2f} + p {Kp * error:.2f} + i {Ki * self.integral:.2f} = {output_with_feedback:.2f}")
         else:
             cmd.speed = 0.0
-            # self.integral = self.constrain(self.integral * Ki, 0.4, 2.5) / Ki 
-            self.integral = 0.0
+            self.integral = self.constrain(self.integral * Ki, 0.4, 2.5) / Ki 
         
         self.ackermann_cmd_publisher.publish(cmd)
 
