@@ -1,6 +1,11 @@
 # path_planning
 Generates a body-relative track centreline from cone detections using [`fsd_path_planning`](https://github.com/GryphonRacingAI/ft-fsd-path-planning).
 
+The planner itself does not load Torch models. In the default full-stack setup,
+however, its `/cone_array` input comes from YOLO perception running on
+`cuda:0`. Contributors using that pipeline must complete the repository's
+[NVIDIA GPU setup guide](../GPU_SETUP.md) before starting the stack.
+
 ## Installation
 1. Create and/or source your virtual environment if you haven't already:
 

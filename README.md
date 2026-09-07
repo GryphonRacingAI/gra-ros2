@@ -8,6 +8,11 @@ This package is intended for the following:
 - **ROS 2 Jazzy**
 - **Gazebo Harmonic**
 
+The default YOLO-to-path-planning pipeline also requires an NVIDIA GPU, a
+working NVIDIA driver, and a CUDA-enabled Torch installation. Complete the
+machine-specific [NVIDIA GPU setup and verification guide](./GPU_SETUP.md)
+before launching the full stack.
+
 >**Important:** For the most up-to-date installation instructions, please refer to the official pages:  
 - [ROS 2 Jazzy Installation Guide](https://docs.ros.org/en/jazzy/Installation.html)  
 - [Gazebo Harmonic Installation Guide](https://gazebosim.org/docs/harmonic/install_ubuntu/)
@@ -187,6 +192,10 @@ ros2 run slam fastslam_node.py --ros-args -p use_sim_time:=true
 ## Launch Path Planning
 
 **NOTE: read the [path_planning](./path_planning/README.md) to setup your python environment first.**
+
+When using the default YOLO cone source, also complete the
+[NVIDIA GPU setup](./GPU_SETUP.md). The planner itself does not load the Torch
+model; its upstream perception node does.
 
 ```bash
 ros2 run path_planning pathfinder.py

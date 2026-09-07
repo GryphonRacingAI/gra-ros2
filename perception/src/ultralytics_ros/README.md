@@ -1,4 +1,9 @@
 # Pre-requisites
+
+The simulation launch uses `device:=cuda:0` and has no CPU fallback. Complete
+the repository's [NVIDIA GPU setup guide](../../../GPU_SETUP.md), including its
+Torch allocation test, before running perception.
+
 ### Python virtual environment setup if you haven't already
 
 ```bash
