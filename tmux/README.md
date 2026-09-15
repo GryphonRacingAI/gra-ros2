@@ -2,6 +2,10 @@
 
 These scripts start the ADS-DV stack in a tmux session (one ROS/Gazebo process per window) so you can watch logs while the car, CAN, and planner run.
 
+The default `CONES=yolo` pipeline requires an NVIDIA GPU and CUDA-enabled
+Torch. Set up and verify each machine with the
+[NVIDIA GPU guide](../GPU_SETUP.md) first.
+
 ```bash
 cd ~/colcon_ws
 ./tmux/startup.sh   # usual sim + CAN + YOLO + pathfinder + PP + supervisor
@@ -118,6 +122,10 @@ CAN=0 CONTROLLER=pp ./tmux/startup.sh
 `CONES=perfect` with `CONTROLLER=pp` is unsupported (PP is local-frame only; `perfect_path` on `mppi_track` is odom-frame). The script warns.
 
 YOLO always uses `device:=cuda:0` (`predict_with_cloud.launch.xml sim:=true`). There is no CPU fallback.
+
+For first-time driver installation, Secure Boot guidance, the expected Torch
+environment, and a symptom-based troubleshooting table, see the
+[NVIDIA GPU setup guide](../GPU_SETUP.md).
 
 If `nvidia-smi` works but `torch.cuda.is_available()` is False (`CUDA unknown error`), `nvidia_uvm` is wedged. The launcher writes `$LOG_DIR/gpu.log` and stops before YOLO starts. Recipe:
 

@@ -118,7 +118,7 @@ ensure_vcan() {
 		return 0
 	fi
 	cat >&2 <<EOF
-Virtual CAN interface ${CAN_IFACE} is not up. Grok cannot run sudo.
+Virtual CAN interface ${CAN_IFACE} is not up.
 
 In your own terminal:
 
