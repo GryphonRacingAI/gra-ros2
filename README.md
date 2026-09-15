@@ -165,7 +165,7 @@ verbosity | sets the Gazebo console output verbosity | 0 - 4| `1`
 
 ## Launch Perception
 
-**NOTE: read the [ultralytics_ros](./perception/src/ultralytics_ros/README.md) to setup your python environment to run perception package**
+**NOTE: read the [ultralytics_ros](./perception/ultralytics_ros/README.md) to setup your python environment to run perception package**
 
 To launch the perception nodes, use the following command
 
