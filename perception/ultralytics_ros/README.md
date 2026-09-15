@@ -1,7 +1,7 @@
 # Pre-requisites
 
 The simulation launch uses `device:=cuda:0` and has no CPU fallback. Complete
-the repository's [NVIDIA GPU setup guide](../../../GPU_SETUP.md), including its
+the repository's [NVIDIA GPU setup guide](../../GPU_SETUP.md), including its
 Torch allocation test, before running perception.
 
 ### Python virtual environment setup if you haven't already
@@ -27,4 +27,4 @@ ros2 launch ultralytics_ros predict_with_cloud.launch.xml \
   use_sim_time:=true sim:=true device:=cuda:0 yolo_model:=conev11n.pt
 ```
 
-`sim:=true` sets ZED image + Velodyne cloud + Gazebo camera convention. Do not rely on the launch-file defaults (`/image_raw`, `/points_raw`) in simulation. See [`tmux/README.md`](../../../tmux/README.md).
+`sim:=true` sets ZED image + Velodyne cloud + Gazebo camera convention. Do not rely on the launch-file defaults (`/image_raw`, `/points_raw`) in simulation. See [`tmux/README.md`](../../tmux/README.md).

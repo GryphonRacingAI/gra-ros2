@@ -86,7 +86,7 @@ cd ~/colcon_ws
 python3 -m venv ros_venv
 source ros_venv/bin/activate
 python -m pip install --upgrade pip
-python -m pip install -r src/perception/src/ultralytics_ros/requirements.txt
+python -m pip install -r src/perception/ultralytics_ros/requirements.txt
 ```
 
 The perception requirements install Ultralytics and Torch. A separate
