@@ -157,7 +157,7 @@ This should launch Gazebo Sim, with the acceleration track and ADS-DV vehicle mo
 The following launch arguments are provided for `dynamic_event.launch.py`
   | Argument |Description| Options | Default
 --|--|--|--|
-event | specifies which track to spawn in based on the dynamic event |`acceleration`, `skidpad`, `autocross`, `trackdrive`, `mppi_track` |`acceleration`
+event | specifies which track to spawn in based on the dynamic event |`acceleration`, `skidpad`, `autocross`, `trackdrive`, `mppi_track`, `fsuk_autocross`, `fsg_trackdrive`, `endurance_loop`, `hairpin_chain`, `fast_sweepers` |`acceleration`
 autostart | starts the simulation automatically |`true`, `false`|`true`
 model_file | path to the vehicle model sdf file | Any valid path to vehicle sdf model |hard-coded path
 name | sets the vehicle name in Gazebo | Any valid string|`ads_dv`

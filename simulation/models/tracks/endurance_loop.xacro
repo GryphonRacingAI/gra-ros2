@@ -1,0 +1,183 @@
+<?xml version="1.0" ?>
+<sdf version='1.7' xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <world name='map'>
+
+    <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics">
+      </plugin>
+    <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster">
+    </plugin>
+    <plugin filename="gz-sim-sensors-system" name="gz::sim::systems::Sensors">
+      <render_engine>ogre2</render_engine>
+    </plugin>
+    <plugin
+        filename="gz-sim-user-commands-system"
+        name="gz::sim::systems::UserCommands">
+      </plugin>
+
+    <xacro:include filename="$(find simulation)/models/world/physics.xacro"/>
+    <xacro:physics_tags/>
+
+    <include>
+      <uri>model://simulation/models/world/sun</uri>
+    </include>
+
+    <include>
+      <uri>model://simulation/models/world/ground_plane</uri>
+    </include>
+
+    <xacro:include filename="$(find simulation)/models/cones/cone.xacro"/>
+
+    <model name="cones">
+      <xacro:cone name="large_orange_1" type="large_orange" pose="-2.90833 -18.4155 0.033 0 0 0"/>
+      <xacro:cone name="large_orange_2" type="large_orange" pose="-3.72934 -15.53 0.033 0 0 0"/>
+      <xacro:cone name="blue_1" type="blue" pose="-0.671725 -18.0272 0.15 0 0 0"/>
+      <xacro:cone name="yellow_1" type="yellow" pose="-1.04433 -15.0504 0.15 0 0 0"/>
+      <xacro:cone name="blue_2" type="blue" pose="1.71588 -17.8504 0.15 0 0 0"/>
+      <xacro:cone name="yellow_2" type="yellow" pose="1.55544 -14.8547 0.15 0 0 0"/>
+      <xacro:cone name="blue_3" type="blue" pose="4.17572 -17.7708 0.15 0 0 0"/>
+      <xacro:cone name="yellow_3" type="yellow" pose="4.09496 -14.7719 0.15 0 0 0"/>
+      <xacro:cone name="blue_4" type="blue" pose="6.67677 -17.7173 0.15 0 0 0"/>
+      <xacro:cone name="yellow_4" type="yellow" pose="6.59488 -14.7185 0.15 0 0 0"/>
+      <xacro:cone name="blue_5" type="blue" pose="9.21146 -17.6329 0.15 0 0 0"/>
+      <xacro:cone name="yellow_5" type="yellow" pose="9.05943 -14.6367 0.15 0 0 0"/>
+      <xacro:cone name="blue_6" type="blue" pose="11.7812 -17.4569 0.15 0 0 0"/>
+      <xacro:cone name="yellow_6" type="yellow" pose="11.4797 -14.4721 0.15 0 0 0"/>
+      <xacro:cone name="blue_7" type="blue" pose="14.3914 -17.1055 0.15 0 0 0"/>
+      <xacro:cone name="yellow_7" type="yellow" pose="13.8258 -14.1593 0.15 0 0 0"/>
+      <xacro:cone name="blue_8" type="blue" pose="16.9868 -16.4528 0.15 0 0 0"/>
+      <xacro:cone name="yellow_8" type="yellow" pose="16.0771 -13.594 0.15 0 0 0"/>
+      <xacro:cone name="blue_9" type="blue" pose="19.4547 -15.4978 0.15 0 0 0"/>
+      <xacro:cone name="yellow_9" type="yellow" pose="18.2719 -12.7408 0.15 0 0 0"/>
+      <xacro:cone name="blue_10" type="blue" pose="21.8129 -14.3858 0.15 0 0 0"/>
+      <xacro:cone name="yellow_10" type="yellow" pose="20.4371 -11.7199 0.15 0 0 0"/>
+      <xacro:cone name="blue_11" type="blue" pose="24.0899 -13.1052 0.15 0 0 0"/>
+      <xacro:cone name="yellow_11" type="yellow" pose="22.5192 -10.5493 0.15 0 0 0"/>
+      <xacro:cone name="blue_12" type="blue" pose="26.2711 -11.6448 0.15 0 0 0"/>
+      <xacro:cone name="yellow_12" type="yellow" pose="24.4936 -9.22805 0.15 0 0 0"/>
+      <xacro:cone name="blue_13" type="blue" pose="28.3318 -9.98284 0.15 0 0 0"/>
+      <xacro:cone name="yellow_13" type="yellow" pose="26.3259 -7.75206 0.15 0 0 0"/>
+      <xacro:cone name="blue_14" type="blue" pose="30.227 -8.08214 0.15 0 0 0"/>
+      <xacro:cone name="yellow_14" type="yellow" pose="27.9623 -6.11459 0.15 0 0 0"/>
+      <xacro:cone name="blue_15" type="blue" pose="31.8712 -5.89814 0.15 0 0 0"/>
+      <xacro:cone name="yellow_15" type="yellow" pose="29.3267 -4.309 0.15 0 0 0"/>
+      <xacro:cone name="blue_16" type="blue" pose="33.1151 -3.45517 0.15 0 0 0"/>
+      <xacro:cone name="yellow_16" type="yellow" pose="30.3469 -2.29896 0.15 0 0 0"/>
+      <xacro:cone name="blue_17" type="blue" pose="33.9675 -0.896735 0.15 0 0 0"/>
+      <xacro:cone name="yellow_17" type="yellow" pose="31.0714 -0.113925 0.15 0 0 0"/>
+      <xacro:cone name="blue_18" type="blue" pose="34.5148 1.70595 0.15 0 0 0"/>
+      <xacro:cone name="yellow_18" type="yellow" pose="31.5519 2.17644 0.15 0 0 0"/>
+      <xacro:cone name="blue_19" type="blue" pose="34.8001 4.33892 0.15 0 0 0"/>
+      <xacro:cone name="yellow_19" type="yellow" pose="31.8052 4.51454 0.15 0 0 0"/>
+      <xacro:cone name="blue_20" type="blue" pose="34.824 6.99843 0.15 0 0 0"/>
+      <xacro:cone name="yellow_20" type="yellow" pose="31.8274 6.85469 0.15 0 0 0"/>
+      <xacro:cone name="blue_21" type="blue" pose="34.5374 9.69057 0.15 0 0 0"/>
+      <xacro:cone name="yellow_21" type="yellow" pose="31.5896 9.13354 0.15 0 0 0"/>
+      <xacro:cone name="blue_22" type="blue" pose="33.796 12.371 0.15 0 0 0"/>
+      <xacro:cone name="yellow_22" type="yellow" pose="31.0064 11.2673 0.15 0 0 0"/>
+      <xacro:cone name="blue_23" type="blue" pose="32.4962 14.8435 0.15 0 0 0"/>
+      <xacro:cone name="yellow_23" type="yellow" pose="29.9784 13.2123 0.15 0 0 0"/>
+      <xacro:cone name="blue_24" type="blue" pose="30.808 17.0013 0.15 0 0 0"/>
+      <xacro:cone name="yellow_24" type="yellow" pose="28.5843 14.9875 0.15 0 0 0"/>
+      <xacro:cone name="blue_25" type="blue" pose="28.8619 18.8662 0.15 0 0 0"/>
+      <xacro:cone name="yellow_25" type="yellow" pose="26.9199 16.5796 0.15 0 0 0"/>
+      <xacro:cone name="blue_26" type="blue" pose="26.7278 20.4707 0.15 0 0 0"/>
+      <xacro:cone name="yellow_26" type="yellow" pose="25.0573 17.9788 0.15 0 0 0"/>
+      <xacro:cone name="blue_27" type="blue" pose="24.4372 21.8331 0.15 0 0 0"/>
+      <xacro:cone name="yellow_27" type="yellow" pose="23.0509 19.1726 0.15 0 0 0"/>
+      <xacro:cone name="blue_28" type="blue" pose="21.9979 22.9338 0.15 0 0 0"/>
+      <xacro:cone name="yellow_28" type="yellow" pose="20.9345 20.1286 0.15 0 0 0"/>
+      <xacro:cone name="blue_29" type="blue" pose="19.4549 23.7235 0.15 0 0 0"/>
+      <xacro:cone name="yellow_29" type="yellow" pose="18.702 20.8195 0.15 0 0 0"/>
+      <xacro:cone name="blue_30" type="blue" pose="16.8831 24.2636 0.15 0 0 0"/>
+      <xacro:cone name="yellow_30" type="yellow" pose="16.3796 21.3061 0.15 0 0 0"/>
+      <xacro:cone name="blue_31" type="blue" pose="14.2958 24.6033 0.15 0 0 0"/>
+      <xacro:cone name="yellow_31" type="yellow" pose="14.0084 21.6171 0.15 0 0 0"/>
+      <xacro:cone name="blue_32" type="blue" pose="11.6961 24.7631 0.15 0 0 0"/>
+      <xacro:cone name="yellow_32" type="yellow" pose="11.6164 21.7641 0.15 0 0 0"/>
+      <xacro:cone name="blue_33" type="blue" pose="9.08419 24.7412 0.15 0 0 0"/>
+      <xacro:cone name="yellow_33" type="yellow" pose="9.22742 21.7446 0.15 0 0 0"/>
+      <xacro:cone name="blue_34" type="blue" pose="6.46441 24.5116 0.15 0 0 0"/>
+      <xacro:cone name="yellow_34" type="yellow" pose="6.86572 21.5385 0.15 0 0 0"/>
+      <xacro:cone name="blue_35" type="blue" pose="3.87224 24.0372 0.15 0 0 0"/>
+      <xacro:cone name="yellow_35" type="yellow" pose="4.53933 21.1123 0.15 0 0 0"/>
+      <xacro:cone name="blue_36" type="blue" pose="1.34041 23.3438 0.15 0 0 0"/>
+      <xacro:cone name="yellow_36" type="yellow" pose="2.24814 20.4845 0.15 0 0 0"/>
+      <xacro:cone name="blue_37" type="blue" pose="-1.12437 22.4513 0.15 0 0 0"/>
+      <xacro:cone name="yellow_37" type="yellow" pose="0.0108729 19.6744 0.15 0 0 0"/>
+      <xacro:cone name="blue_38" type="blue" pose="-3.5163 21.3575 0.15 0 0 0"/>
+      <xacro:cone name="yellow_38" type="yellow" pose="-2.14514 18.6892 0.15 0 0 0"/>
+      <xacro:cone name="blue_39" type="blue" pose="-5.81906 20.0362 0.15 0 0 0"/>
+      <xacro:cone name="yellow_39" type="yellow" pose="-4.18 17.5236 0.15 0 0 0"/>
+      <xacro:cone name="blue_40" type="blue" pose="-8.03064 18.3966 0.15 0 0 0"/>
+      <xacro:cone name="yellow_40" type="yellow" pose="-5.99121 16.1965 0.15 0 0 0"/>
+      <xacro:cone name="blue_41" type="blue" pose="-9.8933 16.2263 0.15 0 0 0"/>
+      <xacro:cone name="yellow_41" type="yellow" pose="-7.37593 14.5945 0.15 0 0 0"/>
+      <xacro:cone name="blue_42" type="blue" pose="-11.0915 13.7066 0.15 0 0 0"/>
+      <xacro:cone name="yellow_42" type="yellow" pose="-8.30494 12.5953 0.15 0 0 0"/>
+      <xacro:cone name="blue_43" type="blue" pose="-11.9072 11.2463 0.15 0 0 0"/>
+      <xacro:cone name="yellow_43" type="yellow" pose="-9.05814 10.3067 0.15 0 0 0"/>
+      <xacro:cone name="blue_44" type="blue" pose="-12.6546 8.96488 0.15 0 0 0"/>
+      <xacro:cone name="yellow_44" type="yellow" pose="-9.87447 7.83749 0.15 0 0 0"/>
+      <xacro:cone name="blue_45" type="blue" pose="-13.5725 7.03458 0.15 0 0 0"/>
+      <xacro:cone name="yellow_45" type="yellow" pose="-11.1396 5.27923 0.15 0 0 0"/>
+      <xacro:cone name="blue_46" type="blue" pose="-14.9565 5.67978 0.15 0 0 0"/>
+      <xacro:cone name="yellow_46" type="yellow" pose="-13.3082 3.17318 0.15 0 0 0"/>
+      <xacro:cone name="blue_47" type="blue" pose="-16.8797 4.9068 0.15 0 0 0"/>
+      <xacro:cone name="yellow_47" type="yellow" pose="-15.9923 2.04105 0.15 0 0 0"/>
+      <xacro:cone name="blue_48" type="blue" pose="-19.1683 4.42815 0.15 0 0 0"/>
+      <xacro:cone name="yellow_48" type="yellow" pose="-18.5951 1.48342 0.15 0 0 0"/>
+      <xacro:cone name="blue_49" type="blue" pose="-21.6771 3.98114 0.15 0 0 0"/>
+      <xacro:cone name="yellow_49" type="yellow" pose="-21.0113 1.05596 0.15 0 0 0"/>
+      <xacro:cone name="blue_50" type="blue" pose="-24.3306 3.23081 0.15 0 0 0"/>
+      <xacro:cone name="yellow_50" type="yellow" pose="-23.1701 0.464334 0.15 0 0 0"/>
+      <xacro:cone name="blue_51" type="blue" pose="-26.7527 1.84405 0.15 0 0 0"/>
+      <xacro:cone name="yellow_51" type="yellow" pose="-25.0659 -0.636797 0.15 0 0 0"/>
+      <xacro:cone name="blue_52" type="blue" pose="-28.8474 0.183809 0.15 0 0 0"/>
+      <xacro:cone name="yellow_52" type="yellow" pose="-26.8871 -2.08714 0.15 0 0 0"/>
+      <xacro:cone name="blue_53" type="blue" pose="-30.7731 -1.62187 0.15 0 0 0"/>
+      <xacro:cone name="yellow_53" type="yellow" pose="-28.6101 -3.70066 0.15 0 0 0"/>
+      <xacro:cone name="blue_54" type="blue" pose="-32.5352 -3.66273 0.15 0 0 0"/>
+      <xacro:cone name="yellow_54" type="yellow" pose="-30.1186 -5.4403 0.15 0 0 0"/>
+      <xacro:cone name="blue_55" type="blue" pose="-34.0142 -6.066 0.15 0 0 0"/>
+      <xacro:cone name="yellow_55" type="yellow" pose="-31.2713 -7.28092 0.15 0 0 0"/>
+      <xacro:cone name="blue_56" type="blue" pose="-34.8188 -8.92046 0.15 0 0 0"/>
+      <xacro:cone name="yellow_56" type="yellow" pose="-31.8326 -9.20829 0.15 0 0 0"/>
+      <xacro:cone name="blue_57" type="blue" pose="-34.5851 -11.8339 0.15 0 0 0"/>
+      <xacro:cone name="yellow_57" type="yellow" pose="-31.6401 -11.2619 0.15 0 0 0"/>
+      <xacro:cone name="blue_58" type="blue" pose="-33.7782 -14.4778 0.15 0 0 0"/>
+      <xacro:cone name="yellow_58" type="yellow" pose="-30.9806 -13.3945 0.15 0 0 0"/>
+      <xacro:cone name="blue_59" type="blue" pose="-32.6247 -16.9234 0.15 0 0 0"/>
+      <xacro:cone name="yellow_59" type="yellow" pose="-30.0007 -15.4692 0.15 0 0 0"/>
+      <xacro:cone name="blue_60" type="blue" pose="-31.1576 -19.2041 0.15 0 0 0"/>
+      <xacro:cone name="yellow_60" type="yellow" pose="-28.7656 -17.3935 0.15 0 0 0"/>
+      <xacro:cone name="blue_61" type="blue" pose="-29.3037 -21.2887 0.15 0 0 0"/>
+      <xacro:cone name="yellow_61" type="yellow" pose="-27.308 -19.0488 0.15 0 0 0"/>
+      <xacro:cone name="blue_62" type="blue" pose="-26.9593 -22.923 0.15 0 0 0"/>
+      <xacro:cone name="yellow_62" type="yellow" pose="-25.5654 -20.2664 0.15 0 0 0"/>
+      <xacro:cone name="blue_63" type="blue" pose="-24.3396 -23.9093 0.15 0 0 0"/>
+      <xacro:cone name="yellow_63" type="yellow" pose="-23.5063 -21.0273 0.15 0 0 0"/>
+      <xacro:cone name="blue_64" type="blue" pose="-21.705 -24.4611 0.15 0 0 0"/>
+      <xacro:cone name="yellow_64" type="yellow" pose="-21.2472 -21.4962 0.15 0 0 0"/>
+      <xacro:cone name="blue_65" type="blue" pose="-19.0742 -24.7276 0.15 0 0 0"/>
+      <xacro:cone name="yellow_65" type="yellow" pose="-18.9031 -21.7325 0.15 0 0 0"/>
+      <xacro:cone name="blue_66" type="blue" pose="-16.4412 -24.7629 0.15 0 0 0"/>
+      <xacro:cone name="yellow_66" type="yellow" pose="-16.5359 -21.7644 0.15 0 0 0"/>
+      <xacro:cone name="blue_67" type="blue" pose="-13.7404 -24.5506 0.15 0 0 0"/>
+      <xacro:cone name="yellow_67" type="yellow" pose="-14.2512 -21.5944 0.15 0 0 0"/>
+      <xacro:cone name="blue_68" type="blue" pose="-10.9596 -23.7767 0.15 0 0 0"/>
+      <xacro:cone name="yellow_68" type="yellow" pose="-12.2317 -21.0598 0.15 0 0 0"/>
+      <xacro:cone name="blue_69" type="blue" pose="-8.62118 -22.1685 0.15 0 0 0"/>
+      <xacro:cone name="yellow_69" type="yellow" pose="-10.48 -19.8138 0.15 0 0 0"/>
+      <xacro:cone name="blue_70" type="blue" pose="-6.75217 -20.5058 0.15 0 0 0"/>
+      <xacro:cone name="yellow_70" type="yellow" pose="-8.61195 -18.1519 0.15 0 0 0"/>
+      <xacro:cone name="large_orange_3" type="large_orange" pose="-4.92301 -19.218 0.033 0 0 0"/>
+      <xacro:cone name="large_orange_4" type="large_orange" pose="-6.34845 -16.5783 0.033 0 0 0"/>
+      <plugin filename="gz-sim-pose-publisher-system" name="gz::sim::systems::PosePublisher">
+        <use_pose_vector_msg>true</use_pose_vector_msg>
+        <publish_model_pose>true</publish_model_pose>
+        <publish_nested_model_pose>true</publish_nested_model_pose>
+        <publish_link_pose>false</publish_link_pose>
+      </plugin>
+    </model>
+  </world>
+</sdf>

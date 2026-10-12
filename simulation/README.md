@@ -206,6 +206,47 @@ The track files are located in `models/tracks/`:
 - **Quick changes:** Edit `.sdf` directly for testing (changes to the .sdf **will** be **overwritten** when exporting from .xacro)
 - **Export command:** `xacro <track_name>.xacro > <track_name>.sdf`
 
+### Generated Tracks
+
+`scripts/generate_tracks.py` builds tracks from a centreline instead of by hand.
+Waypoints are splined, resampled at a uniform arc-length step, then offset by
+±1.5 m to give the constant 3 m corridor. It writes all four artefacts at once,
+so no separate `xacro` export step is needed:
+
+| Output | Path |
+|---|---|
+| cone CSVs | `tracks/<name>/{inner,outer}_cones.csv` |
+| xacro template | `models/tracks/<name>.xacro` |
+| expanded SDF | `models/tracks/<name>.sdf` |
+| `perfect_path` pairs | `config/perfect_path_<name>_pairs.txt` |
+
+```bash
+./scripts/generate_tracks.py --list          # show tracks and their intent
+./scripts/generate_tracks.py                 # regenerate all
+./scripts/generate_tracks.py --track hairpin_chain
+```
+
+To add a track, append an entry to `TRACKS` in the generator, rerun it, then
+register the event in `launch/dynamic_event.launch.py` using the spawn heading
+the generator prints.
+
+### Validating Tracks
+
+`scripts/validate_tracks.py` checks cone geometry without ROS or Gazebo, which
+catches the faults a simulator will not: a corner tighter than the car can
+steer (min turn radius ~4.0 m, from `pure_pursuit.py`), an inverted inner edge,
+a corridor that crosses or runs close to itself, bunched or gapped cones, and a
+loop that neither closes nor forms a start gate.
+
+```bash
+./scripts/validate_tracks.py                 # every track
+./scripts/validate_tracks.py mppi_track
+```
+
+Both scripts are pure standard library, so they run before the workspace is
+built. Note `mppi_track` reports a warning: its last 5 cone pairs repeat the
+first 5, so 10 cone models spawn on top of existing ones.
+
 ## Vehicle Model Development
 
 ### ADS-DV Model
