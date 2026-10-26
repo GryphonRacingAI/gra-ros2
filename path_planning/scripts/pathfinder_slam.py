@@ -105,13 +105,15 @@ class CentrelineAlgorithm:
 
         # greedy cone sorting - for each sorted yellow, find closest blue
         midpoints = self._pair_and_midpoint(y_filtered, b_filtered)
-        
+
         if len(midpoints) < 2:
             return None
 
         # Build waypoint list starting from car
         waypoints = [np.array([0.0, 0.0])]
-        waypoints.extend(midpoints)
+        waypoints.extend(self._chain_from_car(midpoints))
+        if len(waypoints) < 3:
+            return None
 
         waypoints = self._smooth_path(waypoints)
         waypoints = [wp for wp in waypoints if wp[0] >= 0.0] # ahead of the car
@@ -151,40 +153,56 @@ class CentrelineAlgorithm:
     def _pair_and_midpoint(self, yellow_cones, blue_cones):
         """
         Pair yellow and blue cones to form gates.
-        Strategy: For each yellow cone (in forward order), find closest blue cone.
+        Strategy: each yellow cone with its closest blue cone AND each blue cone with its
+        closest yellow cone, by plain distance (cones may be reused), then drop duplicates.
         Returns list of midpoint waypoints.
+
+        The old version paired each yellow with the closest *unused* blue at the same forward
+        x (|dx| < cone_vertical_tolerance). In corners the gate cones are not side by side in
+        the car frame, so it paired nothing (or zig-zagged, leaving the outer cones unused) and
+        the car stopped mid-corner.
         """
         midpoints = []
-        blue_used = set()
-        
-        for y in yellow_cones:
-            min_dist = float('inf')
-            closest_b_idx = -1
-            
-            # Find closest unused blue cone
-            for b_idx, b in enumerate(blue_cones):
-                if b_idx in blue_used:
-                    continue
-                
-                lateral_dist = abs(b[1] - y[1])
-                
-                # Check vertical tolerance
-                vertical_diff = abs(b[0] - y[0])
-                if vertical_diff > self.cone_vertical_tolerance:
-                    continue
-                
-                if lateral_dist < min_dist:
-                    min_dist = lateral_dist
-                    closest_b_idx = b_idx
-            
-            # Accept pairing if within track width
-            if closest_b_idx >= 0 and min_dist < self.max_gate_distance:
-                b = blue_cones[closest_b_idx]
-                midpoint = (y + b) / 2.0
-                midpoints.append(midpoint)
-                blue_used.add(closest_b_idx)
-        
+        for side, other in ((yellow_cones, blue_cones), (blue_cones, yellow_cones)):
+            if len(other) == 0:
+                continue
+            for c in side:
+                dists = np.linalg.norm(other - c, axis=1)
+                j = int(np.argmin(dists))
+                # Accept pairing if within track width
+                if dists[j] < self.max_gate_distance:
+                    mid = (c + other[j]) / 2.0
+                    if all(np.linalg.norm(mid - m) > 0.5 for m in midpoints):
+                        midpoints.append(mid)
+
         return midpoints
+
+    def _chain_from_car(self, midpoints, max_step=8.0, max_turn=math.radians(75)):
+        """Order midpoints by walking from the car to the nearest next one.
+
+        Sorting by forward x breaks in hairpins (the track comes back towards the car). Each step
+        must be shorter than max_step and turn less than max_turn, so midpoints from another part
+        of the track are not joined in.
+        """
+        remaining = [np.asarray(m, dtype=float) for m in midpoints]
+        pos, heading = np.zeros(2), 0.0
+        chain = []
+        while remaining:
+            best, best_d = None, max_step
+            for i, m in enumerate(remaining):
+                d = np.linalg.norm(m - pos)
+                if d < 1e-3 or d >= best_d:
+                    continue
+                turn = math.atan2(m[1] - pos[1], m[0] - pos[0]) - heading
+                if abs(math.atan2(math.sin(turn), math.cos(turn))) < max_turn:
+                    best, best_d = i, d
+            if best is None:
+                break
+            m = remaining.pop(best)
+            heading = math.atan2(m[1] - pos[1], m[0] - pos[0])
+            pos = m
+            chain.append(m)
+        return chain
 
     def _smooth_path(self, waypoints, window_size=None):
         """
