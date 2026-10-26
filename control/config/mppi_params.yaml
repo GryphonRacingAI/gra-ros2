@@ -1,39 +1,42 @@
 mppi_controller:
   ros__parameters:
     # MPPI Core Parameters
-    dt: 0.05
-    horizon: 12
-    num_rollouts: 500
+    dt: 0.05              # control period and model step (s)
+    horizon: 30           # steps (1.5 s)
+    num_rollouts: 400
     lambda: 2.0
-    sigma_u_base: [0.6, 0.15]
-    sigma_u_min: [0.2, 0.05]
-    
+    sigma_u: [1.5, 0.12]  # sampling noise std: accel (m/s^2), steering command (rad)
+    alpha: 0.6            # time correlation of the sampling noise
+
     # Cost Weights
-    w_path: 40.0
-    w_heading: 5.0
-    w_speed: 2.0
-    w_control: 4.5
-    w_terminal: 1.0
+    w_path: 20.0          # (distance to path)^2
+    w_heading: 4.0        # (heading error)^2
+    w_speed: 1.0          # (v - v_ref)^2 below v_ref: rewards progress
+    w_overspeed: 5.0      # (v - v_ref)^2 above v_ref
+    w_progress: 10.0      # reward per metre of progress along the path over the horizon
+    w_grip: 20.0          # lateral accel above 1.2 x a_lat_max (incl. unwinding steering at speed)
+    w_steer_rate: 150.0   # (change of steering command)^2
+    w_accel: 0.05
     w_obstacle: 150.0
-    
-    # Vehicle Limits
-    max_accel: 3.0
-    min_vel: -1.0
-    max_vel: 8.0
-    max_steer: 0.5235987756  # np.pi/6
-    
-    # Vehicle Geometry
-    wheelbase: 1.6
-    
+
+    # Vehicle (ADS-DV; see simulation/src/ads_dv_vcu_sim.cpp)
+    max_accel: 4.0        # VCU torque limit: ~4.7 m/s^2 at low speed, less above 8 m/s
+    max_decel: 4.0        # motor braking (regen); the friction brakes are for stopping
+    max_vel: 15.0
+    v_creep: 1.5          # never plan below this: a stopped car can't steer back onto the path
+    max_steer: 0.38       # effective: Gazebo's Ackermann inner-wheel limit clips 0.4242 to ~0.38 (measured R 3.85 m)
+    steer_rate: 1.0       # steering actuator rate (rad/s)
+    steer_tau: 0.15       # steering actuator lag (s)
+    wheelbase: 1.534
+
     # Path Following
-    search_window: 50
+    path_spacing: 0.5     # path resampled every 0.5 m
     safety_distance: 0.6
     cone_radius: 0.2
-    
+    speed_lead: 0.25      # speed request = planned speed this far ahead (s)
+
     # Speed Profile
-    a_lat_max: 2.0
-    v_max_straight: 7.0
-    v_min: 1.0
-    
-    # Noise Smoothing
-    alpha: 0.5
+    a_lat_max: 5.0        # planned lateral accel (tyres hold ~13 m/s^2; margin for path noise)
+    v_max_straight: 10.0
+    v_min: 2.0
+    a_brake_plan: 3.0     # planned braking before slow sections
