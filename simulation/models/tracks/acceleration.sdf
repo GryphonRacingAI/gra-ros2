@@ -4,7 +4,7 @@
 <!-- |    EDITING THIS FILE BY HAND IS NOT RECOMMENDED                                 | -->
 <!-- =================================================================================== -->
 <sdf version="1.7">
-  <world name="map">
+  <world name="sim_world">
     <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics">
       </plugin>
     <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster">
