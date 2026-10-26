@@ -27,7 +27,9 @@ from rclpy.node import Node
 from message_filters import ApproximateTimeSynchronizer, Subscriber
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import PoseStamped, TransformStamped, Quaternion
-from std_msgs.msg import UInt16
+from std_msgs.msg import Header, UInt16
+from sensor_msgs.msg import PointCloud2
+from sensor_msgs_py import point_cloud2
 from tf2_ros import TransformBroadcaster
 from visualization_msgs.msg import Marker, MarkerArray
 from common_msgs.msg import ConeArray, Cone
@@ -412,19 +414,26 @@ class FastSLAMCore:
             update_threshold = float(self.config.endurance.LOCALIZATION_THRESHOLD)
             resample_trigger = float(self.config.endurance.LOCALIZATION_RESAMPLE_TRIGGER_RATIO) * self.N
 
-        # Prediction.
+        # Prediction. The kernel turns first and then moves along the OLD heading (Euler), which
+        # biases every corner inwards. Two half-steps (turn half, then move + turn the other
+        # half) move the particles along the mid-step heading instead.
         try:
             prediction_func = self.cuda_modules["predict"].get_function("predict_from_model")
-            prediction_func(
-                self.memory.particles,
-                np.float64(omega_angular),
-                np.float64(v_linear),
-                np.float64(np.sqrt(float(self.config.CONTROL_VARIANCE[0]) * control_noise_multiplier)),
-                np.float64(np.sqrt(float(self.config.CONTROL_VARIANCE[1]) * control_noise_multiplier)),
-                np.float64(dt),
-                block=(self.THREADS, 1, 1),
-                grid=make_grid(self.N, self.THREADS)
-            )
+            # sigmas scaled so the summed noise over both half-steps equals one full step
+            sigma_w = np.sqrt(2.0 * float(self.config.CONTROL_VARIANCE[1]) * control_noise_multiplier)
+            sigma_v = np.sqrt(float(self.config.CONTROL_VARIANCE[0]) * control_noise_multiplier)
+            half_dt = np.float64(dt / 2.0)
+            for v_step, sigma_v_step in ((0.0, 0.0), (2.0 * v_linear, 2.0 * sigma_v)):
+                prediction_func(
+                    self.memory.particles,
+                    np.float64(omega_angular),
+                    np.float64(v_step),
+                    np.float64(sigma_w),
+                    np.float64(sigma_v_step),
+                    half_dt,
+                    block=(self.THREADS, 1, 1),
+                    grid=make_grid(self.N, self.THREADS)
+                )
             cuda.Context.synchronize()
         except Exception as e:
             raise RuntimeError(f"predict_from_model failed: {e}")
@@ -551,6 +560,8 @@ class FastSLAMNode(Node):
         self.MAX_MEASUREMENTS = int(self.config.sensor.MAX_MEASUREMENTS)
 
         self.last_time = None
+        self.last_odom_pose = None
+        self.motion_from_odom_pose = bool(self.declare_parameter("motion_from_odom_pose", True).value)
         self.start_time = None
         self.latest_lap_count = 0
         self.last_status_time = None
@@ -570,15 +581,21 @@ class FastSLAMNode(Node):
         self.pose_pub = self.create_publisher(PoseStamped, "/slam/pose", 1)
         self.cone_map_pub = self.create_publisher(ConeArray, "/slam/cone_map", 1)
         self.map_markers_pub = self.create_publisher(MarkerArray, "/slam/cone_map_markers", 1)
+        # Nearby mapped cones as obstacles for the MPPI controller, in its frame (odom).
+        self.obstacles_pub = self.create_publisher(PointCloud2, "/slam/cones", 1)
+        self.obstacle_radius = float(self.declare_parameter("obstacle_radius", 25.0).value)
 
         # Subscribers.
         self.odom_sub = Subscriber(self, Odometry, "/odom")
         self.cone_sub = Subscriber(self, ConeArray, "/cone_array")
         self.lap_sub = self.create_subscription(UInt16, "/laps", self.lap_callback, 10)
 
+        # /odom arrives at ~100 Hz but /cone_array only after YOLO + clustering, so the odom
+        # queue must cover that latency (20 msgs was ~0.1 s at sim rate: frequent misses and
+        # "Abnormal dt" skips).
         self.ts = ApproximateTimeSynchronizer(
             [self.odom_sub, self.cone_sub],
-            queue_size=20,
+            queue_size=int(self.declare_parameter("sync_queue_size", 150).value),
             slop=0.1
         )
         self.ts.registerCallback(self.slam_callback)
@@ -622,10 +639,30 @@ class FastSLAMNode(Node):
 
         dt = current_time - self.last_time
         self.last_time = current_time
+
+        if self.motion_from_odom_pose:
+            # Motion input from the odom pose change since the last APPLIED step, not the
+            # instantaneous twist. Integrating one twist sample per ~0.1 s step, and dropping
+            # the motion of every skipped frame, drifted the map by metres per lap. Measuring
+            # from the last applied pose means skipped frames lose nothing, and the particles
+            # move and turn exactly as much as odometry did.
+            if self.last_odom_pose is None:
+                self.last_odom_pose = (current_time, rx, ry, r_yaw)
+                return
+            t0, x0, y0, yaw0 = self.last_odom_pose
+            dt = current_time - t0
+            if dt <= 0.0:
+                return  # out-of-order pair from the synchroniser; nothing to apply
+            dx, dy = rx - x0, ry - y0
+            dyaw = math.atan2(math.sin(r_yaw - yaw0), math.cos(r_yaw - yaw0))
+            mid_yaw = yaw0 + dyaw / 2.0
+            v_linear = (dx * math.cos(mid_yaw) + dy * math.sin(mid_yaw)) / dt
+            omega_angular = dyaw / dt
+
         if abs(v_linear) < 0.03 and abs(omega_angular) < 0.02 and len(measurements_rb) == 0:
             return
 
-        if dt <= 0.0 or dt > 0.5:
+        if not self.motion_from_odom_pose and (dt <= 0.0 or dt > 0.5):
             self.get_logger().warn(f"Abnormal dt detected: {dt:.4f}s. Skipping frame.")
             return
 
@@ -654,12 +691,14 @@ class FastSLAMNode(Node):
             self.get_logger().error(f"SLAM/localisation execution error: {e}")
             self.get_logger().debug(traceback.format_exc())
             return
+        self.last_odom_pose = (current_time, rx, ry, r_yaw)
 
         # Publish outputs.
         self._publish_transforms(odom_msg, estimated_pose)
         self._publish_pose_stamped(estimated_pose, odom_msg.header.stamp)
         self._publish_cone_map(final_map_data, odom_msg.header.stamp)
         self._publish_map_markers(final_map_data, odom_msg.header.stamp)
+        self._publish_obstacles(final_map_data, odom_msg, estimated_pose)
 
         self._status_log(current_time, elapsed_time, mode, estimated_pose, len(final_map_data), len(measurements_rb))
 
@@ -815,6 +854,41 @@ class FastSLAMNode(Node):
                 msg.unknown_cones.append(cone)
 
         self.cone_map_pub.publish(msg)
+
+    def _publish_obstacles(self, final_map_data, odom_msg: Odometry, estimated_pose: np.ndarray):
+        """Publish mapped cones near the car on /slam/cones (PointCloud2, odom frame).
+
+        Same map -> base_link -> odom chain the pathfinder uses for /path, so obstacles and
+        path line up for MPPI.
+        """
+        if final_map_data:
+            pts = np.array([lm["position"][:2] for lm in final_map_data], dtype=np.float64)
+        else:
+            pts = np.empty((0, 2))
+
+        rx, ry, r_yaw = (float(v) for v in estimated_pose[:3])
+        dx, dy = pts[:, 0] - rx, pts[:, 1] - ry
+        c, s = math.cos(r_yaw), math.sin(r_yaw)
+        local_x = dx * c + dy * s
+        local_y = -dx * s + dy * c
+        near = np.hypot(local_x, local_y) < self.obstacle_radius
+        local_x, local_y = local_x[near], local_y[near]
+
+        ox = float(odom_msg.pose.pose.position.x)
+        oy = float(odom_msg.pose.pose.position.y)
+        oq = odom_msg.pose.pose.orientation
+        o_yaw = quaternion_to_yaw(oq.x, oq.y, oq.z, oq.w)
+        c, s = math.cos(o_yaw), math.sin(o_yaw)
+        xyz = np.column_stack((
+            ox + local_x * c - local_y * s,
+            oy + local_x * s + local_y * c,
+            np.zeros_like(local_x),
+        )).astype(np.float32)
+
+        header = Header()
+        header.stamp = odom_msg.header.stamp
+        header.frame_id = "odom"
+        self.obstacles_pub.publish(point_cloud2.create_cloud_xyz32(header, xyz.tolist()))
 
     def _publish_map_markers(self, final_map_data, stamp):
         marker_array = MarkerArray()
