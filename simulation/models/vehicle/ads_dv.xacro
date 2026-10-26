@@ -1,5 +1,8 @@
 <?xml version="1.0" ?>
 <sdf version='1.9' xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <!-- drive:=torque (realistic, default) | ideal (old velocity-controlled rear wheels) -->
+    <xacro:arg name="drive" default="torque"/>
+    <xacro:property name="drive" value="$(arg drive)"/>
     <model name='ads_dv' canonical_link='base_footprint'>
 
         <!-- Dummy root link to satisfy KDL (root link must not have inertia) -->
@@ -87,6 +90,19 @@
                 <update_rate>300</update_rate>
                 <visualize>true</visualize>
                 <topic>imu</topic>
+                <!-- MEMS-grade noise (ZED 2i class): gyro ~0.007 deg/s/sqrt(Hz), bias ~40 deg/h -->
+                <imu>
+                    <angular_velocity>
+                        <x><noise type="gaussian"><mean>0</mean><stddev>0.002</stddev><bias_mean>0.0002</bias_mean><bias_stddev>0.0002</bias_stddev></noise></x>
+                        <y><noise type="gaussian"><mean>0</mean><stddev>0.002</stddev><bias_mean>0.0002</bias_mean><bias_stddev>0.0002</bias_stddev></noise></y>
+                        <z><noise type="gaussian"><mean>0</mean><stddev>0.002</stddev><bias_mean>0.0002</bias_mean><bias_stddev>0.0002</bias_stddev></noise></z>
+                    </angular_velocity>
+                    <linear_acceleration>
+                        <x><noise type="gaussian"><mean>0</mean><stddev>0.02</stddev><bias_mean>0.01</bias_mean><bias_stddev>0.01</bias_stddev></noise></x>
+                        <y><noise type="gaussian"><mean>0</mean><stddev>0.02</stddev><bias_mean>0.01</bias_mean><bias_stddev>0.01</bias_stddev></noise></y>
+                        <z><noise type="gaussian"><mean>0</mean><stddev>0.02</stddev><bias_mean>0.01</bias_mean><bias_stddev>0.01</bias_stddev></noise></z>
+                    </linear_acceleration>
+                </imu>
             </sensor>
         </link>
 
@@ -169,11 +185,28 @@
             <frame_id>odom</frame_id>
             <child_frame_id>base_link</child_frame_id>
         </plugin>
+        <!-- Drive. torque (default): each wheel gets a torque from the ADS-DV VCU emulator
+             (simulation/src/ads_dv_vcu_sim.cpp: 4WD, per-axle speed loop, VCU torque limits, brakes,
+             rolling + aero resistance), so the car accelerates, coasts, brakes and slides like a car.
+             ideal: the old drive, rear wheel speed set directly (infinite torque, no inertia). -->
+        <xacro:if value="${drive == 'ideal'}">
         <plugin filename="gz-sim-joint-controller-system" name="gz::sim::systems::JointController">
             <joint_name>rear_left_wheel_joint</joint_name>
             <joint_name>rear_right_wheel_joint</joint_name>
             <topic>speed_cmd</topic>
         </plugin>
+        </xacro:if>
+        <xacro:unless value="${drive == 'ideal'}">
+        <xacro:macro name="wheel_torque" params="joint">
+            <plugin filename="gz-sim-apply-joint-force-system" name="gz::sim::systems::ApplyJointForce">
+                <joint_name>${joint}</joint_name>
+            </plugin>
+        </xacro:macro>
+        <xacro:wheel_torque joint="front_left_wheel_joint"/>
+        <xacro:wheel_torque joint="front_right_wheel_joint"/>
+        <xacro:wheel_torque joint="rear_left_wheel_joint"/>
+        <xacro:wheel_torque joint="rear_right_wheel_joint"/>
+        </xacro:unless>
         <plugin name="gz::sim::systems::LogicalCamera" filename="gz-sim-logical-camera-system">
             <render_engine>ogre2</render_engine>
         </plugin>

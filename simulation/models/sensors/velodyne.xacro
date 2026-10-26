@@ -32,8 +32,9 @@
             <ray>
                 <scan>
                     <horizontal>
-                        <samples>1800</samples>
-                        <resolution>0.003490659</resolution> <!-- 0.2 degrees -->
+                        <!-- real VLP-16 at 10 Hz: 0.2 deg steps -> 450 over 90 deg (was 1800 = 0.05 deg) -->
+                        <samples>450</samples>
+                        <resolution>1</resolution>
                         <min_angle>-0.785398</min_angle>
                         <max_angle>0.785398</max_angle>
                     </horizontal>
@@ -49,6 +50,12 @@
                     <max>100.0</max>
                     <resolution>0.002</resolution>
                 </range>
+                <!-- VLP-16 range accuracy is +-3 cm -->
+                <noise>
+                    <type>gaussian</type>
+                    <mean>0.0</mean>
+                    <stddev>0.015</stddev>
+                </noise>
             </ray>
             <always_on>1</always_on>
             <visualize>true</visualize>
