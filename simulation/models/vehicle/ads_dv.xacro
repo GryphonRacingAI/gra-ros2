@@ -185,7 +185,7 @@
         <plugin filename="gz-sim-odometry-publisher-system" name="gz::sim::systems::OdometryPublisher">
             <odom_frame>odom</odom_frame>
             <robot_base_frame>base_link</robot_base_frame>
-            <odom_publish_frequency>600</odom_publish_frequency>
+            <odom_publish_frequency>100</odom_publish_frequency>
             <odom_topic>ads_dv/odom</odom_topic>
             <tf_topic>ads_dv/tf</tf_topic>
             <!-- not the same as /model/ads_dv/tf or model/ads_dv/odom which AckermannSteering publishes. Don't use that, it depends on the wheel joints and not the actual location -->
