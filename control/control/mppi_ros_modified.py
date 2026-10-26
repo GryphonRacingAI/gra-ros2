@@ -204,9 +204,9 @@ class MPPIController(Node):
         self.path_arr = result.points
         self.path_v_ref = result.speed_ref
         self.path_heading = result.heading
-        # Local paths are re-published relative to the car each cycle — restart search.
-        if self.use_local_frame:
-            self.path_idx = 0
+        # The pathfinder rebuilds the path from the car's position every time (local or global frame),
+        # so an index into the previous path is meaningless; search the new one from its start.
+        self.path_idx = 0
 
         self.get_logger().info(
             f"Path received with {n_points} points (frame='{frame or 'unset'}').",
@@ -215,11 +215,11 @@ class MPPIController(Node):
     def cone_callback(self, msg):
         """ Parse PointCloud2 cones into obstacle array """
         # Read points using sensor_msgs_py
-        points_list = list(pc2.read_points(msg, field_names=("x", "y"),             skip_nans=True))
-        if not points_list:
+        # read_points() returns a structured array on Jazzy; read_points_numpy gives a plain (N, 2)
+        points_np = pc2.read_points_numpy(msg, field_names=("x", "y"), skip_nans=True).reshape(-1, 2)
+        if points_np.shape[0] == 0:
+            self.obstacles = np.empty((0, 3))
             return
-            
-        points_np = np.array(points_list) # (N, 2)
         
         # Add radius column
         r = self.cone_radius * np.ones((points_np.shape[0], 1))
@@ -229,6 +229,8 @@ class MPPIController(Node):
         """ Main MPPI Iteration (Called at 20Hz) """
         
         # 1. Check if ready
+        # Don't sleep here: with use_sim_time the clock only advances when this (single-threaded)
+        # executor processes /clock, so sleep_for() blocked the node forever.
         if self.vehicle_state is None:
             self.get_logger().info("Waiting for vehicle state (odom speed)", throttle_duration_sec=2.0)
             return
