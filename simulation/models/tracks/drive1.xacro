@@ -118,6 +118,12 @@
       <xacro:cone name="yellow_8" type="yellow" pose="4.811370849609379 29.249588012695312 0.15 0 0 0"/>
       <xacro:cone name="yellow_9" type="yellow" pose="7.373870849609374 31.874588012695312 0.15 0 0 0"/>
       <xacro:cone name="yellow_10" type="yellow" pose="10.917827368100067 32.70692136814713 0.15 0 0 0"/>
+      <!-- yellow_fill_*: inner edge of the top-right hairpin, missing from the source (the track was
+           exported from a partial SLAM map). Blue edge offset 3.7 m inwards, the track's median width. -->
+      <xacro:cone name="yellow_fill_1" type="yellow" pose="15.0 30.72 0.15 0 0 0"/>
+      <xacro:cone name="yellow_fill_2" type="yellow" pose="16.83 29.45 0.15 0 0 0"/>
+      <xacro:cone name="yellow_fill_3" type="yellow" pose="17.97 27.28 0.15 0 0 0"/>
+      <xacro:cone name="yellow_fill_4" type="yellow" pose="19.41 24.36 0.15 0 0 0"/>
       <xacro:cone name="yellow_11" type="yellow" pose="21.248870849609375 17.499588012695312 0.15 0 0 0"/>
       <xacro:cone name="yellow_12" type="yellow" pose="21.882050232110036 14.499699134665917 0.15 0 0 0"/>
       <xacro:cone name="yellow_13" type="yellow" pose="20.139784073194402 20.734654217222435 0.15 0 0 0"/>
