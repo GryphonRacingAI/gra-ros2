@@ -48,6 +48,10 @@ def generate_launch_description():
     verbosity_launch_arg = DeclareLaunchArgument(
         "verbosity", default_value=TextSubstitution(text="1")
     )
+    gui_launch_arg = DeclareLaunchArgument(
+        "gui", default_value=TextSubstitution(text="true"),
+        description="false runs the Gazebo server only (-s), which saves a lot of CPU"
+    )
     
     set_autostart = SetLaunchConfiguration(
         name='autostart_flag',
@@ -160,7 +164,7 @@ def generate_launch_description():
         ),
         SetLaunchConfiguration(
             name='Y',
-            value='0.0'
+            value='1.57079632679'
         ),
         SetLaunchConfiguration(
             name='world',
@@ -168,7 +172,7 @@ def generate_launch_description():
         ),
         SetLaunchConfiguration(
             name='map_file',
-            value='autocross.sdf'
+            value='drive1.sdf'
         )
         ], 
         scoped=False,
@@ -180,11 +184,11 @@ def generate_launch_description():
     set_trackdrive = GroupAction([
         SetLaunchConfiguration(
              name='x',
-             value='0.0'
+             value='-2.0'
         ),
         SetLaunchConfiguration(
             name='y',
-            value='0.0'
+            value='10.4'
         ),
         SetLaunchConfiguration(
              name='z',
@@ -275,6 +279,7 @@ def generate_launch_description():
         name='gz_args',
         value=[tracks_dir, '/', LaunchConfiguration('map_file'), ' ',
                LaunchConfiguration('autostart_flag'), ' ',
+               IfElseSubstitution(LaunchConfiguration('gui'), if_value='', else_value='-s '),
                '-v ', LaunchConfiguration('verbosity')]
     )
 
@@ -365,6 +370,7 @@ def generate_launch_description():
         name_launch_arg,
         autostart_launch_arg,
         verbosity_launch_arg,
+        gui_launch_arg,
 
         set_autostart,
         set_acceleration,

@@ -1744,7 +1744,7 @@
       </model>
       <model name="large_orange_1">
         <static>true</static>
-        <pose>1.14507 3.03746 0.033 0 0 0</pose>
+        <pose>0.9 13.45 0.033 0 0 0</pose>
         <link name="large_orange_1_link">
           <visual name="visual">
             <geometry>
@@ -1770,7 +1770,7 @@
       </model>
       <model name="large_orange_2">
         <static>true</static>
-        <pose>-0.919189 2.98971 0.033 0 0 0</pose>
+        <pose>1.9 13.55 0.033 0 0 0</pose>
         <link name="large_orange_2_link">
           <visual name="visual">
             <geometry>
@@ -1796,7 +1796,7 @@
       </model>
       <model name="large_orange_3">
         <static>true</static>
-        <pose>1.04889 -3.01482 0.033 0 0 0</pose>
+        <pose>0.9 7.40 0.033 0 0 0</pose>
         <link name="large_orange_3_link">
           <visual name="visual">
             <geometry>
@@ -1822,7 +1822,7 @@
       </model>
       <model name="large_orange_4">
         <static>true</static>
-        <pose>-1.21717 -3.06412 0.033 0 0 0</pose>
+        <pose>1.9 7.50 0.033 0 0 0</pose>
         <link name="large_orange_4_link">
           <visual name="visual">
             <geometry>
