@@ -41,6 +41,7 @@ class PredictNode(Node):
         self.declare_parameter("max_det", 300)
         self.declare_parameter("classes", list(range(80)))
         self.declare_parameter("device", "cpu")
+        self.declare_parameter("verbose", True)  # per-frame YOLO summary on stdout
         self.declare_parameter("result_conf", True)
         self.declare_parameter("result_line_width", 1)
         self.declare_parameter("result_font_size", 1)
@@ -86,7 +87,7 @@ class PredictNode(Node):
             max_det=max_det,
             classes=classes,
             device=device,
-            verbose=True,
+            verbose=self.get_parameter("verbose").get_parameter_value().bool_value,
             retina_masks=True,
         )
 
