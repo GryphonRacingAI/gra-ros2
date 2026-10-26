@@ -197,7 +197,7 @@ def main(args=None):
         pass
     finally:
         lap_counter.destroy_node()
-        rclpy.shutdown()
+        rclpy.try_shutdown()  # Ctrl-C already shut the context down
 
 if __name__ == '__main__':
     main()
