@@ -106,13 +106,15 @@ class CentrelineAlgorithm:
         # greedy cone sorting - for each sorted yellow, find closest blue
         midpoints = self._pair_and_midpoint(y_filtered, b_filtered)
 
-        if len(midpoints) < 2:
+        if len(midpoints) == 0:
             return None
 
-        # Build waypoint list starting from car
+        # Build waypoint list starting from car. A single gate ahead is enough to move towards:
+        # on widely spaced tracks (acceleration: 5 m) the second gate is often not seen from
+        # standstill, and requiring two kept the car from ever starting.
         waypoints = [np.array([0.0, 0.0])]
         waypoints.extend(self._chain_from_car(midpoints))
-        if len(waypoints) < 3:
+        if len(waypoints) < 2 or (len(waypoints) == 2 and waypoints[1][0] < 1.0):
             return None
 
         waypoints = self._smooth_path(waypoints)
@@ -279,12 +281,13 @@ class CentrelineTrackPathfinder(Node):
 
     def cone_callback(self, msg):
         if self.slam_pose is None or self.odom_pose is None:
-            self.get_logger().warn("[PATHFINDER] Waiting for /slam/pose and /odom")
+            self.get_logger().warn("[PATHFINDER] Waiting for /slam/pose and /odom", throttle_duration_sec=5.0)
             return
 
         if msg.header.frame_id != 'map':
             self.get_logger().warn(
-                f"[PATHFINDER] Expected cone_map in map frame, got '{msg.header.frame_id}'"
+                f"[PATHFINDER] Expected cone_map in map frame, got '{msg.header.frame_id}'",
+                throttle_duration_sec=5.0,
             )
 
         yellow_map = [[c.position.x, c.position.y] for c in msg.yellow_cones]
@@ -294,17 +297,17 @@ class CentrelineTrackPathfinder(Node):
         yellow_local = map_to_base_link(yellow_map, rx, ry, r_yaw)
         blue_local = map_to_base_link(blue_map, rx, ry, r_yaw)
 
-        self.get_logger().info(
+        self.get_logger().debug(
             f"[PATHFINDER INPUT] Yellow: {len(yellow_local)}, Blue: {len(blue_local)}, "
             f"cone_map frame: {msg.header.frame_id}"
         )
         if len(yellow_local) > 0:
-            self.get_logger().info(
+            self.get_logger().debug(
                 f"  Yellow local - X: [{yellow_local[:, 0].min():.2f}, {yellow_local[:, 0].max():.2f}], "
                 f"Y: [{yellow_local[:, 1].min():.2f}, {yellow_local[:, 1].max():.2f}]"
             )
         if len(blue_local) > 0:
-            self.get_logger().info(
+            self.get_logger().debug(
                 f"  Blue local - X: [{blue_local[:, 0].min():.2f}, {blue_local[:, 0].max():.2f}], "
                 f"Y: [{blue_local[:, 1].min():.2f}, {blue_local[:, 1].max():.2f}]"
             )
@@ -317,14 +320,14 @@ class CentrelineTrackPathfinder(Node):
             if path_local is not None:
                 ox, oy, o_yaw = self.odom_pose
                 path_out = base_link_to_odom(path_local, ox, oy, o_yaw)
-                self.get_logger().info(
+                self.get_logger().debug(
                     f"[PATHFINDER OUTPUT] {len(path_out)} waypoints in {self.output_frame}"
                 )
-                self.get_logger().info(
+                self.get_logger().debug(
                     f"  Range - X: [{path_out[:, 0].min():.2f}, {path_out[:, 0].max():.2f}], "
                     f"Y: [{path_out[:, 1].min():.2f}, {path_out[:, 1].max():.2f}]"
                 )
-                self.get_logger().info(
+                self.get_logger().debug(
                     f"  First 5: {[f'({p[0]:.2f}, {p[1]:.2f})' for p in path_out[:5]]}"
                 )
                 self.publish_path(path_out, self.output_frame, msg.header.stamp)
@@ -333,7 +336,8 @@ class CentrelineTrackPathfinder(Node):
                     self.publish_viz(path_viz, self.viz_frame, msg.header.stamp)
             else:
                 self.get_logger().warn(
-                    "[PATHFINDER OUTPUT] No valid path generated (insufficient cones or waypoints)"
+                    "[PATHFINDER OUTPUT] No valid path generated (insufficient cones or waypoints)",
+                    throttle_duration_sec=2.0,
                 )
         except Exception as e:
             self.get_logger().error(f"Planning Error: {e}")
