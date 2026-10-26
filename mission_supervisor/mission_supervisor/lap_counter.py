@@ -67,8 +67,21 @@ class LapCounter(Node):
         # Fallback to msg.header.frame_id if it exists, otherwise force 'velodyne'
         source_frame = msg.header.frame_id if hasattr(msg, 'header') and msg.header.frame_id else self.cone_frame
 
+        # Tracks mark the line with two big orange cones per side, so the first two detections may
+        # be on the same side (a line along the track). Use the pair furthest apart: one per side.
+        candidates = list(msg.large_orange_cones)
+        if len(candidates) > 2:
+            candidates = list(max(
+                ((a, b) for i, a in enumerate(candidates) for b in candidates[i + 1:]),
+                key=lambda p: math.dist((p[0].position.x, p[0].position.y),
+                                        (p[1].position.x, p[1].position.y))))
+        if len(candidates) == 2 and math.dist(
+                (candidates[0].position.x, candidates[0].position.y),
+                (candidates[1].position.x, candidates[1].position.y)) < 2.0:
+            return  # both on the same side: not a finish line
+
         transformed_cones = []
-        for cone in msg.large_orange_cones[:2]:
+        for cone in candidates[:2]:
             try:
                 point_stamped = PointStamped()
                 point_stamped.header.frame_id = source_frame
