@@ -6,11 +6,12 @@ predict_with_cloud_node:
     ransac_distance_threshold: 0.03
     preprocessing_filter_threshold: 0.0
 
+    # Only ONE block below may be active (duplicate YAML keys: the last one silently wins).
     # ZED2I PARAMS
-    cluster_tolerance: 0.1
-    voxel_leaf_size: 0.05
-    min_cluster_size: 10
-    max_cluster_size: 700
+    # cluster_tolerance: 0.1
+    # voxel_leaf_size: 0.05
+    # min_cluster_size: 10
+    # max_cluster_size: 700
 
     # LIDAR PARAMS
     # cluster_tolerance: 0.3
@@ -18,11 +19,13 @@ predict_with_cloud_node:
     # min_cluster_size: 2
     # max_cluster_size: 70
 
-    # LIDAR SIM PARAMS
+    # LIDAR SIM PARAMS (simulated VLP-16: 0.05 deg horizontal, 2 deg between rings, 0.6 m high)
+    # A cone 3 m away returns ~3 rings x ~75 points, far above the old max of 70, so near cones
+    # were rejected. A 3 cm voxel leaves ~5-25 points per cone from 2 m to 15 m.
     cluster_tolerance: 0.15
-    voxel_leaf_size: 0.01
-    min_cluster_size: 5
-    max_cluster_size: 70
+    voxel_leaf_size: 0.03
+    min_cluster_size: 3
+    max_cluster_size: 1000
 
   # REAL PARAMS
     #use_sim_time: False

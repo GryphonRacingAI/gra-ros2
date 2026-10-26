@@ -216,6 +216,14 @@ void PredictWithCloudNode::projectCloud(const pcl::PointCloud<pcl::PointXYZ>::Pt
       }
       RCLCPP_DEBUG(this->get_logger(), "Detection %zu cluster size: %zu", i, closest_detection_cloud->points.size());
 
+      // No cluster within [min_cluster_size, max_cluster_size]: drop the detection. Publishing it
+      // anyway produced a cone at (0, 0, 0) (centre of an empty bounding box), which SLAM mapped.
+      if (closest_detection_cloud->points.empty())
+      {
+        RCLCPP_DEBUG(this->get_logger(), "Detection %zu: no valid cluster, dropped.", i);
+        continue;
+      }
+
       *combine_detection_cloud += *closest_detection_cloud;
 
       // Create the 3D bounding box
@@ -473,7 +481,9 @@ PredictWithCloudNode::cloud2TransformedCloud(const pcl::PointCloud<pcl::PointXYZ
   }
   catch (tf2::TransformException& e)
   {
-    RCLCPP_DEBUG(this->get_logger(), "TF transform exception (using original cloud): %s", e.what());
+    // Projecting an untransformed cloud gives wrong cone positions, so make this visible.
+    RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 5000,
+                         "TF transform exception (using original cloud): %s", e.what());
     return cloud;
   }
 }
