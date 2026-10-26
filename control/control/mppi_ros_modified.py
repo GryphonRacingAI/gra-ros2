@@ -188,19 +188,20 @@ class MPPIController(Node):
         self.path_arr = result.points
         self.path_v_ref = result.speed_ref
         self.path_heading = result.heading
-        
-        # Reset index if path changes significantly (optional logic)
-        # For now, we rely on the search window in the control loop
-        self.get_logger().info(f"Path received with {n_points} points.")
+
+        # The pathfinder rebuilds the path from the car's position every time, so an index into
+        # the previous path is meaningless; search the new one from its start.
+        self.path_idx = 0
+        self.get_logger().debug(f"Path received with {n_points} points.")
 
     def cone_callback(self, msg):
         """ Parse PointCloud2 cones into obstacle array """
         # Read points using sensor_msgs_py
-        points_list = list(pc2.read_points(msg, field_names=("x", "y"),             skip_nans=True))
-        if not points_list:
+        # read_points() returns a structured array on Jazzy; read_points_numpy gives a plain (N, 2)
+        points_np = pc2.read_points_numpy(msg, field_names=("x", "y"), skip_nans=True).reshape(-1, 2)
+        if points_np.shape[0] == 0:
+            self.obstacles = np.empty((0, 3))
             return
-            
-        points_np = np.array(points_list) # (N, 2)
         
         # Add radius column
         r = self.cone_radius * np.ones((points_np.shape[0], 1))
@@ -210,13 +211,13 @@ class MPPIController(Node):
         """ Main MPPI Iteration (Called at 20Hz) """
         
         # 1. Check if ready
+        # Don't sleep here: with use_sim_time the clock only advances when this (single-threaded)
+        # executor processes /clock, so sleep_for() blocked the node forever.
         if self.vehicle_state is None:
-            self.get_logger().info("Waiting for vehicle state")
-            self.get_clock().sleep_for(rclpy.duration.Duration(seconds=3))
+            self.get_logger().info("Waiting for vehicle state", throttle_duration_sec=3.0)
             return
         if self.path_arr is None:
-            self.get_logger().info("Waiting for path")
-            self.get_clock().sleep_for(rclpy.duration.Duration(seconds=3))
+            self.get_logger().info("Waiting for path", throttle_duration_sec=3.0)
             return
         
         x = self.vehicle_state.copy()
