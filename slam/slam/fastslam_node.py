@@ -250,6 +250,7 @@ class FastSLAMCore:
 
         self.mode = "mapping"
         self.frozen_map = None
+        self.persistent_weights = bool(cfg_get(config, "PERSISTENT_WEIGHTS", True))
 
         self._info(f"Chosen FastSLAM N: {self.N}")
         self._info(f"Threads: {self.THREADS}")
@@ -295,6 +296,18 @@ class FastSLAMCore:
 
         self.weights = np.zeros(self.N, dtype=WEIGHT_DTYPE)
         self._info("CUDA FastSLAM mapping core initialised.")
+
+    def _reset_weights(self):
+        try:
+            reset_weights_func = self.cuda_modules["resample"].get_function("reset_weights")
+            reset_weights_func(
+                self.memory.particles,
+                block=(self.THREADS, 1, 1),
+                grid=make_grid(self.N, self.THREADS)
+            )
+            cuda.Context.synchronize()
+        except Exception as e:
+            raise RuntimeError(f"reset_weights kernel failed: {e}")
 
     def _info(self, msg):
         if self.logger:
@@ -392,17 +405,14 @@ class FastSLAMCore:
             self.mode = "localization"
             self._force_frozen_map_on_gpu(name="pre_step_frozen_map")
 
-        # Reset weights.
-        try:
-            reset_weights_func = self.cuda_modules["resample"].get_function("reset_weights")
-            reset_weights_func(
-                self.memory.particles,
-                block=(self.THREADS, 1, 1),
-                grid=make_grid(self.N, self.THREADS)
-            )
-            cuda.Context.synchronize()
-        except Exception as e:
-            raise RuntimeError(f"reset_weights kernel failed: {e}")
+        # Weights. Sequential importance resampling: a particle's weight is the product of its
+        # measurement likelihoods since the last resample (rescale() normalises them each step),
+        # and is reset only after resampling. Resetting every step (persistent_weights:=false, the
+        # old behaviour) made resampling see one step's evidence only, so particles whose maps had
+        # drifted survived and the published map filled with duplicates as soon as the process
+        # noise was > 0 (sim, perfect odometry: ~125 landmarks for 72 cones; with this ~80-100).
+        if not self.persistent_weights:
+            self._reset_weights()
 
         # Mapping vs frozen-map localisation parameters.
         if self.frozen_map is None:
@@ -495,6 +505,8 @@ class FastSLAMCore:
             if neff < resample_trigger:
                 resample(self.cuda_modules, self.config, self.weights, self.memory, 0.5)
                 cuda.Context.synchronize()
+                if self.persistent_weights:
+                    self._reset_weights()
 
                 if self.frozen_map is not None:
                     check_and_memcpy_dtoh(
@@ -512,6 +524,15 @@ class FastSLAMCore:
             check_and_memcpy_dtoh(self.particles, self.memory.particles, name="particles")
             best_idx = int(np.argmax(FlatParticle.w(self.particles)))
             best_landmarks = FlatParticle.get_landmarks(self.particles, best_idx)
+            # get_pose_estimate() averages headings linearly: near +-pi (driving west) particles at
+            # +3.1 and -3.1 rad average to ~0, and the published heading flipped by up to 180 deg
+            # (replayed sim bag). Use the weighted circular mean instead.
+            p2d = self._particles_2d()
+            w = p2d[:, 3] / max(p2d[:, 3].sum(), 1e-300)
+            estimated_pose = np.array([
+                np.dot(w, p2d[:, 0]), np.dot(w, p2d[:, 1]),
+                math.atan2(np.dot(w, np.sin(p2d[:, 2])), np.dot(w, np.cos(p2d[:, 2]))),
+            ])
             best_covariances = FlatParticle.get_covariances(self.particles, best_idx)
             best_colors = FlatParticle.get_colors(self.particles, best_idx)
         except Exception as e:
@@ -562,6 +583,14 @@ class FastSLAMNode(Node):
         self.last_time = None
         self.last_odom_pose = None
         self.motion_from_odom_pose = bool(self.declare_parameter("motion_from_odom_pose", True).value)
+        # after the map freeze: localise by colour-aware cone matching (false: keep the particle filter)
+        self.match_localisation = bool(self.declare_parameter("match_localisation", True).value)
+        self.match_gate = float(self.declare_parameter("match_gate", 1.0).value)    # m
+        self.match_gain = float(self.declare_parameter("match_gain", 0.5).value)    # blend per update
+        self.loc_map = None
+        self.loc_map_data = None
+        self.loc_correction = None
+        self.loc_matches = 0
         self.start_time = None
         self.latest_lap_count = 0
         self.last_status_time = None
@@ -677,20 +706,27 @@ class FastSLAMNode(Node):
             and self.latest_lap_count >= int(self.config.endurance.FREEZE_AFTER_LAPS)
         )
 
-        try:
-            estimated_pose, final_map_data, mode = self.slam_core.execute_step(
-                v_linear=v_linear,
-                omega_angular=omega_angular,
-                measurements_rb=measurements_rb,
-                dt=dt,
-                elapsed_time=elapsed_time,
-                lap_count=self.latest_lap_count,
-                freeze_requested=freeze_requested,
-            )
-        except Exception as e:
-            self.get_logger().error(f"SLAM/localisation execution error: {e}")
-            self.get_logger().debug(traceback.format_exc())
-            return
+        if self.loc_map is not None:
+            # frozen map: colour-aware cone matching instead of the particle filter
+            estimated_pose = self._match_localise(measurements_rb, rx, ry, r_yaw)
+            final_map_data, mode = self.loc_map_data, "localization"
+        else:
+            try:
+                estimated_pose, final_map_data, mode = self.slam_core.execute_step(
+                    v_linear=v_linear,
+                    omega_angular=omega_angular,
+                    measurements_rb=measurements_rb,
+                    dt=dt,
+                    elapsed_time=elapsed_time,
+                    lap_count=self.latest_lap_count,
+                    freeze_requested=freeze_requested,
+                )
+            except Exception as e:
+                self.get_logger().error(f"SLAM/localisation execution error: {e}")
+                self.get_logger().debug(traceback.format_exc())
+                return
+            if self.match_localisation and self.slam_core.frozen_map is not None:
+                self._start_match_localisation(final_map_data, estimated_pose, rx, ry, r_yaw)
         self.last_odom_pose = (current_time, rx, ry, r_yaw)
 
         # Publish outputs.
@@ -701,6 +737,80 @@ class FastSLAMNode(Node):
         self._publish_obstacles(final_map_data, odom_msg, estimated_pose)
 
         self._status_log(current_time, elapsed_time, mode, estimated_pose, len(final_map_data), len(measurements_rb))
+
+    # ---- Localisation on the frozen map by colour-aware cone matching -----------------------
+    # The particle filter's data association ignores cone colour and gates at a fixed distance.
+    # Once the pose is ~1 m off, cones match the wrong landmarks, which pulls it further off, and
+    # beyond the gate nothing matches and it never recovers: in sim it diverged by 4-8 m a few
+    # laps after the freeze. With the map fixed, localisation is a small alignment problem: match
+    # each cone to the nearest frozen landmark OF THE SAME COLOUR and fit the rigid transform.
+
+    def _start_match_localisation(self, final_map_data, estimated_pose, rx, ry, r_yaw):
+        self.loc_map_data = list(final_map_data)
+        self.loc_map = np.array([[lm["position"][0], lm["position"][1], lm["type"]] for lm in final_map_data])
+        self.loc_correction = self._correction(estimated_pose, (rx, ry, r_yaw))
+        self.get_logger().warn(f"localisation by colour-aware cone matching on {len(self.loc_map)} frozen landmarks")
+
+    @staticmethod
+    def _correction(map_pose, odom_pose):
+        # T such that map_pose = T (+) odom_pose
+        dyaw = map_pose[2] - odom_pose[2]
+        c, s = math.cos(dyaw), math.sin(dyaw)
+        return np.array([map_pose[0] - (c * odom_pose[0] - s * odom_pose[1]),
+                         map_pose[1] - (s * odom_pose[0] + c * odom_pose[1]), dyaw])
+
+    @staticmethod
+    def _apply(corr, odom_pose):
+        c, s = math.cos(corr[2]), math.sin(corr[2])
+        return np.array([corr[0] + c * odom_pose[0] - s * odom_pose[1],
+                         corr[1] + s * odom_pose[0] + c * odom_pose[1],
+                         math.atan2(math.sin(corr[2] + odom_pose[2]), math.cos(corr[2] + odom_pose[2]))])
+
+    def _match_localise(self, measurements_rb, rx, ry, r_yaw):
+        pose = self._apply(self.loc_correction, (rx, ry, r_yaw))
+        self.loc_matches = 0
+        if len(measurements_rb) < 3:
+            return pose
+        r, b, kind = measurements_rb[:, 0], measurements_rb[:, 1], measurements_rb[:, 2]
+        c, s = math.cos(pose[2]), math.sin(pose[2])
+        lx, ly = r * np.cos(b), r * np.sin(b)
+        meas = np.column_stack((pose[0] + c * lx - s * ly, pose[1] + s * lx + c * ly))
+        src, dst = [], []
+        for p, k in zip(meas, kind):
+            same = self.loc_map[self.loc_map[:, 2] == k]
+            if k == Cone.UNKNOWN or len(same) == 0:
+                continue
+            d = np.hypot(same[:, 0] - p[0], same[:, 1] - p[1])
+            j = int(np.argmin(d))
+            if d[j] < self.match_gate:
+                src.append(p)
+                dst.append(same[j, :2])
+        self.loc_matches = len(src)
+        if len(src) < 3:
+            return pose
+        src, dst = np.array(src), np.array(dst)
+        ms, md = src.mean(axis=0), dst.mean(axis=0)
+        # A few cones in a line (one track edge) don't determine the rotation: then translation only.
+        spread = np.linalg.svd(src - ms, compute_uv=False)[-1] / math.sqrt(len(src))
+        dth = 0.0
+        if spread > 1.0:
+            u, _, vt = np.linalg.svd((src - ms).T @ (dst - md))
+            rot = (u @ vt).T
+            if np.linalg.det(rot) > 0:
+                dth = math.atan2(rot[1, 0], rot[0, 0])
+        # rotate about the matched cones' centre, then shift onto the landmarks
+        c, s = math.cos(dth), math.sin(dth)
+        rel = pose[:2] - ms
+        new_xy = md + np.array([c * rel[0] - s * rel[1], s * rel[0] + c * rel[1]])
+        # odometry is good, so real corrections are small: limit each step (1 deg, 0.5 m)
+        step = self.match_gain * (new_xy - pose[:2])
+        n = np.hypot(*step)
+        if n > 0.5:
+            step *= 0.5 / n
+        pose = np.array([pose[0] + step[0], pose[1] + step[1],
+                         pose[2] + float(np.clip(self.match_gain * dth, -math.radians(1.0), math.radians(1.0)))])
+        self.loc_correction = self._correction(pose, (rx, ry, r_yaw))
+        return pose
 
     def _status_log(self, current_time, elapsed_time, mode, estimated_pose, landmark_count, measurement_count):
         if not self.enable_status_logging:
@@ -722,6 +832,9 @@ class FastSLAMNode(Node):
             f"mode={mode}, laps={self.latest_lap_count}, "
             f"t={elapsed_time:.1f}s, pose=({x:.2f}, {y:.2f}, {yaw:.2f}), "
             f"measurements={measurement_count}, landmarks={landmark_count}"
+            + (f", matched={self.loc_matches}, correction=({self.loc_correction[0]:.2f}, "
+               f"{self.loc_correction[1]:.2f}, {math.degrees(self.loc_correction[2]):.1f} deg)"
+               if self.loc_map is not None else "")
         )
 
         if mode != self.last_mode:

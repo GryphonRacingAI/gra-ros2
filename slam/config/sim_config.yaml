@@ -7,9 +7,14 @@ MAX_LANDMARKS: 600
 SEED: 42
 START_POSITION: [0.0, 0.0, 0.0]
 
+# Odometry noise (variances of v and yaw rate), kept near zero on purpose. /odom comes from wheel
+# speeds + IMU with the gyro bias calibrated at standstill: it drifts < 0.5 deg / 400 m in sim.
+# With realistic noise values (e.g. real_config's) this FastSLAM builds poor maps in sim (~100-130
+# landmarks for 72 cones, many > 1.5 m off) even with perfect odometry, while ~0 gives a clean
+# map (69 landmarks, none off). Open issue for the SLAM owners; see docs/WSL_SETUP.md.
 CONTROL_VARIANCE:
-  - 0.0
-  - 0
+  - 0.0001
+  - 0.00002
 
 THRESHOLD: 2.0
 
@@ -38,6 +43,9 @@ endurance:
 
   # After freeze, use smoother update gating and covariance.
   # These are the only extra localisation settings exposed.
+  # Only used with match_localisation:=false: by default the node localises on the frozen map by
+  # colour-aware cone matching (see fastslam_node.py), because this particle filter localisation
+  # diverged by metres a few laps after the freeze in sim.
   LOCALIZATION_THRESHOLD: 12
   LOCALIZATION_COVARIANCE:
     - 0.2
