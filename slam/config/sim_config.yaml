@@ -7,14 +7,25 @@ MAX_LANDMARKS: 600
 SEED: 42
 START_POSITION: [0.0, 0.0, 0.0]
 
-# Odometry noise (variances of v and yaw rate), kept near zero on purpose. /odom comes from wheel
-# speeds + IMU with the gyro bias calibrated at standstill: it drifts < 0.5 deg / 400 m in sim.
-# With realistic noise values (e.g. real_config's) this FastSLAM builds poor maps in sim (~100-130
-# landmarks for 72 cones, many > 1.5 m off) even with perfect odometry, while ~0 gives a clean
-# map (69 landmarks, none off). Open issue for the SLAM owners; see docs/WSL_SETUP.md.
+# The particles hold the rear axle pose: it is the point that moves along the heading, which the
+# motion model assumes. base_link (/odom, the car's centre) is this far ahead of it.
+REAR_AXLE_OFFSET: 0.767
+
+# Odometry noise (variances of v [m^2/s^2] and yaw rate [rad^2/s^2] per update), measured: the
+# per-0.1 s increments of /odom vs /ground_truth/odom in the sim bags (mppi_track, trackdrive) give
+# ~0.003-0.006 and ~0.5-1.4e-5 (wheel speeds + a bias-calibrated gyro: < 0.3 deg heading drift in
+# 400 s). These values used to break mapping; that was the kernel bugs and the rear-axle mismatch
+# (see fastslam_node.py), not the noise. Replays of the mppi_track bag, 3 seeds each: ~0 noise
+# and these values both give 0.1 m map residual and 0.2-0.4 m pose error. 3x/10x these
+# ([0.01, 0.0001]) still maps (residual 0.2-0.35 m, pose 0.4-1.2 m); real_config's [0.02, 0.01]
+# (a 0.1 rad/s yaw-rate error, ~1000x this gyro) still does not with 512 particles (nor 2048).
+# Live, full stack (ground truth), with the rear-axle fix and vcu_odometry's slip handling:
+# mppi_track 10 laps, 0 % of the time > 1.5 m off the centreline (max 1.07 m; was 26-37 %), SLAM pose
+# error 0.2-0.5 m for the whole run; trackdrive 10 laps, max 0.70 m off. The long drift after the
+# map freeze was odometry (speed spikes of 1-3 m/s at wheel slip), not the map or the matching.
 CONTROL_VARIANCE:
-  - 0.0001
-  - 0.00002
+  - 0.003
+  - 0.00001
 
 THRESHOLD: 2.0
 
@@ -24,8 +35,17 @@ sensor:
   MIN_RANGE: 2
   FOV: 1.22173
   LIDAR_X_OFFSET: 0.52
+  # Measurement noise (range [m^2], bearing [rad^2]), from the mppi_track bag vs the true cones:
+  # within the VLP-16's range (< ~10.5 m) cones come from lidar clusters (radial sd 0.08 m, bearing
+  # sd 0.3-0.85 deg); beyond, mostly from the camera box-height fallback (radial sd ~0.5 m, biased
+  # -0.3 m). One covariance for both (the old [0.09, 0.004]) let the far camera cones pull the map
+  # around: replay map residual 0.28 -> 0.13 m, pose error 0.6 -> 0.3 m with these.
   VARIANCE:
-    - 0.09
+    - 0.01
+    - 0.001
+  FAR_RANGE: 10.5
+  FAR_VARIANCE:
+    - 0.36
     - 0.004
 
 endurance:
