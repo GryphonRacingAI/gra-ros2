@@ -48,7 +48,7 @@ public:
     crr_ = declare_parameter("rolling_resistance", 0.015);
     cda_ = declare_parameter("drag_area", 1.0);  // Cd * frontal area, m^2
     cmd_timeout_ = declare_parameter("cmd_timeout", 1.0);
-    const double rate = declare_parameter("rate", 200.0);
+    const double rate = declare_parameter("rate", 100.0);  // Hz of sim time
     ami_state_ = static_cast<uint8_t>(declare_parameter("ami_state", 0));
 
     steer_pub_ = create_publisher<std_msgs::msg::Float64>("/steer_angle_cmd", 10);
@@ -80,7 +80,9 @@ public:
     js_sub_ = create_subscription<sensor_msgs::msg::JointState>(
         "/joint_states", rclcpp::SensorDataQoS(), std::bind(&AdsDvVcuSim::joint_cb, this, _1));
 
-    timer_ = create_wall_timer(std::chrono::duration<double>(1.0 / rate), [this] { step(); });
+    // Sim-time timer: on a wall timer the message load (4 torques + steering through the bridge)
+    // grew as the sim slowed down, which slowed it down further.
+    timer_ = rclcpp::create_timer(this, get_clock(), rclcpp::Duration::from_seconds(1.0 / rate), [this] { step(); });
     RCLCPP_INFO(get_logger(), "ADS-DV VCU emulator: 4WD torque drive, %.0f Nm/axle, steer rate %.2f rad/s",
                 axle_torque_request_, steer_rate_);
   }
@@ -189,7 +191,7 @@ private:
     s.data = steer_actual_;
     steer_angle_pub_->publish(s);
 
-    if (++tick_ % 4 == 0) publish_vcu2ai(rpm, brake_pct);  // ~50 Hz
+    if (++tick_ % 2 == 0) publish_vcu2ai(rpm, brake_pct);  // 50 Hz
   }
 
   void publish_vcu2ai(const std::array<double, 4> & rpm, double brake_pct) {
