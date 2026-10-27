@@ -202,10 +202,11 @@ class CentrelineAlgorithm:
                 if abs(math.atan2(math.sin(turn), math.cos(turn))) >= max_turn:
                     continue
                 # Driving direction: blue on the left, yellow on the right. The step must cross the
-                # gate that way (sin of the angle from step to yellow->blue > 0.5), which rules out
-                # driving the track backwards and "gates" made across the infield.
+                # gate that way (sin of the angle from step to yellow->blue > 0.1), which rules out
+                # driving the track backwards and "gates" made across the infield. (0.5 rejected
+                # valid steps near hairpin apexes, where the next gate is crossed at a shallow angle.)
                 step = m - pos
-                if (step[0] * gate[1] - step[1] * gate[0]) / (np.linalg.norm(step) * np.linalg.norm(gate) + 1e-9) > 0.5:
+                if (step[0] * gate[1] - step[1] * gate[0]) / (np.linalg.norm(step) * np.linalg.norm(gate) + 1e-9) > 0.1:
                     best, best_d = i, d
             if best is None:
                 break
@@ -276,15 +277,18 @@ class SkidpadPlanner:
 
     def update_anchor(self, orange, blue, yellow):
         """Locate the timing line centre from the mapped cones (map frame)."""
-        if self.frozen or len(orange) < 2:
-            return
-        guess = np.mean(orange, axis=0)
         cones = np.array(list(blue) + list(yellow)) if len(blue) + len(yellow) else np.empty((0, 2))
+        if self.frozen or len(cones) < 10:
+            return
+        # Start from the large orange cones if there are some, but let the circles decide: the
+        # orange mean alone was 6 m off (small entry-lane cones taken for large ones), so search
+        # +-8 m along the driving direction and +-2 m across.
+        guess = np.mean(orange, axis=0) if len(orange) >= 2 else self.centre.copy()
         best = guess
-        if len(cones) >= 6:
+        if len(cones) >= 10:
             best_err = float('inf')
-            for dx in np.arange(-1.0, 1.01, 0.1):
-                for dy in np.arange(-1.0, 1.01, 0.1):
+            for dx in np.arange(-8.0, 8.01, 0.25):
+                for dy in np.arange(-2.0, 2.01, 0.25):
                     c = guess + [dx, dy]
                     d = np.minimum(np.linalg.norm(cones - (c + [0, -self.R_CENTRE]), axis=1),
                                    np.linalg.norm(cones - (c + [0, self.R_CENTRE]), axis=1))
@@ -417,6 +421,14 @@ class CentrelineTrackPathfinder(Node):
             return
         yellow_local = map_to_base_link(yellow_map, rx, ry, r_yaw)
         blue_local = map_to_base_link(blue_map, rx, ry, r_yaw)
+        # Orange cones (start/finish line, acceleration braking zone) mark the lane on both sides
+        # and only where it is straight: put each on the side of the car it is on. Without them the
+        # path ended at the last blue/yellow gate before the acceleration finish line.
+        orange_map = [[c.position.x, c.position.y] for c in list(msg.orange_cones) + list(msg.large_orange_cones)]
+        if orange_map:
+            orange_local = map_to_base_link(orange_map, rx, ry, r_yaw)
+            yellow_local = np.vstack([yellow_local.reshape(-1, 2), orange_local[orange_local[:, 1] < 0]])
+            blue_local = np.vstack([blue_local.reshape(-1, 2), orange_local[orange_local[:, 1] >= 0]])
 
         self.get_logger().debug(
             f"[PATHFINDER INPUT] Yellow: {len(yellow_local)}, Blue: {len(blue_local)}, "
@@ -437,6 +449,8 @@ class CentrelineTrackPathfinder(Node):
             path_local = self.centreline_planner.calculate_path(
                 yellow_local.tolist(), blue_local.tolist()
             )
+            if path_local is None:
+                path_local = self.recovery_arc(yellow_local, blue_local)
 
             if path_local is not None:
                 ox, oy, o_yaw = self.odom_pose
@@ -463,6 +477,26 @@ class CentrelineTrackPathfinder(Node):
         except Exception as e:
             self.get_logger().error(f"Planning Error: {e}")
     
+    def recovery_arc(self, yellow_local, blue_local, radius=4.5, length=5.0):
+        """No gate ahead, but one boundary is: turn towards the other one.
+
+        Blue cones are the left edge, so if only blue is ahead the track lies to the right (and to
+        the left if only yellow is). Seen in sim: the car under-turned in a corner on lap 1 and
+        stopped facing the outer cones; with only blue in view no gate could ever be formed.
+        """
+        def ahead(c):
+            c = np.asarray(c).reshape(-1, 2)
+            return int(np.sum((c[:, 0] > 0.5) & (np.linalg.norm(c, axis=1) < 12.0)))
+        n_y, n_b = ahead(yellow_local), ahead(blue_local)
+        if (n_y == 0) == (n_b == 0):
+            return None  # nothing ahead, or both colours (then the planner's failure is something else)
+        side = -1.0 if n_b > 0 else 1.0  # right if we only see blue
+        s = np.arange(0.0, length + 1e-9, 0.5)
+        self.get_logger().warn(
+            f"[PATHFINDER] only {'blue' if n_b else 'yellow'} cones ahead: turning {'right' if side < 0 else 'left'} to find the track",
+            throttle_duration_sec=2.0)
+        return np.column_stack((radius * np.sin(s / radius), side * radius * (1.0 - np.cos(s / radius))))
+
     def plan_skidpad(self, msg, yellow_map, blue_map):
         orange_map = [[c.position.x, c.position.y] for c in msg.large_orange_cones]
         self.skidpad.update_anchor(orange_map, blue_map, yellow_map)
