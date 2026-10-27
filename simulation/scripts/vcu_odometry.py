@@ -12,7 +12,7 @@ import math
 
 import rclpy
 from rclpy.node import Node
-from rclpy.qos import qos_profile_sensor_data
+from rclpy.qos import QoSProfile, ReliabilityPolicy
 from geometry_msgs.msg import TransformStamped
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import Imu
@@ -44,8 +44,11 @@ class VcuOdometry(Node):
         self.last_imu = None
         self.stamp = None
         if self.source == 'wheel':
-            self.create_subscription(VCU2AI, '/vcu2ai', self.vcu_cb, 10)
-            self.create_subscription(Imu, '/imu/data', self.imu_cb, qos_profile_sensor_data)
+            # Deep queues: with the 5-message sensor-data default, a 20 ms stall of this node at the
+            # IMU's 300 Hz dropped samples, and a 0.5 s gap mid-corner lost 27 deg of heading.
+            buffered = QoSProfile(depth=400, reliability=ReliabilityPolicy.BEST_EFFORT)
+            self.create_subscription(VCU2AI, '/vcu2ai', self.vcu_cb, 100)
+            self.create_subscription(Imu, '/imu/data', self.imu_cb, buffered)
             self.create_timer(1.0 / rate, self.publish)
             # no ground truth (real car): start at the origin after 2 s
             self.create_timer(2.0, self.start_without_ground_truth)
@@ -82,14 +85,19 @@ class VcuOdometry(Node):
             self.bias_n += 1
             if self.bias_n >= 50:
                 self.gyro_bias = self.bias_sum / self.bias_n
-        self.w = raw - self.gyro_bias
+        w_prev, self.w = self.w, raw - self.gyro_bias
         if self.started and self.last_imu is not None:
             dt = t - self.last_imu
-            if 0.0 < dt < 0.1:
-                mid = self.yaw + self.w * dt / 2.0
+            if 0.0 < dt < 1.0:
+                # trapezoid: also bridges the odd missing samples without losing the rotation
+                dyaw = 0.5 * (w_prev + self.w) * dt
+                mid = self.yaw + dyaw / 2.0
                 self.x += self.v * math.cos(mid) * dt
                 self.y += self.v * math.sin(mid) * dt
-                self.yaw = math.atan2(math.sin(self.yaw + self.w * dt), math.cos(self.yaw + self.w * dt))
+                self.yaw = math.atan2(math.sin(self.yaw + dyaw), math.cos(self.yaw + dyaw))
+            elif dt >= 1.0:
+                self.get_logger().warn(f'no IMU data for {dt:.1f} s: heading not integrated over the gap',
+                                       throttle_duration_sec=5.0)
         self.last_imu = t
         self.stamp = msg.header.stamp
 
