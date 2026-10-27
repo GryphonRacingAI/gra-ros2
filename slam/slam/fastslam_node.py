@@ -587,6 +587,8 @@ class FastSLAMNode(Node):
         self.match_localisation = bool(self.declare_parameter("match_localisation", True).value)
         self.match_gate = float(self.declare_parameter("match_gate", 1.0).value)    # m
         self.match_gain = float(self.declare_parameter("match_gain", 0.5).value)    # blend per update
+        self.match_max_step = float(self.declare_parameter("match_max_step", 0.15).value)  # m per update
+        self.match_max_turn = float(self.declare_parameter("match_max_turn", 0.3).value)  # deg per update
         self.loc_map = None
         self.loc_map_data = None
         self.loc_correction = None
@@ -776,15 +778,21 @@ class FastSLAMNode(Node):
         lx, ly = r * np.cos(b), r * np.sin(b)
         meas = np.column_stack((pose[0] + c * lx - s * ly, pose[1] + s * lx + c * ly))
         src, dst = [], []
-        for p, k in zip(meas, kind):
+        for i, (p, k) in enumerate(zip(meas, kind)):
             same = self.loc_map[self.loc_map[:, 2] == k]
             if k == Cone.UNKNOWN or len(same) == 0:
                 continue
             d = np.hypot(same[:, 0] - p[0], same[:, 1] - p[1])
             j = int(np.argmin(d))
-            if d[j] < self.match_gate:
-                src.append(p)
-                dst.append(same[j, :2])
+            if d[j] >= self.match_gate:
+                continue
+            # mutual nearest neighbour: no other measured cone of this colour is closer to that
+            # landmark (along an evenly spaced edge a cone can otherwise match its neighbour)
+            others = meas[(kind == k) & (np.arange(len(meas)) != i)]
+            if len(others) and np.min(np.hypot(others[:, 0] - same[j, 0], others[:, 1] - same[j, 1])) < d[j]:
+                continue
+            src.append(p)
+            dst.append(same[j, :2])
         self.loc_matches = len(src)
         if len(src) < 3:
             return pose
@@ -802,13 +810,15 @@ class FastSLAMNode(Node):
         c, s = math.cos(dth), math.sin(dth)
         rel = pose[:2] - ms
         new_xy = md + np.array([c * rel[0] - s * rel[1], s * rel[0] + c * rel[1]])
-        # odometry is good, so real corrections are small: limit each step (1 deg, 0.5 m)
+        # odometry is good, so real corrections are small: limit each step, so that a wrong match
+        # can't drag the pose away (it then also needs many consistent updates to move it)
         step = self.match_gain * (new_xy - pose[:2])
         n = np.hypot(*step)
-        if n > 0.5:
-            step *= 0.5 / n
+        if n > self.match_max_step:
+            step *= self.match_max_step / n
+        max_turn = math.radians(self.match_max_turn)
         pose = np.array([pose[0] + step[0], pose[1] + step[1],
-                         pose[2] + float(np.clip(self.match_gain * dth, -math.radians(1.0), math.radians(1.0)))])
+                         pose[2] + float(np.clip(self.match_gain * dth, -max_turn, max_turn))])
         self.loc_correction = self._correction(pose, (rx, ry, r_yaw))
         return pose
 
