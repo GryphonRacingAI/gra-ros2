@@ -44,7 +44,7 @@ DEBUG_GPU = False
 try:
     from fastslam64.lib.particle3 import FlatParticle
     from fastslam64.lib.common import CUDAMemory, rescale, get_pose_estimate, resample
-    from fastslam64.cuda.fastslam import load_cuda_modules
+    from fastslam64.cuda import fastslam as fastslam_cuda
     from fastslam64.lib.utils import dotify
 except Exception as e:
     raise SystemExit(f"Failed to import FastSLAM core components: {e}")
@@ -52,6 +52,85 @@ except Exception as e:
 
 KERN_FLOAT = np.float64
 WEIGHT_DTYPE = np.float64
+
+# ------------------ CUDA kernel fixes ------------------
+# fastslam64 is installed from outside this repo, so its kernels are patched as they are loaded.
+# Each patch must match the library source exactly once, or the node refuses to start.
+KERNEL_PATCHES = {
+    "update.cu": [
+        # vecmul(K, residual, out) read its second input element from the OUTPUT vector (still
+        # zero), so the EKF landmark update used only the range residual and dropped the bearing
+        # residual: landmarks were never corrected sideways, and with realistic odometry noise
+        # every particle's map filled with duplicates.
+        ("double e = u[0]; double f = v[1];",
+         "double e = u[0]; double f = u[1];"),
+        # Data association ignored colour: along a track edge a cone could match the landmark of
+        # a cone on the other side. Only match landmarks of the measured colour (UNKNOWN = 0
+        # matches anything).
+        ("""            double dist = compute_dist(particle, in_range[j], measurements->measurements[i], measurement_cov);
+""",
+         """            double lm_type = get_landmark_color(particle, in_range[j], max_landmarks)[0];
+            double ms_type = measurements->measurements[i][2];
+            if (lm_type != ms_type && lm_type != 0.0 && ms_type != 0.0) continue;
+            double dist = compute_dist(particle, in_range[j], measurements->measurements[i], measurement_cov);
+"""),
+        # One measurement covariance for every cone. In sim, cones closer than the VLP-16 blind band
+        # (~10.5 m) come from lidar clusters (~0.08 m, <1 deg), farther ones mostly from the camera
+        # box-height fallback (~0.5 m in range). Use sensor.FAR_VARIANCE beyond sensor.FAR_RANGE.
+        ("""    for(int i = 0; i < n_measurements; i++) {
+        double best = 1000000.0;
+""",
+         """    for(int i = 0; i < n_measurements; i++) {
+        double R_far[] = { <<FAR_VAR_R>>, 0.0, 0.0, <<FAR_VAR_B>> };
+        double *R_i = (measurements->measurements[i][0] > <<FAR_RANGE>>) ? R_far : measurement_cov;
+        double best = 1000000.0;
+"""),
+        ("matmul_jacobian(H, landmark_cov, measurement_cov, S);",
+         "matmul_jacobian(H, landmark_cov, R_i, S);"),
+        ("""        } else {
+            add_measurement_as_landmark(particle, measurements->measurements[i], measurement_cov, max_landmarks);""",
+         """        } else {
+            add_measurement_as_landmark(particle, measurements->measurements[i], R_i, max_landmarks);"""),
+        # A measurement that matches no landmark became a new landmark at no cost to the particle's
+        # weight, while a match multiplies it by the measurement likelihood. So a particle whose
+        # pose had drifted, and matched nothing, outweighed one that matched with a 3-sigma
+        # residual, and kept duplicating the map. Charge a new landmark the likelihood of a match
+        # at Mahalanobis distance sqrt(NEW_LANDMARK_D2) (FastSLAM's new-feature likelihood p0;
+        # 0 = off). Applied on top of the R_i patch above.
+        ("""        } else {
+            add_measurement_as_landmark(particle, measurements->measurements[i], R_i, max_landmarks);""",
+         """        } else {
+            if (<<NEW_LM_D2>> > 0.0) {
+                double det_r = R_i[0] * R_i[3] - R_i[1] * R_i[2];
+                particle[3] *= exp(-0.5 * <<NEW_LM_D2>>) / (2.0 * M_PI * sqrt(det_r));
+            }
+            add_measurement_as_landmark(particle, measurements->measurements[i], R_i, max_landmarks);"""),
+        ("""    for(int i = 0; i < n_measurements; i++) {
+        add_measurement_as_landmark(particle, measurements->measurements[i], measurement_cov, max_landmarks);""",
+         """    for(int i = 0; i < n_measurements; i++) {
+        double R_far[] = { <<FAR_VAR_R>>, 0.0, 0.0, <<FAR_VAR_B>> };
+        double *R_i = (measurements->measurements[i][0] > <<FAR_RANGE>>) ? R_far : measurement_cov;
+        add_measurement_as_landmark(particle, measurements->measurements[i], R_i, max_landmarks);"""),
+    ],
+}
+
+
+def load_cuda_modules(**args):
+    cu_dir = os.path.dirname(fastslam_cuda.__file__)
+    sources = {}
+    for name in ("predict", "update", "rescale", "resample", "weights_and_mean_position", "permute"):
+        with open(os.path.join(cu_dir, name + ".cu"), "r", encoding="utf-8") as f:
+            src = f.read()
+        for old, new in KERNEL_PATCHES.get(name + ".cu", []):
+            if src.count(old) != 1:
+                raise RuntimeError(f"fastslam64 {name}.cu changed: kernel patch no longer applies:\n{old}")
+            src = src.replace(old, new)
+        sources[name] = src
+    modules = {name: fastslam_cuda.preprocess_module(src, args, no_extern_c=(name == "predict"))
+               for name, src in sources.items()}
+    modules["weights_and_mean"] = modules.pop("weights_and_mean_position")
+    return modules
+
 
 
 # ------------------ Config Helpers ------------------
@@ -106,11 +185,21 @@ def load_config(use_sim: bool):
     config.sensor.MIN_RANGE = float(cfg_get(config.sensor, "MIN_RANGE", 1.5))
     config.sensor.FOV = float(cfg_get(config.sensor, "FOV", 1.22173))
     config.sensor.LIDAR_X_OFFSET = float(cfg_get(config.sensor, "LIDAR_X_OFFSET", 0.52))
+    # Distance from the rear axle forward to base_link (the /odom point). The particles move along
+    # their heading (no sideslip), which only the rear axle does; see FastSLAMNode.slam_callback.
+    config.REAR_AXLE_OFFSET = float(cfg_get(config, "REAR_AXLE_OFFSET", 0.0))
+    # weight of a measurement that starts a new landmark (see KERNEL_PATCHES); 0 = off
+    config.NEW_LANDMARK_D2 = float(cfg_get(config, "NEW_LANDMARK_D2", 0.0))
     config.sensor.VARIANCE = np.array(
         cfg_get(config.sensor, "VARIANCE", [0.01, 0.001]),
         dtype=np.float64
     )
     config.sensor.COVARIANCE = np.diag(config.sensor.VARIANCE).astype(np.float64)
+    # beyond FAR_RANGE: FAR_VARIANCE (default: the same as VARIANCE, i.e. off)
+    config.sensor.FAR_RANGE = float(cfg_get(config.sensor, "FAR_RANGE", 1e9))
+    config.sensor.FAR_VARIANCE = np.array(
+        cfg_get(config.sensor, "FAR_VARIANCE", list(config.sensor.VARIANCE)), dtype=np.float64
+    )
 
     config.PARTICLES_PER_THREAD = config.N // config.THREADS
     config.PARTICLE_SIZE = 6 + 8 * config.MAX_LANDMARKS
@@ -260,14 +349,18 @@ class FastSLAMCore:
         self.particles = FlatParticle.get_initial_particles(
             self.N,
             self.config.MAX_LANDMARKS,
-            self.config.START_POSITION.copy(),
+            self._rear_axle_start(),
             sigma=0.2
         ).astype(KERN_FLOAT)
 
         self.cuda_modules = load_cuda_modules(
             THREADS=self.THREADS,
             PARTICLE_SIZE=int(self.config.PARTICLE_SIZE),
-            N_PARTICLES=self.N
+            N_PARTICLES=self.N,
+            FAR_RANGE=float(self.config.sensor.FAR_RANGE),
+            FAR_VAR_R=float(self.config.sensor.FAR_VARIANCE[0]),
+            FAR_VAR_B=float(self.config.sensor.FAR_VARIANCE[1]),
+            NEW_LM_D2=float(self.config.NEW_LANDMARK_D2),
         )
 
         self.memory = CUDAMemory(self.config)
@@ -296,6 +389,12 @@ class FastSLAMCore:
 
         self.weights = np.zeros(self.N, dtype=WEIGHT_DTYPE)
         self._info("CUDA FastSLAM mapping core initialised.")
+
+    def _rear_axle_start(self):
+        # START_POSITION is the base_link pose; the particles hold the rear axle pose
+        x, y, th = self.config.START_POSITION
+        L = self.config.REAR_AXLE_OFFSET
+        return np.array([x - L * math.cos(th), y - L * math.sin(th), th], dtype=np.float64)
 
     def _reset_weights(self):
         try:
@@ -582,6 +681,7 @@ class FastSLAMNode(Node):
 
         self.last_time = None
         self.last_odom_pose = None
+        self.rear_axle_offset = float(self.config.REAR_AXLE_OFFSET)
         self.motion_from_odom_pose = bool(self.declare_parameter("motion_from_odom_pose", True).value)
         # after the map freeze: localise by colour-aware cone matching (false: keep the particle filter)
         self.match_localisation = bool(self.declare_parameter("match_localisation", True).value)
@@ -684,7 +784,15 @@ class FastSLAMNode(Node):
             dt = current_time - t0
             if dt <= 0.0:
                 return  # out-of-order pair from the synchroniser; nothing to apply
-            dx, dy = rx - x0, ry - y0
+            # The particle motion model moves along the heading, as only the rear axle does:
+            # base_link (the car's centre) also moves sideways at yaw rate x REAR_AXLE_OFFSET, and
+            # projecting its motion on the heading dropped that every step, so the particles traced
+            # the rear axle's path while measurements were placed from base_link (up to 1.5 m apart
+            # after a half turn). So the particles hold the REAR AXLE pose (rear-relative cones,
+            # START_POSITION shifted back), converted back to base_link for every output.
+            L = self.rear_axle_offset
+            dx = (rx - L * math.cos(r_yaw)) - (x0 - L * math.cos(yaw0))
+            dy = (ry - L * math.sin(r_yaw)) - (y0 - L * math.sin(yaw0))
             dyaw = math.atan2(math.sin(r_yaw - yaw0), math.cos(r_yaw - yaw0))
             mid_yaw = yaw0 + dyaw / 2.0
             v_linear = (dx * math.cos(mid_yaw) + dy * math.sin(mid_yaw)) / dt
@@ -717,7 +825,7 @@ class FastSLAMNode(Node):
                 estimated_pose, final_map_data, mode = self.slam_core.execute_step(
                     v_linear=v_linear,
                     omega_angular=omega_angular,
-                    measurements_rb=measurements_rb,
+                    measurements_rb=self._to_rear_axle(measurements_rb),
                     dt=dt,
                     elapsed_time=elapsed_time,
                     lap_count=self.latest_lap_count,
@@ -727,6 +835,10 @@ class FastSLAMNode(Node):
                 self.get_logger().error(f"SLAM/localisation execution error: {e}")
                 self.get_logger().debug(traceback.format_exc())
                 return
+            L = self.rear_axle_offset
+            estimated_pose = np.array([estimated_pose[0] + L * math.cos(estimated_pose[2]),
+                                       estimated_pose[1] + L * math.sin(estimated_pose[2]),
+                                       estimated_pose[2]])
             if self.match_localisation and self.slam_core.frozen_map is not None:
                 self._start_match_localisation(final_map_data, estimated_pose, rx, ry, r_yaw)
         self.last_odom_pose = (current_time, rx, ry, r_yaw)
@@ -739,6 +851,17 @@ class FastSLAMNode(Node):
         self._publish_obstacles(final_map_data, odom_msg, estimated_pose)
 
         self._status_log(current_time, elapsed_time, mode, estimated_pose, len(final_map_data), len(measurements_rb))
+
+    def _to_rear_axle(self, measurements_rb):
+        # [range, bearing, type] from base_link -> from the rear axle
+        L = self.rear_axle_offset
+        if L == 0.0 or len(measurements_rb) == 0:
+            return measurements_rb
+        m = measurements_rb.copy()
+        x = m[:, 0] * np.cos(m[:, 1]) + L
+        y = m[:, 0] * np.sin(m[:, 1])
+        m[:, 0], m[:, 1] = np.hypot(x, y), np.arctan2(y, x)
+        return m
 
     # ---- Localisation on the frozen map by colour-aware cone matching -----------------------
     # The particle filter's data association ignores cone colour and gates at a fixed distance.

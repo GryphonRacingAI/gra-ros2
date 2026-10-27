@@ -8,6 +8,17 @@ MAX_LANDMARKS: 800
 SEED: 42
 START_POSITION: [0.0, 0.0, 0.0]
 
+# Options added for the sim (see sim_config.yaml), off here until measured on the car:
+#  - REAR_AXLE_OFFSET: distance from the rear axle forward to base_link, if /odom is not already
+#    the rear axle (the particles must hold the point that moves along the heading).
+#  - sensor.FAR_RANGE / FAR_VARIANCE: a separate measurement covariance for far cones, if the
+#    perception error grows with range (measure it against surveyed cones).
+#  - NEW_LANDMARK_D2 (e.g. 9): charge a particle for starting a landmark; helped replays with
+#    large process noise like the values below, unclear benefit with small noise.
+# The CUDA kernel fixes in fastslam_node.py (EKF bearing residual, colour-aware association)
+# apply here too. Measure CONTROL_VARIANCE from logged odometry vs a reference (per-update
+# increments): the yaw-rate value below (0.1 rad/s sd) is far more than a calibrated gyro shows,
+# and in sim this much noise still breaks mapping with 512-2048 particles.
 CONTROL_VARIANCE:
   - 0.02      # Linear velocity variance; increase if wheel odom slips
   - 0.01      # Angular velocity variance; increase if yaw estimate drifts
