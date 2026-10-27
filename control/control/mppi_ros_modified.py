@@ -108,7 +108,7 @@ class MPPIController(Node):
         self.horizon = self.declare_parameter('horizon', 30).value
         self.num_rollouts = self.declare_parameter('num_rollouts', 400).value
         self.lambda_ = self.declare_parameter('lambda', 2.0).value
-        self.sigma_u = np.array(self.declare_parameter('sigma_u', [1.5, 0.12]).value)
+        self.sigma_u = np.array(self.declare_parameter('sigma_u', [1.5, 0.06]).value)
         self.alpha = self.declare_parameter('alpha', 0.6).value  # time correlation of the noise
 
         # Cost Weights
@@ -138,9 +138,12 @@ class MPPIController(Node):
 
         # Path Following
         self.path_spacing = self.declare_parameter('path_spacing', 0.5).value
+        self.path_smoothing = self.declare_parameter('path_smoothing', 3.0).value  # m, half window
         self.safety_distance = self.declare_parameter('safety_distance', 0.6).value
         self.cone_radius = self.declare_parameter('cone_radius', 0.2).value
         self.speed_lead = self.declare_parameter('speed_lead', 0.25).value  # s ahead for the speed request
+        self.path_timeout = self.declare_parameter('path_timeout', 1.0).value  # s without a new path -> stop
+        self.path_extension = self.declare_parameter('path_extension', 0.0).value  # m, straight events only
 
         # Speed Profile
         self.a_lat_max = self.declare_parameter('a_lat_max', 5.0).value  # planned; tyres give ~13
@@ -175,6 +178,7 @@ class MPPIController(Node):
         self.path_arr = None
         self.path_heading = None
         self.path_v_ref = None
+        self.last_path_time = None
         self.obstacles = np.empty((0, 3))
 
         self.u0 = np.zeros((self.horizon, 2))
@@ -202,18 +206,49 @@ class MPPIController(Node):
         self.path_frame_id = frame or ('odom' if not self.use_local_frame else self.expected_path_frame)
         self.path_is_local = self.use_local_frame and frame in (self.expected_path_frame, 'base_link', 'velodyne', '')
         raw = np.array([[p.pose.position.x, p.pose.position.y] for p in msg.poses])
-        result = self.path_processor(raw)
+        if self.path_extension > 0.0:
+            # straight event: continue the path past what the planner can see, so the horizon
+            # (1.5 s) doesn't cap the speed at path length / 1.5 s
+            d = raw[-1] - raw[-2]
+            raw = np.vstack([raw, raw[-1] + d / (np.linalg.norm(d) + 1e-9) * self.path_extension])
+        # The planner's waypoints are gate midpoints that jitter by tens of cm between updates;
+        # differentiating them for curvature gave spurious tight "corners" and a speed profile that
+        # collapsed (4 m/s on a straight). Smooth the geometry first (moving average over
+        # +-path_smoothing m, start point kept).
+        dense, _ = resample_path(raw, self.path_spacing)
+        k = int(self.path_smoothing / self.path_spacing)
+        if k > 0 and len(dense) > 2 * k + 1:
+            pad = np.vstack([np.repeat(dense[:1], k, axis=0), dense, np.repeat(dense[-1:], k, axis=0)])
+            kernel = np.ones(2 * k + 1) / (2 * k + 1)
+            smooth = np.column_stack([np.convolve(pad[:, i], kernel, mode='valid') for i in (0, 1)])
+            smooth[0] = dense[0]
+            dense = smooth
+        result = self.path_processor(dense if len(dense) >= 2 else raw)
         pts, s = resample_path(result.points, self.path_spacing)
         if len(pts) < 2:
             return
         # heading and curvature-limited speed from the team's PathProcessor, at the new spacing
         s_orig = np.concatenate([[0.0], np.cumsum(np.linalg.norm(np.diff(result.points, axis=0), axis=1))])
         heading = np.interp(s, s_orig, np.unwrap(result.heading))
-        v_ref = np.interp(s, s_orig, result.speed_ref)
-        # brake in time for slow sections ahead (backward pass)
+        # Speed from curvature over a +-3 m baseline (circle through three points): differentiating
+        # point to point (PathProcessor) turns 10 cm of jitter into a "tight corner".
+        b = max(1, int(3.0 / self.path_spacing))
+        kappa = np.zeros(len(pts))
+        for i in range(len(pts)):
+            a_, c_ = pts[max(0, i - b)], pts[min(len(pts) - 1, i + b)]
+            p_ = pts[i]
+            ab, bc, ac = np.linalg.norm(p_ - a_), np.linalg.norm(c_ - p_), np.linalg.norm(c_ - a_)
+            area2 = abs((p_[0] - a_[0]) * (c_[1] - a_[1]) - (p_[1] - a_[1]) * (c_[0] - a_[0]))
+            kappa[i] = 2.0 * area2 / (ab * bc * ac) if ab * bc * ac > 1e-6 else 0.0
+        v_ref = np.clip(np.sqrt(self.a_lat_max / (kappa + 1e-3)), self.v_min, self.v_max_straight)
+        # Drive within sight: be able to slow to v_min by the end of what the planner can see (the
+        # path is only a few metres long in an unmapped corner on lap 1). Then brake in time for
+        # slow sections ahead (backward pass).
+        v_ref[-1] = min(v_ref[-1], self.v_min)
         for i in range(len(v_ref) - 2, -1, -1):
             v_ref[i] = min(v_ref[i], math.sqrt(v_ref[i + 1] ** 2 + 2.0 * self.a_brake_plan * (s[i + 1] - s[i])))
         self.path_arr, self.path_heading, self.path_v_ref = pts, heading, v_ref
+        self.last_path_time = self.get_clock().now()
 
     def cone_callback(self, msg):
         """ Parse PointCloud2 cones into obstacle array """
@@ -259,6 +294,16 @@ class MPPIController(Node):
         _, _, _, v = self.vehicle_state
         x, y, yaw = (0.0, 0.0, 0.0) if local else self.vehicle_state[:3]
         obstacles = self.obstacles_in(local)
+
+        # No new path for a while (the planner sees no gates): keep following the last one, which
+        # usually brings new cones into view, but stop at its end instead of circling there with
+        # the creep speed (acceleration: the last gate before the finish line).
+        stale = (self.get_clock().now() - self.last_path_time).nanoseconds * 1e-9 > self.path_timeout
+        if stale and np.linalg.norm(self.path_arr[-1] - np.array([x, y])) < 2.0:
+            self.get_logger().warn("reached the end of the last /path: stopping", throttle_duration_sec=2.0)
+            self.pub_ackermann.publish(AckermannDrive(speed=0.0, steering_angle=0.0))
+            self.u0[:] = 0.0
+            return
         steer = self.steer_measured if self.steer_measured is not None else float(self.u0[0, 1])
         X0 = np.array([x, y, yaw, max(v, 0.0), steer])
 
@@ -281,6 +326,10 @@ class MPPIController(Node):
         # ---- sample controls (time-correlated noise) and roll out
         K, H = self.num_rollouts, self.horizon
         noise = self.rng.standard_normal((K, H, 2)) * self.sigma_u
+        # Steering noise within the grip budget at the current speed: with a fixed sigma, fast
+        # rollouts were penalised for sampled steering (v^2 tan(d) / L over the grip limit) more
+        # often than slow ones, which biased the plan to lower speeds (plateau at ~13 of 18 m/s).
+        noise[:, :, 1] *= min(1.0, self.a_lat_max * self.p['wheelbase'] / (max(v, 1.0) ** 2 * self.sigma_u[1]))
         for h in range(1, H):
             noise[:, h, :] = self.alpha * noise[:, h - 1, :] + math.sqrt(1 - self.alpha ** 2) * noise[:, h, :]
         noise[0] = 0.0  # keep the current plan as one candidate
@@ -322,6 +371,11 @@ class MPPIController(Node):
         self.u0 = self.u0 + np.einsum('k,khi->hi', w, noise)
         self.u0[:, 0] = clamp(self.u0[:, 0], -self.p['max_decel'], self.p['max_accel'])
         self.u0[:, 1] = clamp(self.u0[:, 1], -self.p['max_steer'], self.p['max_steer'])
+        # Smooth the steering sequence (moving average over 5 steps). Through the actuator lag the
+        # first command barely changes the predicted motion, so the weighted average was noisy
+        # and the car weaved.
+        pad = np.concatenate([np.full(2, self.u0[0, 1]), self.u0[:, 1], np.full(2, self.u0[-1, 1])])
+        self.u0[:, 1] = np.convolve(pad, np.ones(5) / 5.0, mode='valid')
 
         # ---- command: steering request now, speed request = planned speed speed_lead s ahead
         plan = rollout(X0, self.u0[None], self.dt, self.p)[0]

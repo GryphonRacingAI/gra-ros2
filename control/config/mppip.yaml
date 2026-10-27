@@ -11,7 +11,7 @@ mppi_controller:
     horizon: 30           # steps (1.5 s)
     num_rollouts: 400
     lambda: 2.0
-    sigma_u: [1.5, 0.12]  # sampling noise std: accel (m/s^2), steering command (rad)
+    sigma_u: [1.5, 0.06]  # sampling noise std: accel (m/s^2), steering command (rad)
     alpha: 0.6            # time correlation of the sampling noise
 
     # Cost Weights
@@ -37,9 +37,12 @@ mppi_controller:
 
     # Path Following
     path_spacing: 0.5     # path resampled every 0.5 m
+    path_smoothing: 3.0   # moving average over +-3 m before curvature (waypoints jitter)
     safety_distance: 0.6
     cone_radius: 0.2
     speed_lead: 0.25      # speed request = planned speed this far ahead (s)
+    path_timeout: 1.0     # no new /path for this long (s) and at the end of the last one: stop
+    path_extension: 0.0   # m to extend the path straight ahead (acceleration only)
 
     # Speed Profile
     a_lat_max: 5.0        # planned lateral accel (tyres hold ~13 m/s^2; margin for path noise)
