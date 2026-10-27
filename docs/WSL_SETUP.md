@@ -4,10 +4,28 @@ Tested on WSL2 Ubuntu 24.04, ROS 2 Jazzy, Gazebo Harmonic, RTX 5060 laptop GPU.
 The pipeline is the same as on native Ubuntu:
 
 ```
-Gazebo (ads_dv + track) -> perception (YOLO + lidar clustering) -> /cone_array
+Gazebo (ads_dv + track) -> ads_dv_vcu_sim (VCU + drivetrain) / vcu_odometry (wheels + IMU)
+  -> perception (YOLO + lidar, camera fallback) -> /cone_array
   -> lap_counter (/laps) -> FastSLAM (/slam/pose, /slam/cone_map, /slam/cones)
-  -> pathfinder (/path) -> MPPI (/ackermann_cmd) -> ackermann_to_speed_steer -> Gazebo
+  -> pathfinder (/path) -> MPPI (/ackermann_cmd) -> ads_dv_vcu_sim -> wheel torques
+  mission_control ends the event: /chequered_flag -> brakes
 ```
+
+### How realistic the simulated car is
+
+| | sim | source |
+|---|---|---|
+| drivetrain | 4WD, one motor per axle 3.5:1, 195 Nm/axle with the VCU's speed-dependent caps, speed loop per axle | fsai_api (fs-ai_api.c, ackermann_can.cpp) |
+| brakes | 50 % on /brake or chequered flag (0.6 g measured), 100 % on emergency brake or lost commands | ackermann_can; brake torque is an estimate |
+| tyres | mu 1.15 -> ~1.37 g sustained lateral (measured) | estimate for slicks, no aero |
+| steering | +-24.3 deg, 1 rad/s actuator | limit from the sdf; rate is an estimate |
+| resistance | rolling 0.015, CdA 1.0 | estimates |
+| lidar | VLP-16: 16 rings 2 deg apart, 0.2 deg horizontal, 1.5 cm range noise | VLP-16 data sheet |
+| IMU | MEMS noise and bias | ZED 2i class |
+| odometry | wheel speeds + IMU yaw rate, gyro bias calibrated at standstill | as on the car |
+
+`drive:=ideal` and `odom:=ground_truth` (launch args, or `FSAI_DRIVE` / `FSAI_ODOM` for the
+launcher) give the old behaviour: wheel speed set directly and Gazebo's exact pose as /odom.
 
 ## 1. Setup
 
@@ -56,15 +74,17 @@ export PATH=$PATH:/usr/lib/wsl/lib:/usr/local/cuda/bin              # nvidia-smi
 One terminal per line, in this order (after the environment above):
 
 ```bash
-ros2 launch simulation dynamic_event.launch.py event:=trackdrive        # add gui:=false for no window
-ros2 launch ultralytics_ros predict_with_cloud.launch.xml use_sim_time:=true yolo_model:=conev11n.pt input_topic:=/zed2i/depth_camera/image
+ros2 launch simulation dynamic_event.launch.py event:=trackdrive        # gui:=false: no window
+ros2 launch ultralytics_ros predict_with_cloud.launch.xml use_sim_time:=true yolo_model:=conev11n.pt input_topic:=/zed2i/depth_camera/image verbose:=false
 ros2 run mission_supervisor lap_counter --ros-args -p use_sim_time:=true
 ros2 run slam fastslam_node.py --ros-args -p use_sim_time:=true
-ros2 run path_planning pathfinder.py --ros-args -p use_sim_time:=true
+ros2 run path_planning pathfinder.py --ros-args -p use_sim_time:=true -p event:=trackdrive
 ros2 run control mppi_ros_modified.py --ros-args -p use_sim_time:=true --params-file src/control/config/mppi_params.yaml
+ros2 run mission_supervisor mission_control --ros-args -p use_sim_time:=true -p event:=trackdrive
 ```
 
-Events: `trackdrive` (track_small), `mppi_track`, `autocross` (drive1, FSG 2019), `acceleration`, `skidpad`.
+Events: `trackdrive` (track_small, 10 laps), `mppi_track`, `autocross` (drive1, FSG 2019, 1 lap),
+`acceleration`, `skidpad`. Use the same `event` for the simulation, pathfinder and mission_control.
 
 `predict_with_cloud_node` reads its parameters (topics, cluster sizes) from
 `perception/src/ultralytics_ros/config/predict_with_cloud_node.yaml`, which `main()` loads with
@@ -75,27 +95,44 @@ higher priority than launch-file parameters. Edit the YAML, not the launch argum
 ```bash
 ros2 topic echo /cone_array --once     # no cones at (0,0,0); several yellow AND blue
 ros2 topic hz /path                     # ~10 Hz once SLAM has mapped cones on both sides
-ros2 topic echo /odom --field pose.pose.position   # the car moves
+ros2 topic echo /ground_truth/odom --field pose.pose.position   # where the car really is
 ros2 topic echo /laps                   # increments each time the car crosses the start line
+ros2 topic echo /mission_state          # DRIVING -> FINISHING (braking) -> FINISHED
 ```
 
 `ros2 topic hz` under-reports high-rate topics (e.g. `/odom`) when the CPU is busy.
 
-## 5. Known limits
+## 5. Status per event
 
-Status per event with the full pipeline (WSL, Gazebo, YOLO + lidar, FastSLAM, pathfinder, MPPI):
+Full stack in Gazebo with the realistic car (torque drivetrain, tyre grip, wheel/IMU odometry,
+VLP-16 at real resolution), headless, WSL VM with 4 cores. Judged against ground truth.
 
 | event | result |
 |---|---|
-| trackdrive (track_small) | laps continuously (5 laps in 7 min, ~70 s/lap); map freezes after lap 2 |
-| mppi_track | laps (2 laps in 6 min, ~160 s/lap) |
-| acceleration | reaches the finish (76 m in 23.5 s), but nothing stops the car afterwards |
-| skidpad | drives to the centre, then stops: the centreline planner has no figure-8 logic |
-| autocross (drive1) | not run in Gazebo; offline planner replay on the true cones stops at the top hairpin, where drive1 has no yellow cones along ~15 m of the corner's inside |
+| trackdrive (track_small, 98 m) | 10 laps then stop; 13.6-13.9 s laps (6.6 m/s mean), never more than 1.1 m from the centreline (several consecutive missions) |
+| autocross (drive1, 242 m) | 1 lap then stop; never more than 1.05 m from the centreline, 5.4 m/s mean |
+| acceleration (75 m) | 7.3 s to the finish line (13.4 m/s), within 0.2 m of the lane centre, stops ~20 m after the line |
+| skidpad | right circle x2, left circle x2 at 9.2 m radius (rules: 9.125 m), exit, stop |
+| mppi_track (372 m, 3 m wide) | 10 laps then stop, 43-46 s laps, but over the cone line ~17 % of the time (see below) |
 
-- Laps are slow (mean ~1.4 m/s). MPPI only penalises overspeed; nothing in its cost rewards progress.
+## 6. Known limits
 
-- WSL gives the VM a share of the laptop's cores/RAM (`.wslconfig`). With 4 cores, the Gazebo
-  GUI alone costs ~half a core; use `gui:=false` when you don't need to watch.
-- The simulated VLP-16 has 2 degrees between rings, so cones beyond ~10-12 m are often hit by
-  no ring and get no 3D position; SLAM builds the map as the car drives.
+- **mppi_track localisation:** after the map freeze the car localises by matching cones to the
+  frozen map. On long straights with evenly spaced cones only the lateral position can be
+  corrected; along-track drift (wheel slip under hard acceleration, ~1.5 %) builds up to more
+  than the 1 m match gate, and the car then drives laps offset by a few metres until a corner
+  realigns it. A wider search made it worse (ambiguous). Needs a better localiser.
+- **FastSLAM process noise:** with realistic odometry noise (e.g. real_config.yaml's) this
+  FastSLAM builds poor maps in sim even with perfect odometry (100-130 landmarks for 72 cones);
+  the sim config uses near-zero noise while mapping. Persistent weights (fixed) helped but did not
+  solve it. Worth checking on the car.
+- **fastslam64 (external library):** heading mean is linear (worked around in the node with a
+  circular mean); data association ignores cone colour (the frozen-map localisation in the node
+  is colour-aware).
+- **Estimated vehicle numbers** (check against the car): speed loop gains, brake torque at 100 %,
+  steering rate (1 rad/s), rolling resistance, CdA, regenerative braking.
+- **VLP-16 blind band:** no ring hits a 0.325 m cone between ~10.5 and ~16 m (0.6 m mount, 2 deg
+  rings); perception falls back to the camera up to 13 m.
+- WSL gives the VM a share of the laptop's cores/RAM (`.wslconfig`). With 4 cores the Gazebo GUI
+  costs ~half a core and control quality drops when the real-time factor falls below ~0.5
+  (e.g. while recording bags): use `gui:=false` for long tests.
