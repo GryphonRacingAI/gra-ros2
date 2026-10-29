@@ -409,6 +409,17 @@ def generate_launch_description():
                 '/ros_gz_bridge.launch.py']),
         )
 
+    # Cones are static in the world file (cheap); this node makes the ones near the car dynamic so the
+    # car can knock them over (see scripts/cone_activator.py).
+    cone_activator = Node(
+        package='simulation',
+        executable='cone_activator.py',
+        name='cone_activator',
+        output='screen',
+        arguments=[[os.path.join(get_package_share_directory('simulation'), 'models', 'tracks', ''),
+                    LaunchConfiguration('map_file')]],
+    )
+
     return LaunchDescription([
         event_launch_arg,
         model_file_launch_arg,
@@ -433,4 +444,5 @@ def generate_launch_description():
         OpaqueFunction(function=vehicle_nodes),
         initial_sim_world_odom_tf,
         ros_gz_bridge,
+        cone_activator,
     ])

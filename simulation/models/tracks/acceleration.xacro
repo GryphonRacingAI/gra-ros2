@@ -27,7 +27,6 @@
 
     <xacro:include filename="$(find simulation)/models/cones/cone.xacro"/>
 
-    <model name='cones'>
       <xacro:cone name="blue_1" type="blue" pose="-45 1.5 0.15 0 0 0"/>
       <xacro:cone name="blue_2" type="blue" pose="-40 1.5 0.15 0 0 0"/>
       <xacro:cone name="blue_3" type="blue" pose="-35 1.5 0.15 0 0 0"/>
@@ -78,14 +77,8 @@
       <xacro:cone name="large_orange_5" type="large_orange" pose="25 1.5 0.033 0 0 0"/>
       <xacro:cone name="large_orange_6" type="large_orange" pose="25 -1.5 0.033 0 0 0"/>
 
-      <plugin name="gz::sim::systems::PosePublisher" filename="gz-sim-pose-publisher-system">
-          <use_pose_vector_msg>true</use_pose_vector_msg>
-          <publish_model_pose>true</publish_model_pose>
-          <publish_nested_model_pose>true</publish_nested_model_pose>
-          <publish_link_pose>false</publish_link_pose>
-      </plugin>
 
-    </model>
+    <xacro:cone_pool/>
 
   </world>
 </sdf>

@@ -96,6 +96,7 @@ install(TARGETS
 # Install directories
 install(PROGRAMS
   scripts/vcu_odometry.py
+  scripts/cone_activator.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
