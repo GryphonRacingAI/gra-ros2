@@ -1,11 +1,86 @@
 <?xml version="1.0"?>
 <sdf version='1.7' xmlns:xacro="http://ros.org/wiki/xacro">
 
-    <!-- Macro to define a cone -->
+    <!--
+      Dynamic Formula Student cone: a free rigid body that the car can push or knock over.
+
+      Real cones (FSG / FS-AI competition handbook, "Cones" section):
+        small  (blue / yellow / orange): 228 x 228 mm base, 325 mm high
+        large orange:                    285 x 285 mm base, 505 mm high
+      The handbook does not give masses. Assumed from typical PVC cones of those sizes with a
+      rubber/recycled-rubber foot (the foot is roughly half the mass): small 0.65 kg
+      (0.35 kg foot + 0.30 kg shell), large 1.5 kg (0.8 kg foot + 0.7 kg shell).
+
+      Geometry follows the visual meshes (what the lidar/camera see), which are slightly smaller than
+      the handbook: small mesh 225 x 225 x 303 mm, large mesh 262 x 262 x 525 mm.
+      Link frame = mesh frame: small mesh spans z -0.1517..0.1517, large -0.0328..0.4927.
+
+      Collision (cheap primitives, no mesh): square foot box + two stacked cylinders approximating the
+      frustum (radius = mean radius of each half, from the mesh profile).
+      Inertia: solid box foot + thin conical shell, about the COM (computed numerically):
+        small: COM 65 mm above the ground, Ixx = Iyy = 0.00582, Izz = 0.00384 kg m^2
+        large: COM 120 mm above the ground, Ixx = Iyy = 0.0377, Izz = 0.0133 kg m^2
+      Friction (the simulator takes the smaller mu of the two surfaces; ground plane 50, car 1):
+        foot mu 0.9: rubber foot on dry asphalt (~0.8-1.0)
+        body mu 0.4: smooth PVC shell against the car's bodywork, or on asphalt once knocked over.
+        With a grippy body the bodywork friction holds the cone upright and it is shoved along
+        like a box; with ~0.4 it tips over the front edge of its foot as real cones do.
+      No restitution.
+
+      Spawn height: the macro ignores the z in `pose` and places the foot 0.5 mm above the ground
+      (z = mesh half height + 0.0005), so cones settle without a drop or a pop out of the ground.
+      Names and types are unchanged (blue_1, large_orange_3, ...).
+    -->
+    <xacro:macro name="cone_collision" params="name x y z sx sy sz">
+        <collision name="${name}">
+            <pose>${x} ${y} ${z} 0 0 0</pose>
+            <geometry><box><size>${sx} ${sy} ${sz}</size></box></geometry>
+            <surface>
+                <friction><ode><mu>0.9</mu><mu2>0.9</mu2></ode></friction>
+                <bounce><restitution_coefficient>0</restitution_coefficient></bounce>
+            </surface>
+        </collision>
+    </xacro:macro>
+    <xacro:macro name="cone_cylinder" params="name z r l">
+        <collision name="${name}">
+            <pose>0 0 ${z} 0 0 0</pose>
+            <geometry><cylinder><radius>${r}</radius><length>${l}</length></cylinder></geometry>
+            <surface>
+                <friction><ode><mu>0.4</mu><mu2>0.4</mu2></ode></friction>
+                <bounce><restitution_coefficient>0</restitution_coefficient></bounce>
+            </surface>
+        </collision>
+    </xacro:macro>
+
+    <!-- Macro to define a cone as it stands on the track: static, visual only (lidar and camera see
+         it, the car passes through it). scripts/cone_activator.py swaps it for a pooled dynamic body
+         (cone_dyn) when the car comes near; see the comment at the top. -->
     <xacro:macro name="cone" params="name type pose">
+    <xacro:property name="p" value="${pose.split()}"/>
+    <xacro:property name="large" value="${type == 'large_orange'}"/>
+    <xacro:property name="z0" value="${0.0333 if large else 0.1522}"/>
     <model name="${name}">
         <static>true</static>
-        <pose>${pose}</pose>
+        <pose>${p[0]} ${p[1]} ${z0} ${p[3]} ${p[4]} ${p[5]}</pose>
+        <link name="${name}_link">
+            <visual name="visual">
+                <geometry>
+                    <mesh>
+                        <uri>model://simulation/models/cones/cone_${type}/mesh.dae</uri>
+                    </mesh>
+                </geometry>
+            </visual>
+        </link>
+    </model>
+    </xacro:macro>
+
+    <!-- Dynamic cone body (with collision): one pool member, see cone_pool -->
+    <xacro:macro name="cone_dyn" params="name type pose">
+    <xacro:property name="p" value="${pose.split()}"/>
+    <xacro:property name="large" value="${type == 'large_orange'}"/>
+    <xacro:property name="z0" value="${0.0333 if large else 0.1522}"/>
+    <model name="${name}">
+        <pose>${p[0]} ${p[1]} ${z0} ${p[3]} ${p[4]} ${p[5]}</pose>
         <link name="${name}_link">
             <visual name="visual">
                 <geometry>
@@ -15,34 +90,55 @@
                 </geometry>
             </visual>
 
-            <!-- Different inertial properties for different types of cones -->
-            <inertial>
-                <xacro:if value="${type == 'large_orange'}">
-                    <mass>1.05</mass>
-                    <!-- Edit centre of mass later -->
+            <xacro:if value="${large}">
+                <inertial>
+                    <pose>0 0 0.0874 0 0 0</pose>
+                    <mass>1.5</mass>
                     <inertia>
-                        <ixx>0.003</ixx>
-                        <ixy>0.0</ixy>
-                        <ixz>0.0</ixz>
-                        <iyy>0.003</iyy>
-                        <iyz>0.0</iyz>
-                        <izz>0.002</izz>
+                        <ixx>0.0377</ixx><ixy>0</ixy><ixz>0</ixz>
+                        <iyy>0.0377</iyy><iyz>0</iyz>
+                        <izz>0.0133</izz>
                     </inertia>
-                </xacro:if>
-                <xacro:unless value="${type == 'large_orange'}">
-                    <mass>0.45</mass>
+                </inertial>
+                <!-- foot 262 x 262 x 35 mm, z -0.0328..0.002 -->
+                <xacro:cone_collision name="foot" x="0" y="0" z="-0.0154" sx="0.262" sy="0.262" sz="0.0348"/>
+                <!-- body r 104 -> 33 mm over z 0.002..0.493 -->
+                <xacro:cone_cylinder name="body_low" z="0.1245" r="0.086" l="0.245"/>
+                <xacro:cone_cylinder name="body_high" z="0.37" r="0.050" l="0.246"/>
+            </xacro:if>
+            <xacro:unless value="${large}">
+                <inertial>
+                    <pose>0 0 -0.0872 0 0 0</pose>
+                    <mass>0.65</mass>
                     <inertia>
-                        <ixx>0.013</ixx>
-                        <ixy>0.0</ixy>
-                        <ixz>0.0</ixz>
-                        <iyy>0.013</iyy>
-                        <iyz>0.0</iyz>
-                        <izz>0.006</izz>
+                        <ixx>0.00582</ixx><ixy>0</ixy><ixz>0</ixz>
+                        <iyy>0.00582</iyy><iyz>0</iyz>
+                        <izz>0.00384</izz>
                     </inertia>
-                </xacro:unless>
-            </inertial>
+                </inertial>
+                <!-- foot 225 x 225 x 21 mm, z -0.1517..-0.131 -->
+                <xacro:cone_collision name="foot" x="0" y="0" z="-0.14135" sx="0.225" sy="0.225" sz="0.0207"/>
+                <!-- body r 76 -> 12 mm over z -0.131..0.152 -->
+                <xacro:cone_cylinder name="body_low" z="-0.0605" r="0.060" l="0.141"/>
+                <xacro:cone_cylinder name="body_high" z="0.081" r="0.028" l="0.142"/>
+            </xacro:unless>
         </link>
     </model>
+    </xacro:macro>
+
+    <!-- Pool of dynamic cone bodies, parked far from the track until the activator needs them:
+         n of each of blue / yellow / orange / large_orange. -->
+    <xacro:macro name="pool_row" params="type n y">
+        <xacro:if value="${n > 0}">
+            <xacro:cone_dyn name="dyn_${type}_${n}" type="${type}" pose="${600 + 2 * n} ${y} 0 0 0 0"/>
+            <xacro:pool_row type="${type}" n="${n - 1}" y="${y}"/>
+        </xacro:if>
+    </xacro:macro>
+    <xacro:macro name="cone_pool" params="n_small:=16 n_orange:=4 n_large:=6">
+        <xacro:pool_row type="blue" n="${n_small}" y="-600"/>
+        <xacro:pool_row type="yellow" n="${n_small}" y="-610"/>
+        <xacro:pool_row type="orange" n="${n_orange}" y="-620"/>
+        <xacro:pool_row type="large_orange" n="${n_large}" y="-630"/>
     </xacro:macro>
 
 </sdf>
