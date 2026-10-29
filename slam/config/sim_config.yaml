@@ -60,6 +60,8 @@ endurance:
 
   # Prevents freezing a bad/empty map.
   MIN_LANDMARKS_TO_FREEZE: 40
+  # Same-colour landmarks closer than this (m) are merged when the map is frozen (0 = off).
+  MERGE_RADIUS: 0.7
 
   # After freeze, use smoother update gating and covariance.
   # These are the only extra localisation settings exposed.

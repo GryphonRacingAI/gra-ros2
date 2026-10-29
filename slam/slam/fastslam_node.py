@@ -42,96 +42,17 @@ DEBUG_GPU = False
 
 # ------------------ FastSLAM Core Imports ------------------
 try:
-    from fastslam64.lib.particle3 import FlatParticle
-    from fastslam64.lib.common import CUDAMemory, rescale, get_pose_estimate, resample
-    from fastslam64.cuda import fastslam as fastslam_cuda
-    from fastslam64.lib.utils import dotify
+    # fastslam64 is vendored (slam/fastslam64, see its README): the kernel fixes live in its source.
+    from slam.fastslam64.lib.particle3 import FlatParticle
+    from slam.fastslam64.lib.common import CUDAMemory, rescale, get_pose_estimate, resample
+    from slam.fastslam64.cuda import fastslam as fastslam_cuda
+    from slam.fastslam64.lib.utils import dotify
 except Exception as e:
     raise SystemExit(f"Failed to import FastSLAM core components: {e}")
 
 
 KERN_FLOAT = np.float64
 WEIGHT_DTYPE = np.float64
-
-# ------------------ CUDA kernel fixes ------------------
-# fastslam64 is installed from outside this repo, so its kernels are patched as they are loaded.
-# Each patch must match the library source exactly once, or the node refuses to start.
-KERNEL_PATCHES = {
-    "update.cu": [
-        # vecmul(K, residual, out) read its second input element from the OUTPUT vector (still
-        # zero), so the EKF landmark update used only the range residual and dropped the bearing
-        # residual: landmarks were never corrected sideways, and with realistic odometry noise
-        # every particle's map filled with duplicates.
-        ("double e = u[0]; double f = v[1];",
-         "double e = u[0]; double f = u[1];"),
-        # Data association ignored colour: along a track edge a cone could match the landmark of
-        # a cone on the other side. Only match landmarks of the measured colour (UNKNOWN = 0
-        # matches anything).
-        ("""            double dist = compute_dist(particle, in_range[j], measurements->measurements[i], measurement_cov);
-""",
-         """            double lm_type = get_landmark_color(particle, in_range[j], max_landmarks)[0];
-            double ms_type = measurements->measurements[i][2];
-            if (lm_type != ms_type && lm_type != 0.0 && ms_type != 0.0) continue;
-            double dist = compute_dist(particle, in_range[j], measurements->measurements[i], measurement_cov);
-"""),
-        # One measurement covariance for every cone. In sim, cones closer than the VLP-16 blind band
-        # (~10.5 m) come from lidar clusters (~0.08 m, <1 deg), farther ones mostly from the camera
-        # box-height fallback (~0.5 m in range). Use sensor.FAR_VARIANCE beyond sensor.FAR_RANGE.
-        ("""    for(int i = 0; i < n_measurements; i++) {
-        double best = 1000000.0;
-""",
-         """    for(int i = 0; i < n_measurements; i++) {
-        double R_far[] = { <<FAR_VAR_R>>, 0.0, 0.0, <<FAR_VAR_B>> };
-        double *R_i = (measurements->measurements[i][0] > <<FAR_RANGE>>) ? R_far : measurement_cov;
-        double best = 1000000.0;
-"""),
-        ("matmul_jacobian(H, landmark_cov, measurement_cov, S);",
-         "matmul_jacobian(H, landmark_cov, R_i, S);"),
-        ("""        } else {
-            add_measurement_as_landmark(particle, measurements->measurements[i], measurement_cov, max_landmarks);""",
-         """        } else {
-            add_measurement_as_landmark(particle, measurements->measurements[i], R_i, max_landmarks);"""),
-        # A measurement that matches no landmark became a new landmark at no cost to the particle's
-        # weight, while a match multiplies it by the measurement likelihood. So a particle whose
-        # pose had drifted, and matched nothing, outweighed one that matched with a 3-sigma
-        # residual, and kept duplicating the map. Charge a new landmark the likelihood of a match
-        # at Mahalanobis distance sqrt(NEW_LANDMARK_D2) (FastSLAM's new-feature likelihood p0;
-        # 0 = off). Applied on top of the R_i patch above.
-        ("""        } else {
-            add_measurement_as_landmark(particle, measurements->measurements[i], R_i, max_landmarks);""",
-         """        } else {
-            if (<<NEW_LM_D2>> > 0.0) {
-                double det_r = R_i[0] * R_i[3] - R_i[1] * R_i[2];
-                particle[3] *= exp(-0.5 * <<NEW_LM_D2>>) / (2.0 * M_PI * sqrt(det_r));
-            }
-            add_measurement_as_landmark(particle, measurements->measurements[i], R_i, max_landmarks);"""),
-        ("""    for(int i = 0; i < n_measurements; i++) {
-        add_measurement_as_landmark(particle, measurements->measurements[i], measurement_cov, max_landmarks);""",
-         """    for(int i = 0; i < n_measurements; i++) {
-        double R_far[] = { <<FAR_VAR_R>>, 0.0, 0.0, <<FAR_VAR_B>> };
-        double *R_i = (measurements->measurements[i][0] > <<FAR_RANGE>>) ? R_far : measurement_cov;
-        add_measurement_as_landmark(particle, measurements->measurements[i], R_i, max_landmarks);"""),
-    ],
-}
-
-
-def load_cuda_modules(**args):
-    cu_dir = os.path.dirname(fastslam_cuda.__file__)
-    sources = {}
-    for name in ("predict", "update", "rescale", "resample", "weights_and_mean_position", "permute"):
-        with open(os.path.join(cu_dir, name + ".cu"), "r", encoding="utf-8") as f:
-            src = f.read()
-        for old, new in KERNEL_PATCHES.get(name + ".cu", []):
-            if src.count(old) != 1:
-                raise RuntimeError(f"fastslam64 {name}.cu changed: kernel patch no longer applies:\n{old}")
-            src = src.replace(old, new)
-        sources[name] = src
-    modules = {name: fastslam_cuda.preprocess_module(src, args, no_extern_c=(name == "predict"))
-               for name, src in sources.items()}
-    modules["weights_and_mean"] = modules.pop("weights_and_mean_position")
-    return modules
-
-
 
 # ------------------ Config Helpers ------------------
 def cfg_get(obj, name, default):
@@ -188,7 +109,7 @@ def load_config(use_sim: bool):
     # Distance from the rear axle forward to base_link (the /odom point). The particles move along
     # their heading (no sideslip), which only the rear axle does; see FastSLAMNode.slam_callback.
     config.REAR_AXLE_OFFSET = float(cfg_get(config, "REAR_AXLE_OFFSET", 0.0))
-    # weight of a measurement that starts a new landmark (see KERNEL_PATCHES); 0 = off
+    # weight of a measurement that starts a new landmark (see fastslam64/README.md); 0 = off
     config.NEW_LANDMARK_D2 = float(cfg_get(config, "NEW_LANDMARK_D2", 0.0))
     config.sensor.VARIANCE = np.array(
         cfg_get(config.sensor, "VARIANCE", [0.01, 0.001]),
@@ -214,6 +135,9 @@ def load_config(use_sim: bool):
     config.endurance.MIN_LANDMARKS_TO_FREEZE = int(
         cfg_get(config.endurance, "MIN_LANDMARKS_TO_FREEZE", 20)
     )
+    # Same-colour landmarks closer than this are one cone mapped twice (data association failed
+    # while the particle's pose was off); merged when the map is frozen. 0 = off.
+    config.endurance.MERGE_RADIUS = float(cfg_get(config.endurance, "MERGE_RADIUS", 0.7))
 
     # Hidden/default endurance tuning. You can expose these later only if needed.
     config.endurance.LOCALIZATION_THRESHOLD = float(
@@ -339,6 +263,8 @@ class FastSLAMCore:
 
         self.mode = "mapping"
         self.frozen_map = None
+        self.frozen_count = 0
+        self.frozen_map_data = []
         self.persistent_weights = bool(cfg_get(config, "PERSISTENT_WEIGHTS", True))
 
         self._info(f"Chosen FastSLAM N: {self.N}")
@@ -353,7 +279,7 @@ class FastSLAMCore:
             sigma=0.2
         ).astype(KERN_FLOAT)
 
-        self.cuda_modules = load_cuda_modules(
+        self.cuda_modules = fastslam_cuda.load_cuda_modules(
             THREADS=self.THREADS,
             PARTICLE_SIZE=int(self.config.PARTICLE_SIZE),
             N_PARTICLES=self.N,
@@ -427,7 +353,27 @@ class FastSLAMCore:
         if self.frozen_map is None:
             return
         particles_2d = self._particles_2d()
+        particles_2d[:, 5] = self.frozen_count
         particles_2d[:, 6:] = self.frozen_map
+
+    def _map_data_from_block(self, block, n):
+        ml = int(self.config.MAX_LANDMARKS)
+        means = block[:2 * ml].reshape(ml, 2)[:n]
+        covs = block[2 * ml:6 * ml].reshape(ml, 2, 2)[:n]
+        probs = block[6 * ml:7 * ml][:n]
+        colors = block[7 * ml:8 * ml][:n]
+        return [{"position": means[i], "covariance": covs[i], "type": safe_cone_type(colors[i]), "prob": float(probs[i])}
+                for i in range(n) if not np.all(covs[i] == 0) and np.linalg.norm(means[i]) > 0.01]
+
+    def _dump_map(self, map_data, n_before):
+        # debugging hook: FSAI_MAP_DUMP=/path/file.csv writes the frozen map (x, y, type) and the
+        # landmark count before merging
+        path = os.environ.get("FSAI_MAP_DUMP")
+        if path:
+            with open(path, "w") as f:
+                f.write(f"# landmarks before merge: {n_before}\nx,y,type,prob\n")
+                for lm in map_data:
+                    f.write(f"{lm['position'][0]:.3f},{lm['position'][1]:.3f},{lm['type']},{lm['prob']:.1f}\n")
 
     def _force_frozen_map_on_gpu(self, name):
         if self.frozen_map is None:
@@ -438,6 +384,40 @@ class FastSLAMCore:
             ensure_contiguous(self.particles, KERN_FLOAT),
             name=name
         )
+
+    def _merge_duplicate_landmarks(self, block, n, radius):
+        """Merge same-colour landmarks within `radius` of each other in one particle's landmark block
+        (means | covariances | probabilities | colours). Returns (new block, new landmark count)."""
+        ml = int(self.config.MAX_LANDMARKS)
+        means = block[:2 * ml].reshape(ml, 2)[:n]
+        covs = block[2 * ml:6 * ml].reshape(ml, 4)[:n]
+        probs = block[6 * ml:7 * ml][:n]
+        colors = block[7 * ml:8 * ml][:n]
+        parent = list(range(n))
+
+        def find(i):
+            while parent[i] != i:
+                parent[i] = parent[parent[i]]
+                i = parent[i]
+            return i
+
+        for i in range(n):
+            d = np.hypot(means[i + 1:, 0] - means[i, 0], means[i + 1:, 1] - means[i, 1])
+            for j in np.nonzero((d < radius) & (colors[i + 1:] == colors[i]))[0] + i + 1:
+                parent[find(int(j))] = find(i)
+
+        groups = {}
+        for i in range(n):
+            groups.setdefault(find(i), []).append(i)
+        out = np.zeros_like(block)
+        o_means = out[:2 * ml].reshape(ml, 2)
+        o_covs = out[2 * ml:6 * ml].reshape(ml, 4)
+        o_probs, o_colors = out[6 * ml:7 * ml], out[7 * ml:8 * ml]
+        for k, members in enumerate(sorted(groups.values(), key=min)):
+            best = min(members, key=lambda m: covs[m, 0] + covs[m, 3])   # tightest covariance
+            o_means[k] = means[members].mean(axis=0)
+            o_covs[k], o_probs[k], o_colors[k] = covs[best], probs[best], colors[best]
+        return out, len(groups)
 
     def freeze_best_map(self, final_map_data, elapsed_time, lap_count):
         if self.frozen_map is not None:
@@ -456,6 +436,17 @@ class FastSLAMCore:
             best_idx = int(np.argmax(FlatParticle.w(self.particles)))
             particles_2d = self._particles_2d()
             self.frozen_map = np.copy(particles_2d[best_idx, 6:])
+            self.frozen_count = int(particles_2d[best_idx, 5])
+            n_before = self.frozen_count
+            radius = float(self.config.endurance.MERGE_RADIUS)
+            if radius > 0.0:
+                self.frozen_map, self.frozen_count = self._merge_duplicate_landmarks(
+                    self.frozen_map, self.frozen_count, radius)
+                if self.frozen_count < n_before:
+                    self._warn(f"Merged {n_before - self.frozen_count} duplicate landmarks "
+                               f"({n_before} -> {self.frozen_count}, radius {radius} m).")
+            self.frozen_map_data = self._map_data_from_block(self.frozen_map, self.frozen_count)
+            self._dump_map(self.frozen_map_data, n_before)
         except Exception as e:
             raise RuntimeError(f"Failed to freeze best particle map: {e}")
 
@@ -469,6 +460,7 @@ class FastSLAMCore:
 
         self.mode = "localization"
         self._force_frozen_map_on_gpu(name="freeze_best_map")
+        final_map_data[:] = self.frozen_map_data
 
         self._warn("=" * 72)
         self._warn(
@@ -623,9 +615,9 @@ class FastSLAMCore:
             check_and_memcpy_dtoh(self.particles, self.memory.particles, name="particles")
             best_idx = int(np.argmax(FlatParticle.w(self.particles)))
             best_landmarks = FlatParticle.get_landmarks(self.particles, best_idx)
-            # get_pose_estimate() averages headings linearly: near +-pi (driving west) particles at
-            # +3.1 and -3.1 rad average to ~0, and the published heading flipped by up to 180 deg
-            # (replayed sim bag). Use the weighted circular mean instead.
+            # Weighted circular mean of the heading: a linear mean of particles at +3.1 and -3.1 rad
+            # (driving west) is ~0 and flipped the published heading by up to 180 deg. The vendored
+            # get_mean_position kernel does the same; this host copy keeps the pose on one array.
             p2d = self._particles_2d()
             w = p2d[:, 3] / max(p2d[:, 3].sum(), 1e-300)
             estimated_pose = np.array([
@@ -1189,7 +1181,7 @@ def main(args=None):
             node.destroy_node()
         except Exception:
             pass
-        rclpy.shutdown()
+        rclpy.try_shutdown()
 
 
 if __name__ == "__main__":
