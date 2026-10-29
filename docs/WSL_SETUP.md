@@ -23,9 +23,19 @@ Gazebo (ads_dv + track) -> ads_dv_vcu_sim (VCU + drivetrain) / vcu_odometry (whe
 | lidar | VLP-16: 16 rings 2 deg apart, 0.2 deg horizontal, 1.5 cm range noise | VLP-16 data sheet |
 | IMU | MEMS noise and bias | ZED 2i class |
 | odometry | wheel speeds + IMU yaw rate, gyro bias calibrated at standstill | as on the car |
+| cones | free rigid bodies (foot box + 2 cylinders), 0.65 kg small / 1.5 kg large, tip and slide when hit; static until the car is within 9 m | FS handbook sizes; masses assumed (see `models/cones/cone.xacro`) |
 
 `drive:=ideal` and `odom:=ground_truth` (launch args, or `FSAI_DRIVE` / `FSAI_ODOM` for the
 launcher) give the old behaviour: wheel speed set directly and Gazebo's exact pose as /odom.
+
+**Cones.** A dynamic cone resting on the ground costs a persistent contact per physics step; 292
+dynamic cones cut the real-time factor of the 4-core VM from 0.92 to 0.57 (static cones with the same
+collision shapes cost nothing: 0.90). So the track .sdf files hold static cones, and
+`simulation/scripts/cone_activator.py` (started by `dynamic_event.launch.py`) swaps the cones within
+9 m of the car for dynamic twins (same name and pose) and back to static, at their current pose, once the
+car is 16 m away and they have rested for 1.5 s. Only top-level models can be removed and re-created in
+Gazebo, so the cones are top-level models (no `cones` wrapper, hence no `/model/cones/pose`). Without the
+activator the cones are immovable. Measured RTF with the activator: 0.90-0.96 (before: 0.92).
 
 ## 1. Setup
 
@@ -105,30 +115,40 @@ ros2 topic echo /mission_state          # DRIVING -> FINISHING (braking) -> FINI
 ## 5. Status per event
 
 Full stack in Gazebo with the realistic car (torque drivetrain, tyre grip, wheel/IMU odometry,
-VLP-16 at real resolution), headless, WSL VM with 4 cores. Judged against ground truth.
+VLP-16 at real resolution) and dynamic cones, headless, WSL VM with 4 cores. Judged against
+`/ground_truth/odom` (2026-10-29, vendored fastslam64, freeze-time landmark merge).
 
 | event | result |
 |---|---|
-| trackdrive (track_small, 98 m) | 10 laps then stop; 13.6-13.9 s laps (6.6 m/s mean), never more than 1.1 m from the centreline (several consecutive missions) |
-| autocross (drive1, 242 m) | 1 lap then stop; never more than 1.05 m from the centreline, 5.4 m/s mean |
-| acceleration (75 m) | 7.3 s to the finish line (13.4 m/s), within 0.2 m of the lane centre, stops ~20 m after the line |
-| skidpad | right circle x2, left circle x2 at 9.2 m radius (rules: 9.125 m), exit, stop |
-| mppi_track (372 m, 3 m wide) | 10 laps then stop, 43-46 s laps, but over the cone line ~17 % of the time (see below) |
+| trackdrive (track_small, 98 m) | 10 laps then stop, ~14 s laps (6.8 m/s mean). 4 of 5 runs clean; 1 run froze a map with extra landmarks, the planner then found no path and the car left the track (see limits) |
+| autocross (drive1, 242 m) | 1 lap then stop in 46 s, never more than 1.4 m from the centreline (half width 1.9 m) |
+| acceleration (75 m) | 6.8 s from launch to the line (13.2 m/s there), within 0.26 m of the lane centre, stops 27.6 m after the line |
+| skidpad | finishes and stops; right and left circles ~8.8 m path radius (finite-difference estimate; rules 9.125 m) |
+| mppi_track (372 m, 3 m wide) | 10 laps then stop, 45-46 s laps (8.1 m/s). Clean runs: 0-0.6 % of the time > 1.5 m off the centreline, max 1.3-2.1 m. One run froze a 331-landmark map (292 real cones): 3.9 %, max 3.4 m |
+
+The car's centre passes within 0.5 m of the original position of 13-54 cones per 10-lap mppi_track
+run (the car is ~1.1 m wide with the wheels): it clips cones on tight corners at 8-9 m/s.
 
 ## 6. Known limits
 
-- **mppi_track localisation:** after the map freeze the car localises by matching cones to the
-  frozen map. On long straights with evenly spaced cones only the lateral position can be
-  corrected; along-track drift (wheel slip under hard acceleration, ~1.5 %) builds up to more
-  than the 1 m match gate, and the car then drives laps offset by a few metres until a corner
-  realigns it. A wider search made it worse (ambiguous). Needs a better localiser.
-- **FastSLAM process noise:** with realistic odometry noise (e.g. real_config.yaml's) this
-  FastSLAM builds poor maps in sim even with perfect odometry (100-130 landmarks for 72 cones);
-  the sim config uses near-zero noise while mapping. Persistent weights (fixed) helped but did not
-  solve it. Worth checking on the car.
-- **fastslam64 (external library):** heading mean is linear (worked around in the node with a
-  circular mean); data association ignores cone colour (the frozen-map localisation in the node
-  is colour-aware).
+- **Frozen-map quality (FastSLAM):** the map frozen after lap 2 is sometimes warped or has extra
+  landmarks (74 for 72 cones in the bad trackdrive run; 331 for 292 on mppi_track). Same-colour
+  landmarks within 0.7 m are merged at the freeze (`endurance.MERGE_RADIUS`), which removes the
+  plain duplicates (2-4 per run), but most remaining "ghosts" are real cones displaced > 0.6 m by
+  loop-closure drift and have a high existence count (48-52), so filtering on it does not help.
+  Roughly 1 in 5 runs freezes a map bad enough to hurt. Ideas: freeze only after a map-stability
+  check, or un-freeze and re-map when the planner finds no path for several seconds after the freeze.
+  `FSAI_MAP_DUMP=/path/map.csv` makes the node write the frozen map (x, y, type, existence count).
+- **Cone physics:** a dynamic cone can wedge under the low tub (~0.07 m ground clearance): one
+  mppi_track run stopped dead on yellow cone (44.91, 24.01) at lap 1 with the wheels still driving.
+  Not reproduced in 3 further runs (about 1 in 9 runs).
+- **FastSLAM process noise:** `sim_config.yaml` uses the measured sim odometry noise (it maps fine). The
+  car's `real_config.yaml` ([0.02, 0.01], a 0.1 rad/s yaw-rate error) still maps badly with 512
+  particles (per the notes in `sim_config.yaml`; not re-tested after vendoring). That points at the real
+  odometry noise, to be checked on the car.
+- **fastslam64** is vendored in `slam/slam/fastslam64` (see its README): the library bugs found in
+  the 2026-10-27 report (EKF bearing residual, colour-blind association, linear heading mean) are
+  fixed in its source, not patched at run time.
 - **Estimated vehicle numbers** (check against the car): speed loop gains, brake torque at 100 %,
   steering rate (1 rad/s), rolling resistance, CdA, regenerative braking.
 - **VLP-16 blind band:** no ring hits a 0.325 m cone between ~10.5 and ~16 m (0.6 m mount, 2 deg
