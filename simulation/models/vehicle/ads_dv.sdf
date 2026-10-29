@@ -61,13 +61,59 @@
           <izz>175.68</izz>
         </inertia>
       </inertial>
+      <!-- Chassis collision: a box for the tub plus two boxes for the nose, following
+                 ads-dv.stl (tip at x 1.50). A full-height flat front hits a cone near its centre
+                 of mass and shoves it along upright; the raised, sloped nose tip hits it high up
+                 and knocks it over, as on the real car. -->
       <collision name="chassis_collision">
-        <pose>0 0 0 0 0 0</pose>
+        <pose>-0.175 0 0 0 0 0</pose>
         <geometry>
           <box>
-            <size>2.7 0.489 0.414</size>
+            <size>2.35 0.489 0.414</size>
           </box>
         </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>0.3</mu>
+              <mu2>0.3</mu2>
+            </ode>
+          </friction>
+        </surface>
+      </collision>
+      <collision name="nose_collision">
+        <pose>1.125 0 -0.0275 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.25 0.44 0.355</size>
+          </box>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>0.3</mu>
+              <mu2>0.3</mu2>
+            </ode>
+          </friction>
+        </surface>
+      </collision>
+      <!-- nose tip: box pitched 25 deg nose-up, front-bottom edge at the STL tip (x 1.50,
+                 0.20 m above the ground), underside sloping down to the nose box -->
+      <collision name="nose_tip_collision">
+        <pose>1.348 0 -0.0685 0 -0.4434 0</pose>
+        <geometry>
+          <box>
+            <size>0.26 0.30 0.16</size>
+          </box>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>0.3</mu>
+              <mu2>0.3</mu2>
+            </ode>
+          </friction>
+        </surface>
       </collision>
       <visual name="chassis_visual">
         <pose>0 0 0 0 0 0</pose>
