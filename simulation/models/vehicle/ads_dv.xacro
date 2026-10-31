@@ -1,5 +1,8 @@
 <?xml version="1.0" ?>
 <sdf version='1.9' xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <!-- drive:=torque (realistic, default) | ideal (old velocity-controlled rear wheels) -->
+    <xacro:arg name="drive" default="torque"/>
+    <xacro:property name="drive" value="$(arg drive)"/>
     <model name='ads_dv' canonical_link='base_footprint'>
 
         <!-- Dummy root link to satisfy KDL (root link must not have inertia) -->
@@ -61,13 +64,38 @@
                     <izz>175.68</izz>
                 </inertia>
             </inertial>
+            <!-- Chassis collision: a box for the tub plus two boxes for the nose, following
+                 ads-dv.stl (tip at x 1.50). A full-height flat front hits a cone near its centre
+                 of mass and shoves it along upright; the raised, sloped nose tip hits it high up
+                 and knocks it over, as on the real car. -->
             <collision name='chassis_collision'>
-                <pose>0 0 0 0 0 0</pose>
+                <pose>-0.175 0 0 0 0 0</pose>
                 <geometry>
                     <box>
-                        <size>2.7 0.489 0.414</size>
+                        <size>2.35 0.489 0.414</size>
                     </box>
                 </geometry>
+                <surface><friction><ode><mu>0.3</mu><mu2>0.3</mu2></ode></friction></surface>
+            </collision>
+            <collision name='nose_collision'>
+                <pose>1.125 0 -0.0275 0 0 0</pose>
+                <geometry>
+                    <box>
+                        <size>0.25 0.44 0.355</size>
+                    </box>
+                </geometry>
+                <surface><friction><ode><mu>0.3</mu><mu2>0.3</mu2></ode></friction></surface>
+            </collision>
+            <!-- nose tip: box pitched 25 deg nose-up, front-bottom edge at the STL tip (x 1.50,
+                 0.20 m above the ground), underside sloping down to the nose box -->
+            <collision name='nose_tip_collision'>
+                <pose>1.348 0 -0.0685 0 -0.4434 0</pose>
+                <geometry>
+                    <box>
+                        <size>0.26 0.30 0.16</size>
+                    </box>
+                </geometry>
+                <surface><friction><ode><mu>0.3</mu><mu2>0.3</mu2></ode></friction></surface>
             </collision>
             <visual name='chassis_visual'>
                 <pose>0 0 0 0 0 0</pose>
@@ -87,6 +115,19 @@
                 <update_rate>300</update_rate>
                 <visualize>true</visualize>
                 <topic>imu</topic>
+                <!-- MEMS-grade noise (ZED 2i class): gyro ~0.007 deg/s/sqrt(Hz), bias ~40 deg/h -->
+                <imu>
+                    <angular_velocity>
+                        <x><noise type="gaussian"><mean>0</mean><stddev>0.002</stddev><bias_mean>0.0002</bias_mean><bias_stddev>0.0002</bias_stddev></noise></x>
+                        <y><noise type="gaussian"><mean>0</mean><stddev>0.002</stddev><bias_mean>0.0002</bias_mean><bias_stddev>0.0002</bias_stddev></noise></y>
+                        <z><noise type="gaussian"><mean>0</mean><stddev>0.002</stddev><bias_mean>0.0002</bias_mean><bias_stddev>0.0002</bias_stddev></noise></z>
+                    </angular_velocity>
+                    <linear_acceleration>
+                        <x><noise type="gaussian"><mean>0</mean><stddev>0.02</stddev><bias_mean>0.01</bias_mean><bias_stddev>0.01</bias_stddev></noise></x>
+                        <y><noise type="gaussian"><mean>0</mean><stddev>0.02</stddev><bias_mean>0.01</bias_mean><bias_stddev>0.01</bias_stddev></noise></y>
+                        <z><noise type="gaussian"><mean>0</mean><stddev>0.02</stddev><bias_mean>0.01</bias_mean><bias_stddev>0.01</bias_stddev></noise></z>
+                    </linear_acceleration>
+                </imu>
             </sensor>
         </link>
 
@@ -169,11 +210,28 @@
             <frame_id>odom</frame_id>
             <child_frame_id>base_link</child_frame_id>
         </plugin>
+        <!-- Drive. torque (default): each wheel gets a torque from the ADS-DV VCU emulator
+             (simulation/src/ads_dv_vcu_sim.cpp: 4WD, per-axle speed loop, VCU torque limits, brakes,
+             rolling + aero resistance), so the car accelerates, coasts, brakes and slides like a car.
+             ideal: the old drive, rear wheel speed set directly (infinite torque, no inertia). -->
+        <xacro:if value="${drive == 'ideal'}">
         <plugin filename="gz-sim-joint-controller-system" name="gz::sim::systems::JointController">
             <joint_name>rear_left_wheel_joint</joint_name>
             <joint_name>rear_right_wheel_joint</joint_name>
             <topic>speed_cmd</topic>
         </plugin>
+        </xacro:if>
+        <xacro:unless value="${drive == 'ideal'}">
+        <xacro:macro name="wheel_torque" params="joint">
+            <plugin filename="gz-sim-apply-joint-force-system" name="gz::sim::systems::ApplyJointForce">
+                <joint_name>${joint}</joint_name>
+            </plugin>
+        </xacro:macro>
+        <xacro:wheel_torque joint="front_left_wheel_joint"/>
+        <xacro:wheel_torque joint="front_right_wheel_joint"/>
+        <xacro:wheel_torque joint="rear_left_wheel_joint"/>
+        <xacro:wheel_torque joint="rear_right_wheel_joint"/>
+        </xacro:unless>
         <plugin name="gz::sim::systems::LogicalCamera" filename="gz-sim-logical-camera-system">
             <render_engine>ogre2</render_engine>
         </plugin>
@@ -185,7 +243,7 @@
         <plugin filename="gz-sim-odometry-publisher-system" name="gz::sim::systems::OdometryPublisher">
             <odom_frame>odom</odom_frame>
             <robot_base_frame>base_link</robot_base_frame>
-            <odom_publish_frequency>600</odom_publish_frequency>
+            <odom_publish_frequency>100</odom_publish_frequency>
             <odom_topic>ads_dv/odom</odom_topic>
             <tf_topic>ads_dv/tf</tf_topic>
             <!-- not the same as /model/ads_dv/tf or model/ads_dv/odom which AckermannSteering publishes. Don't use that, it depends on the wheel joints and not the actual location -->

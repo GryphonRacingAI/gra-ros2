@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <sdf version='1.7' xmlns:xacro="http://www.ros.org/wiki/xacro">
-  <world name='map'>
+  <world name='sim_world'>
 
     <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics">
       </plugin>
@@ -27,7 +27,6 @@
 
     <xacro:include filename="$(find simulation)/models/cones/cone.xacro"/>
 
-    <model name="cones">
       <xacro:cone name="large_orange_1" type="large_orange" pose="7.440678897505254 44.92467457538323 0.15 0 0 0"/>
       <xacro:cone name="yellow_2" type="yellow" pose="9.43710595437505 44.98980385480482 0.15 0 0 0"/>
       <xacro:cone name="yellow_3" type="yellow" pose="11.433787902535133 45.054013902062486 0.15 0 0 0"/>
@@ -321,14 +320,8 @@
       <xacro:cone name="blue_145" type="blue" pose="2.33404449770947 47.6205092826547 0.15 0 0 0"/>
       <xacro:cone name="blue_146" type="blue" pose="4.31684977705784 47.6749328204622 0.15 0 0 0"/>
 
-      <plugin name="gz::sim::systems::PosePublisher" filename="gz-sim-pose-publisher-system">
-        <use_pose_vector_msg>true</use_pose_vector_msg>
-        <publish_model_pose>true</publish_model_pose>
-        <publish_nested_model_pose>true</publish_nested_model_pose>
-        <publish_link_pose>false</publish_link_pose>
-      </plugin>
 
-    </model>
+    <xacro:cone_pool/>
 
   </world>
 </sdf>

@@ -3,14 +3,15 @@ predict_with_cloud_node:
     yolo_result_topic: "/yolo_result"
     yolo_3d_result_topic: "/yolo_3d_result"
 
-    ransac_distance_threshold: 0.03
+    ransac_distance_threshold: 0.05   # ground plane; ~3 sigma of the lidar's 1.5 cm range noise
     preprocessing_filter_threshold: 0.0
 
+    # Only ONE block below may be active (duplicate YAML keys: the last one silently wins).
     # ZED2I PARAMS
-    cluster_tolerance: 0.1
-    voxel_leaf_size: 0.05
-    min_cluster_size: 10
-    max_cluster_size: 700
+    # cluster_tolerance: 0.1
+    # voxel_leaf_size: 0.05
+    # min_cluster_size: 10
+    # max_cluster_size: 700
 
     # LIDAR PARAMS
     # cluster_tolerance: 0.3
@@ -18,11 +19,21 @@ predict_with_cloud_node:
     # min_cluster_size: 2
     # max_cluster_size: 70
 
-    # LIDAR SIM PARAMS
+    # LIDAR SIM PARAMS (simulated VLP-16 as the real one: 0.2 deg horizontal, 2 deg between rings,
+    # 0.6 m high). A cone 3 m away returns ~3 rings x ~19 points; one 20 m away ~1 ring x 3 points.
     cluster_tolerance: 0.15
-    voxel_leaf_size: 0.01
-    min_cluster_size: 5
-    max_cluster_size: 70
+    voxel_leaf_size: 0.03
+    min_cluster_size: 2
+    max_cluster_size: 1000
+
+    # Camera fallback for detections without lidar points: the rings miss cones between ~10 and
+    # ~16 m entirely. Range = fy * cone height / box height (heights as YOLO boxes them; calibrated
+    # against ground truth in sim), bearing from the box centre. Measured: sigma 0.09 m at 10-13 m.
+    bbox_range_fallback: true
+    cone_height: 0.31
+    large_cone_height: 0.48
+    bbox_min_height_px: 10.0
+    bbox_max_range: 13.0   # beyond ~13 m one pixel of box height is > 1 m of range
 
   # REAL PARAMS
     #use_sim_time: False

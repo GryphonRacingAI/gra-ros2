@@ -4,7 +4,7 @@
 <!-- |    EDITING THIS FILE BY HAND IS NOT RECOMMENDED                                 | -->
 <!-- =================================================================================== -->
 <sdf version="1.7">
-  <world name="map">
+  <world name="sim_world">
     <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics">
       </plugin>
     <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster">
@@ -41,1169 +41,4089 @@
     <include>
       <uri>model://simulation/models/world/ground_plane</uri>
     </include>
-    <model name="cones">
-      <model name="blue_1">
-        <static>true</static>
-        <pose>-45 1.5 0.15 0 0 0</pose>
-        <link name="blue_1_link">
-          <visual name="visual">
-            <geometry>
-              <mesh>
-                <uri>model://simulation/models/cones/cone_blue/mesh.dae</uri>
-              </mesh>
-            </geometry>
-          </visual>
-          <!-- Different inertial properties for different types of cones -->
-          <inertial>
-            <mass>0.45</mass>
-            <inertia>
-              <ixx>0.013</ixx>
-              <ixy>0.0</ixy>
-              <ixz>0.0</ixz>
-              <iyy>0.013</iyy>
-              <iyz>0.0</iyz>
-              <izz>0.006</izz>
-            </inertia>
-          </inertial>
-        </link>
-      </model>
-      <model name="blue_2">
-        <static>true</static>
-        <pose>-40 1.5 0.15 0 0 0</pose>
-        <link name="blue_2_link">
-          <visual name="visual">
-            <geometry>
-              <mesh>
-                <uri>model://simulation/models/cones/cone_blue/mesh.dae</uri>
-              </mesh>
-            </geometry>
-          </visual>
-          <!-- Different inertial properties for different types of cones -->
-          <inertial>
-            <mass>0.45</mass>
-            <inertia>
-              <ixx>0.013</ixx>
-              <ixy>0.0</ixy>
-              <ixz>0.0</ixz>
-              <iyy>0.013</iyy>
-              <iyz>0.0</iyz>
-              <izz>0.006</izz>
-            </inertia>
-          </inertial>
-        </link>
-      </model>
-      <model name="blue_3">
-        <static>true</static>
-        <pose>-35 1.5 0.15 0 0 0</pose>
-        <link name="blue_3_link">
-          <visual name="visual">
-            <geometry>
-              <mesh>
-                <uri>model://simulation/models/cones/cone_blue/mesh.dae</uri>
-              </mesh>
-            </geometry>
-          </visual>
-          <!-- Different inertial properties for different types of cones -->
-          <inertial>
-            <mass>0.45</mass>
-            <inertia>
-              <ixx>0.013</ixx>
-              <ixy>0.0</ixy>
-              <ixz>0.0</ixz>
-              <iyy>0.013</iyy>
-              <iyz>0.0</iyz>
-              <izz>0.006</izz>
-            </inertia>
-          </inertial>
-        </link>
-      </model>
-      <model name="blue_4">
-        <static>true</static>
-        <pose>-30 1.5 0.15 0 0 0</pose>
-        <link name="blue_4_link">
-          <visual name="visual">
-            <geometry>
-              <mesh>
-                <uri>model://simulation/models/cones/cone_blue/mesh.dae</uri>
-              </mesh>
-            </geometry>
-          </visual>
-          <!-- Different inertial properties for different types of cones -->
-          <inertial>
-            <mass>0.45</mass>
-            <inertia>
-              <ixx>0.013</ixx>
-              <ixy>0.0</ixy>
-              <ixz>0.0</ixz>
-              <iyy>0.013</iyy>
-              <iyz>0.0</iyz>
-              <izz>0.006</izz>
-            </inertia>
-          </inertial>
-        </link>
-      </model>
-      <model name="blue_5">
-        <static>true</static>
-        <pose>-25 1.5 0.15 0 0 0</pose>
-        <link name="blue_5_link">
-          <visual name="visual">
-            <geometry>
-              <mesh>
-                <uri>model://simulation/models/cones/cone_blue/mesh.dae</uri>
-              </mesh>
-            </geometry>
-          </visual>
-          <!-- Different inertial properties for different types of cones -->
-          <inertial>
-            <mass>0.45</mass>
-            <inertia>
-              <ixx>0.013</ixx>
-              <ixy>0.0</ixy>
-              <ixz>0.0</ixz>
-              <iyy>0.013</iyy>
-              <iyz>0.0</iyz>
-              <izz>0.006</izz>
-            </inertia>
-          </inertial>
-        </link>
-      </model>
-      <model name="blue_6">
-        <static>true</static>
-        <pose>-20 1.5 0.15 0 0 0</pose>
-        <link name="blue_6_link">
-          <visual name="visual">
-            <geometry>
-              <mesh>
-                <uri>model://simulation/models/cones/cone_blue/mesh.dae</uri>
-              </mesh>
-            </geometry>
-          </visual>
-          <!-- Different inertial properties for different types of cones -->
-          <inertial>
-            <mass>0.45</mass>
-            <inertia>
-              <ixx>0.013</ixx>
-              <ixy>0.0</ixy>
-              <ixz>0.0</ixz>
-              <iyy>0.013</iyy>
-              <iyz>0.0</iyz>
-              <izz>0.006</izz>
-            </inertia>
-          </inertial>
-        </link>
-      </model>
-      <model name="blue_7">
-        <static>true</static>
-        <pose>-15 1.5 0.15 0 0 0</pose>
-        <link name="blue_7_link">
-          <visual name="visual">
-            <geometry>
-              <mesh>
-                <uri>model://simulation/models/cones/cone_blue/mesh.dae</uri>
-              </mesh>
-            </geometry>
-          </visual>
-          <!-- Different inertial properties for different types of cones -->
-          <inertial>
-            <mass>0.45</mass>
-            <inertia>
-              <ixx>0.013</ixx>
-              <ixy>0.0</ixy>
-              <ixz>0.0</ixz>
-              <iyy>0.013</iyy>
-              <iyz>0.0</iyz>
-              <izz>0.006</izz>
-            </inertia>
-          </inertial>
-        </link>
-      </model>
-      <model name="blue_8">
-        <static>true</static>
-        <pose>-10 1.5 0.15 0 0 0</pose>
-        <link name="blue_8_link">
-          <visual name="visual">
-            <geometry>
-              <mesh>
-                <uri>model://simulation/models/cones/cone_blue/mesh.dae</uri>
-              </mesh>
-            </geometry>
-          </visual>
-          <!-- Different inertial properties for different types of cones -->
-          <inertial>
-            <mass>0.45</mass>
-            <inertia>
-              <ixx>0.013</ixx>
-              <ixy>0.0</ixy>
-              <ixz>0.0</ixz>
-              <iyy>0.013</iyy>
-              <iyz>0.0</iyz>
-              <izz>0.006</izz>
-            </inertia>
-          </inertial>
-        </link>
-      </model>
-      <model name="blue_9">
-        <static>true</static>
-        <pose>-5 1.5 0.15 0 0 0</pose>
-        <link name="blue_9_link">
-          <visual name="visual">
-            <geometry>
-              <mesh>
-                <uri>model://simulation/models/cones/cone_blue/mesh.dae</uri>
-              </mesh>
-            </geometry>
-          </visual>
-          <!-- Different inertial properties for different types of cones -->
-          <inertial>
-            <mass>0.45</mass>
-            <inertia>
-              <ixx>0.013</ixx>
-              <ixy>0.0</ixy>
-              <ixz>0.0</ixz>
-              <iyy>0.013</iyy>
-              <iyz>0.0</iyz>
-              <izz>0.006</izz>
-            </inertia>
-          </inertial>
-        </link>
-      </model>
-      <model name="blue_10">
-        <static>true</static>
-        <pose>0 1.5 0.15 0 0 0</pose>
-        <link name="blue_10_link">
-          <visual name="visual">
-            <geometry>
-              <mesh>
-                <uri>model://simulation/models/cones/cone_blue/mesh.dae</uri>
-              </mesh>
-            </geometry>
-          </visual>
-          <!-- Different inertial properties for different types of cones -->
-          <inertial>
-            <mass>0.45</mass>
-            <inertia>
-              <ixx>0.013</ixx>
-              <ixy>0.0</ixy>
-              <ixz>0.0</ixz>
-              <iyy>0.013</iyy>
-              <iyz>0.0</iyz>
-              <izz>0.006</izz>
-            </inertia>
-          </inertial>
-        </link>
-      </model>
-      <model name="blue_11">
-        <static>true</static>
-        <pose>5 1.5 0.15 0 0 0</pose>
-        <link name="blue_11_link">
-          <visual name="visual">
-            <geometry>
-              <mesh>
-                <uri>model://simulation/models/cones/cone_blue/mesh.dae</uri>
-              </mesh>
-            </geometry>
-          </visual>
-          <!-- Different inertial properties for different types of cones -->
-          <inertial>
-            <mass>0.45</mass>
-            <inertia>
-              <ixx>0.013</ixx>
-              <ixy>0.0</ixy>
-              <ixz>0.0</ixz>
-              <iyy>0.013</iyy>
-              <iyz>0.0</iyz>
-              <izz>0.006</izz>
-            </inertia>
-          </inertial>
-        </link>
-      </model>
-      <model name="blue_12">
-        <static>true</static>
-        <pose>10 1.5 0.15 0 0 0</pose>
-        <link name="blue_12_link">
-          <visual name="visual">
-            <geometry>
-              <mesh>
-                <uri>model://simulation/models/cones/cone_blue/mesh.dae</uri>
-              </mesh>
-            </geometry>
-          </visual>
-          <!-- Different inertial properties for different types of cones -->
-          <inertial>
-            <mass>0.45</mass>
-            <inertia>
-              <ixx>0.013</ixx>
-              <ixy>0.0</ixy>
-              <ixz>0.0</ixz>
-              <iyy>0.013</iyy>
-              <iyz>0.0</iyz>
-              <izz>0.006</izz>
-            </inertia>
-          </inertial>
-        </link>
-      </model>
-      <model name="blue_13">
-        <static>true</static>
-        <pose>15 1.5 0.15 0 0 0</pose>
-        <link name="blue_13_link">
-          <visual name="visual">
-            <geometry>
-              <mesh>
-                <uri>model://simulation/models/cones/cone_blue/mesh.dae</uri>
-              </mesh>
-            </geometry>
-          </visual>
-          <!-- Different inertial properties for different types of cones -->
-          <inertial>
-            <mass>0.45</mass>
-            <inertia>
-              <ixx>0.013</ixx>
-              <ixy>0.0</ixy>
-              <ixz>0.0</ixz>
-              <iyy>0.013</iyy>
-              <iyz>0.0</iyz>
-              <izz>0.006</izz>
-            </inertia>
-          </inertial>
-        </link>
-      </model>
-      <model name="blue_14">
-        <static>true</static>
-        <pose>20 1.5 0.15 0 0 0</pose>
-        <link name="blue_14_link">
-          <visual name="visual">
-            <geometry>
-              <mesh>
-                <uri>model://simulation/models/cones/cone_blue/mesh.dae</uri>
-              </mesh>
-            </geometry>
-          </visual>
-          <!-- Different inertial properties for different types of cones -->
-          <inertial>
-            <mass>0.45</mass>
-            <inertia>
-              <ixx>0.013</ixx>
-              <ixy>0.0</ixy>
-              <ixz>0.0</ixz>
-              <iyy>0.013</iyy>
-              <iyz>0.0</iyz>
-              <izz>0.006</izz>
-            </inertia>
-          </inertial>
-        </link>
-      </model>
-      <model name="yellow_1">
-        <static>true</static>
-        <pose>-45 -1.5 0.15 0 0 0</pose>
-        <link name="yellow_1_link">
-          <visual name="visual">
-            <geometry>
-              <mesh>
-                <uri>model://simulation/models/cones/cone_yellow/mesh.dae</uri>
-              </mesh>
-            </geometry>
-          </visual>
-          <!-- Different inertial properties for different types of cones -->
-          <inertial>
-            <mass>0.45</mass>
-            <inertia>
-              <ixx>0.013</ixx>
-              <ixy>0.0</ixy>
-              <ixz>0.0</ixz>
-              <iyy>0.013</iyy>
-              <iyz>0.0</iyz>
-              <izz>0.006</izz>
-            </inertia>
-          </inertial>
-        </link>
-      </model>
-      <model name="yellow_2">
-        <static>true</static>
-        <pose>-40 -1.5 0.15 0 0 0</pose>
-        <link name="yellow_2_link">
-          <visual name="visual">
-            <geometry>
-              <mesh>
-                <uri>model://simulation/models/cones/cone_yellow/mesh.dae</uri>
-              </mesh>
-            </geometry>
-          </visual>
-          <!-- Different inertial properties for different types of cones -->
-          <inertial>
-            <mass>0.45</mass>
-            <inertia>
-              <ixx>0.013</ixx>
-              <ixy>0.0</ixy>
-              <ixz>0.0</ixz>
-              <iyy>0.013</iyy>
-              <iyz>0.0</iyz>
-              <izz>0.006</izz>
-            </inertia>
-          </inertial>
-        </link>
-      </model>
-      <model name="yellow_3">
-        <static>true</static>
-        <pose>-35 -1.5 0.15 0 0 0</pose>
-        <link name="yellow_3_link">
-          <visual name="visual">
-            <geometry>
-              <mesh>
-                <uri>model://simulation/models/cones/cone_yellow/mesh.dae</uri>
-              </mesh>
-            </geometry>
-          </visual>
-          <!-- Different inertial properties for different types of cones -->
-          <inertial>
-            <mass>0.45</mass>
-            <inertia>
-              <ixx>0.013</ixx>
-              <ixy>0.0</ixy>
-              <ixz>0.0</ixz>
-              <iyy>0.013</iyy>
-              <iyz>0.0</iyz>
-              <izz>0.006</izz>
-            </inertia>
-          </inertial>
-        </link>
-      </model>
-      <model name="yellow_4">
-        <static>true</static>
-        <pose>-30 -1.5 0.15 0 0 0</pose>
-        <link name="yellow_4_link">
-          <visual name="visual">
-            <geometry>
-              <mesh>
-                <uri>model://simulation/models/cones/cone_yellow/mesh.dae</uri>
-              </mesh>
-            </geometry>
-          </visual>
-          <!-- Different inertial properties for different types of cones -->
-          <inertial>
-            <mass>0.45</mass>
-            <inertia>
-              <ixx>0.013</ixx>
-              <ixy>0.0</ixy>
-              <ixz>0.0</ixz>
-              <iyy>0.013</iyy>
-              <iyz>0.0</iyz>
-              <izz>0.006</izz>
-            </inertia>
-          </inertial>
-        </link>
-      </model>
-      <model name="yellow_5">
-        <static>true</static>
-        <pose>-25 -1.5 0.15 0 0 0</pose>
-        <link name="yellow_5_link">
-          <visual name="visual">
-            <geometry>
-              <mesh>
-                <uri>model://simulation/models/cones/cone_yellow/mesh.dae</uri>
-              </mesh>
-            </geometry>
-          </visual>
-          <!-- Different inertial properties for different types of cones -->
-          <inertial>
-            <mass>0.45</mass>
-            <inertia>
-              <ixx>0.013</ixx>
-              <ixy>0.0</ixy>
-              <ixz>0.0</ixz>
-              <iyy>0.013</iyy>
-              <iyz>0.0</iyz>
-              <izz>0.006</izz>
-            </inertia>
-          </inertial>
-        </link>
-      </model>
-      <model name="yellow_6">
-        <static>true</static>
-        <pose>-20 -1.5 0.15 0 0 0</pose>
-        <link name="yellow_6_link">
-          <visual name="visual">
-            <geometry>
-              <mesh>
-                <uri>model://simulation/models/cones/cone_yellow/mesh.dae</uri>
-              </mesh>
-            </geometry>
-          </visual>
-          <!-- Different inertial properties for different types of cones -->
-          <inertial>
-            <mass>0.45</mass>
-            <inertia>
-              <ixx>0.013</ixx>
-              <ixy>0.0</ixy>
-              <ixz>0.0</ixz>
-              <iyy>0.013</iyy>
-              <iyz>0.0</iyz>
-              <izz>0.006</izz>
-            </inertia>
-          </inertial>
-        </link>
-      </model>
-      <model name="yellow_7">
-        <static>true</static>
-        <pose>-15 -1.5 0.15 0 0 0</pose>
-        <link name="yellow_7_link">
-          <visual name="visual">
-            <geometry>
-              <mesh>
-                <uri>model://simulation/models/cones/cone_yellow/mesh.dae</uri>
-              </mesh>
-            </geometry>
-          </visual>
-          <!-- Different inertial properties for different types of cones -->
-          <inertial>
-            <mass>0.45</mass>
-            <inertia>
-              <ixx>0.013</ixx>
-              <ixy>0.0</ixy>
-              <ixz>0.0</ixz>
-              <iyy>0.013</iyy>
-              <iyz>0.0</iyz>
-              <izz>0.006</izz>
-            </inertia>
-          </inertial>
-        </link>
-      </model>
-      <model name="yellow_8">
-        <static>true</static>
-        <pose>-10 -1.5 0.15 0 0 0</pose>
-        <link name="yellow_8_link">
-          <visual name="visual">
-            <geometry>
-              <mesh>
-                <uri>model://simulation/models/cones/cone_yellow/mesh.dae</uri>
-              </mesh>
-            </geometry>
-          </visual>
-          <!-- Different inertial properties for different types of cones -->
-          <inertial>
-            <mass>0.45</mass>
-            <inertia>
-              <ixx>0.013</ixx>
-              <ixy>0.0</ixy>
-              <ixz>0.0</ixz>
-              <iyy>0.013</iyy>
-              <iyz>0.0</iyz>
-              <izz>0.006</izz>
-            </inertia>
-          </inertial>
-        </link>
-      </model>
-      <model name="yellow_9">
-        <static>true</static>
-        <pose>-5 -1.5 0.15 0 0 0</pose>
-        <link name="yellow_9_link">
-          <visual name="visual">
-            <geometry>
-              <mesh>
-                <uri>model://simulation/models/cones/cone_yellow/mesh.dae</uri>
-              </mesh>
-            </geometry>
-          </visual>
-          <!-- Different inertial properties for different types of cones -->
-          <inertial>
-            <mass>0.45</mass>
-            <inertia>
-              <ixx>0.013</ixx>
-              <ixy>0.0</ixy>
-              <ixz>0.0</ixz>
-              <iyy>0.013</iyy>
-              <iyz>0.0</iyz>
-              <izz>0.006</izz>
-            </inertia>
-          </inertial>
-        </link>
-      </model>
-      <model name="yellow_10">
-        <static>true</static>
-        <pose>0 -1.5 0.15 0 0 0</pose>
-        <link name="yellow_10_link">
-          <visual name="visual">
-            <geometry>
-              <mesh>
-                <uri>model://simulation/models/cones/cone_yellow/mesh.dae</uri>
-              </mesh>
-            </geometry>
-          </visual>
-          <!-- Different inertial properties for different types of cones -->
-          <inertial>
-            <mass>0.45</mass>
-            <inertia>
-              <ixx>0.013</ixx>
-              <ixy>0.0</ixy>
-              <ixz>0.0</ixz>
-              <iyy>0.013</iyy>
-              <iyz>0.0</iyz>
-              <izz>0.006</izz>
-            </inertia>
-          </inertial>
-        </link>
-      </model>
-      <model name="yellow_11">
-        <static>true</static>
-        <pose>5 -1.5 0.15 0 0 0</pose>
-        <link name="yellow_11_link">
-          <visual name="visual">
-            <geometry>
-              <mesh>
-                <uri>model://simulation/models/cones/cone_yellow/mesh.dae</uri>
-              </mesh>
-            </geometry>
-          </visual>
-          <!-- Different inertial properties for different types of cones -->
-          <inertial>
-            <mass>0.45</mass>
-            <inertia>
-              <ixx>0.013</ixx>
-              <ixy>0.0</ixy>
-              <ixz>0.0</ixz>
-              <iyy>0.013</iyy>
-              <iyz>0.0</iyz>
-              <izz>0.006</izz>
-            </inertia>
-          </inertial>
-        </link>
-      </model>
-      <model name="yellow_12">
-        <static>true</static>
-        <pose>10 -1.5 0.15 0 0 0</pose>
-        <link name="yellow_12_link">
-          <visual name="visual">
-            <geometry>
-              <mesh>
-                <uri>model://simulation/models/cones/cone_yellow/mesh.dae</uri>
-              </mesh>
-            </geometry>
-          </visual>
-          <!-- Different inertial properties for different types of cones -->
-          <inertial>
-            <mass>0.45</mass>
-            <inertia>
-              <ixx>0.013</ixx>
-              <ixy>0.0</ixy>
-              <ixz>0.0</ixz>
-              <iyy>0.013</iyy>
-              <iyz>0.0</iyz>
-              <izz>0.006</izz>
-            </inertia>
-          </inertial>
-        </link>
-      </model>
-      <model name="yellow_13">
-        <static>true</static>
-        <pose>15 -1.5 0.15 0 0 0</pose>
-        <link name="yellow_13_link">
-          <visual name="visual">
-            <geometry>
-              <mesh>
-                <uri>model://simulation/models/cones/cone_yellow/mesh.dae</uri>
-              </mesh>
-            </geometry>
-          </visual>
-          <!-- Different inertial properties for different types of cones -->
-          <inertial>
-            <mass>0.45</mass>
-            <inertia>
-              <ixx>0.013</ixx>
-              <ixy>0.0</ixy>
-              <ixz>0.0</ixz>
-              <iyy>0.013</iyy>
-              <iyz>0.0</iyz>
-              <izz>0.006</izz>
-            </inertia>
-          </inertial>
-        </link>
-      </model>
-      <model name="yellow_14">
-        <static>true</static>
-        <pose>20 -1.5 0.15 0 0 0</pose>
-        <link name="yellow_14_link">
-          <visual name="visual">
-            <geometry>
-              <mesh>
-                <uri>model://simulation/models/cones/cone_yellow/mesh.dae</uri>
-              </mesh>
-            </geometry>
-          </visual>
-          <!-- Different inertial properties for different types of cones -->
-          <inertial>
-            <mass>0.45</mass>
-            <inertia>
-              <ixx>0.013</ixx>
-              <ixy>0.0</ixy>
-              <ixz>0.0</ixz>
-              <iyy>0.013</iyy>
-              <iyz>0.0</iyz>
-              <izz>0.006</izz>
-            </inertia>
-          </inertial>
-        </link>
-      </model>
-      <model name="orange_1">
-        <static>true</static>
-        <pose>30 1.5 0.15 0 0 0</pose>
-        <link name="orange_1_link">
-          <visual name="visual">
-            <geometry>
-              <mesh>
-                <uri>model://simulation/models/cones/cone_orange/mesh.dae</uri>
-              </mesh>
-            </geometry>
-          </visual>
-          <!-- Different inertial properties for different types of cones -->
-          <inertial>
-            <mass>0.45</mass>
-            <inertia>
-              <ixx>0.013</ixx>
-              <ixy>0.0</ixy>
-              <ixz>0.0</ixz>
-              <iyy>0.013</iyy>
-              <iyz>0.0</iyz>
-              <izz>0.006</izz>
-            </inertia>
-          </inertial>
-        </link>
-      </model>
-      <model name="orange_2">
-        <static>true</static>
-        <pose>30 -1.5 0.15 0 0 0</pose>
-        <link name="orange_2_link">
-          <visual name="visual">
-            <geometry>
-              <mesh>
-                <uri>model://simulation/models/cones/cone_orange/mesh.dae</uri>
-              </mesh>
-            </geometry>
-          </visual>
-          <!-- Different inertial properties for different types of cones -->
-          <inertial>
-            <mass>0.45</mass>
-            <inertia>
-              <ixx>0.013</ixx>
-              <ixy>0.0</ixy>
-              <ixz>0.0</ixz>
-              <iyy>0.013</iyy>
-              <iyz>0.0</iyz>
-              <izz>0.006</izz>
-            </inertia>
-          </inertial>
-        </link>
-      </model>
-      <model name="orange_3">
-        <static>true</static>
-        <pose>35 1.5 0.15 0 0 0</pose>
-        <link name="orange_3_link">
-          <visual name="visual">
-            <geometry>
-              <mesh>
-                <uri>model://simulation/models/cones/cone_orange/mesh.dae</uri>
-              </mesh>
-            </geometry>
-          </visual>
-          <!-- Different inertial properties for different types of cones -->
-          <inertial>
-            <mass>0.45</mass>
-            <inertia>
-              <ixx>0.013</ixx>
-              <ixy>0.0</ixy>
-              <ixz>0.0</ixz>
-              <iyy>0.013</iyy>
-              <iyz>0.0</iyz>
-              <izz>0.006</izz>
-            </inertia>
-          </inertial>
-        </link>
-      </model>
-      <model name="orange_4">
-        <static>true</static>
-        <pose>35 -1.5 0.15 0 0 0</pose>
-        <link name="orange_4_link">
-          <visual name="visual">
-            <geometry>
-              <mesh>
-                <uri>model://simulation/models/cones/cone_orange/mesh.dae</uri>
-              </mesh>
-            </geometry>
-          </visual>
-          <!-- Different inertial properties for different types of cones -->
-          <inertial>
-            <mass>0.45</mass>
-            <inertia>
-              <ixx>0.013</ixx>
-              <ixy>0.0</ixy>
-              <ixz>0.0</ixz>
-              <iyy>0.013</iyy>
-              <iyz>0.0</iyz>
-              <izz>0.006</izz>
-            </inertia>
-          </inertial>
-        </link>
-      </model>
-      <model name="orange_5">
-        <static>true</static>
-        <pose>40 1.5 0.15 0 0 0</pose>
-        <link name="orange_5_link">
-          <visual name="visual">
-            <geometry>
-              <mesh>
-                <uri>model://simulation/models/cones/cone_orange/mesh.dae</uri>
-              </mesh>
-            </geometry>
-          </visual>
-          <!-- Different inertial properties for different types of cones -->
-          <inertial>
-            <mass>0.45</mass>
-            <inertia>
-              <ixx>0.013</ixx>
-              <ixy>0.0</ixy>
-              <ixz>0.0</ixz>
-              <iyy>0.013</iyy>
-              <iyz>0.0</iyz>
-              <izz>0.006</izz>
-            </inertia>
-          </inertial>
-        </link>
-      </model>
-      <model name="orange_6">
-        <static>true</static>
-        <pose>40 -1.5 0.15 0 0 0</pose>
-        <link name="orange_6_link">
-          <visual name="visual">
-            <geometry>
-              <mesh>
-                <uri>model://simulation/models/cones/cone_orange/mesh.dae</uri>
-              </mesh>
-            </geometry>
-          </visual>
-          <!-- Different inertial properties for different types of cones -->
-          <inertial>
-            <mass>0.45</mass>
-            <inertia>
-              <ixx>0.013</ixx>
-              <ixy>0.0</ixy>
-              <ixz>0.0</ixz>
-              <iyy>0.013</iyy>
-              <iyz>0.0</iyz>
-              <izz>0.006</izz>
-            </inertia>
-          </inertial>
-        </link>
-      </model>
-      <model name="orange_7">
-        <static>true</static>
-        <pose>45 1.5 0.15 0 0 0</pose>
-        <link name="orange_7_link">
-          <visual name="visual">
-            <geometry>
-              <mesh>
-                <uri>model://simulation/models/cones/cone_orange/mesh.dae</uri>
-              </mesh>
-            </geometry>
-          </visual>
-          <!-- Different inertial properties for different types of cones -->
-          <inertial>
-            <mass>0.45</mass>
-            <inertia>
-              <ixx>0.013</ixx>
-              <ixy>0.0</ixy>
-              <ixz>0.0</ixz>
-              <iyy>0.013</iyy>
-              <iyz>0.0</iyz>
-              <izz>0.006</izz>
-            </inertia>
-          </inertial>
-        </link>
-      </model>
-      <model name="orange_8">
-        <static>true</static>
-        <pose>45 -1.5 0.15 0 0 0</pose>
-        <link name="orange_8_link">
-          <visual name="visual">
-            <geometry>
-              <mesh>
-                <uri>model://simulation/models/cones/cone_orange/mesh.dae</uri>
-              </mesh>
-            </geometry>
-          </visual>
-          <!-- Different inertial properties for different types of cones -->
-          <inertial>
-            <mass>0.45</mass>
-            <inertia>
-              <ixx>0.013</ixx>
-              <ixy>0.0</ixy>
-              <ixz>0.0</ixz>
-              <iyy>0.013</iyy>
-              <iyz>0.0</iyz>
-              <izz>0.006</izz>
-            </inertia>
-          </inertial>
-        </link>
-      </model>
-      <model name="orange_9">
-        <static>true</static>
-        <pose>50 1.5 0.15 0 0 0</pose>
-        <link name="orange_9_link">
-          <visual name="visual">
-            <geometry>
-              <mesh>
-                <uri>model://simulation/models/cones/cone_orange/mesh.dae</uri>
-              </mesh>
-            </geometry>
-          </visual>
-          <!-- Different inertial properties for different types of cones -->
-          <inertial>
-            <mass>0.45</mass>
-            <inertia>
-              <ixx>0.013</ixx>
-              <ixy>0.0</ixy>
-              <ixz>0.0</ixz>
-              <iyy>0.013</iyy>
-              <iyz>0.0</iyz>
-              <izz>0.006</izz>
-            </inertia>
-          </inertial>
-        </link>
-      </model>
-      <model name="orange_10">
-        <static>true</static>
-        <pose>50 -1.5 0.15 0 0 0</pose>
-        <link name="orange_10_link">
-          <visual name="visual">
-            <geometry>
-              <mesh>
-                <uri>model://simulation/models/cones/cone_orange/mesh.dae</uri>
-              </mesh>
-            </geometry>
-          </visual>
-          <!-- Different inertial properties for different types of cones -->
-          <inertial>
-            <mass>0.45</mass>
-            <inertia>
-              <ixx>0.013</ixx>
-              <ixy>0.0</ixy>
-              <ixz>0.0</ixz>
-              <iyy>0.013</iyy>
-              <iyz>0.0</iyz>
-              <izz>0.006</izz>
-            </inertia>
-          </inertial>
-        </link>
-      </model>
-      <model name="orange_11">
-        <static>true</static>
-        <pose>50 0.75 0.15 0 0 0</pose>
-        <link name="orange_11_link">
-          <visual name="visual">
-            <geometry>
-              <mesh>
-                <uri>model://simulation/models/cones/cone_orange/mesh.dae</uri>
-              </mesh>
-            </geometry>
-          </visual>
-          <!-- Different inertial properties for different types of cones -->
-          <inertial>
-            <mass>0.45</mass>
-            <inertia>
-              <ixx>0.013</ixx>
-              <ixy>0.0</ixy>
-              <ixz>0.0</ixz>
-              <iyy>0.013</iyy>
-              <iyz>0.0</iyz>
-              <izz>0.006</izz>
-            </inertia>
-          </inertial>
-        </link>
-      </model>
-      <model name="orange_12">
-        <static>true</static>
-        <pose>50 -0.75 0.15 0 0 0</pose>
-        <link name="orange_12_link">
-          <visual name="visual">
-            <geometry>
-              <mesh>
-                <uri>model://simulation/models/cones/cone_orange/mesh.dae</uri>
-              </mesh>
-            </geometry>
-          </visual>
-          <!-- Different inertial properties for different types of cones -->
-          <inertial>
-            <mass>0.45</mass>
-            <inertia>
-              <ixx>0.013</ixx>
-              <ixy>0.0</ixy>
-              <ixz>0.0</ixz>
-              <iyy>0.013</iyy>
-              <iyz>0.0</iyz>
-              <izz>0.006</izz>
-            </inertia>
-          </inertial>
-        </link>
-      </model>
-      <model name="large_orange_1">
-        <static>true</static>
-        <pose>-50 1.5 0.033 0 0 0</pose>
-        <link name="large_orange_1_link">
-          <visual name="visual">
-            <geometry>
-              <mesh>
-                <uri>model://simulation/models/cones/cone_large_orange/mesh.dae</uri>
-              </mesh>
-            </geometry>
-          </visual>
-          <!-- Different inertial properties for different types of cones -->
-          <inertial>
-            <mass>1.05</mass>
-            <!-- Edit centre of mass later -->
-            <inertia>
-              <ixx>0.003</ixx>
-              <ixy>0.0</ixy>
-              <ixz>0.0</ixz>
-              <iyy>0.003</iyy>
-              <iyz>0.0</iyz>
-              <izz>0.002</izz>
-            </inertia>
-          </inertial>
-        </link>
-      </model>
-      <model name="large_orange_2">
-        <static>true</static>
-        <pose>-50 -1.5 0.033 0 0 0</pose>
-        <link name="large_orange_2_link">
-          <visual name="visual">
-            <geometry>
-              <mesh>
-                <uri>model://simulation/models/cones/cone_large_orange/mesh.dae</uri>
-              </mesh>
-            </geometry>
-          </visual>
-          <!-- Different inertial properties for different types of cones -->
-          <inertial>
-            <mass>1.05</mass>
-            <!-- Edit centre of mass later -->
-            <inertia>
-              <ixx>0.003</ixx>
-              <ixy>0.0</ixy>
-              <ixz>0.0</ixz>
-              <iyy>0.003</iyy>
-              <iyz>0.0</iyz>
-              <izz>0.002</izz>
-            </inertia>
-          </inertial>
-        </link>
-      </model>
-      <model name="large_orange_3">
-        <static>true</static>
-        <pose>-50.5 1.5 0.033 0 0 0</pose>
-        <link name="large_orange_3_link">
-          <visual name="visual">
-            <geometry>
-              <mesh>
-                <uri>model://simulation/models/cones/cone_large_orange/mesh.dae</uri>
-              </mesh>
-            </geometry>
-          </visual>
-          <!-- Different inertial properties for different types of cones -->
-          <inertial>
-            <mass>1.05</mass>
-            <!-- Edit centre of mass later -->
-            <inertia>
-              <ixx>0.003</ixx>
-              <ixy>0.0</ixy>
-              <ixz>0.0</ixz>
-              <iyy>0.003</iyy>
-              <iyz>0.0</iyz>
-              <izz>0.002</izz>
-            </inertia>
-          </inertial>
-        </link>
-      </model>
-      <model name="large_orange_4">
-        <static>true</static>
-        <pose>-50.5 -1.5 0.033 0 0 0</pose>
-        <link name="large_orange_4_link">
-          <visual name="visual">
-            <geometry>
-              <mesh>
-                <uri>model://simulation/models/cones/cone_large_orange/mesh.dae</uri>
-              </mesh>
-            </geometry>
-          </visual>
-          <!-- Different inertial properties for different types of cones -->
-          <inertial>
-            <mass>1.05</mass>
-            <!-- Edit centre of mass later -->
-            <inertia>
-              <ixx>0.003</ixx>
-              <ixy>0.0</ixy>
-              <ixz>0.0</ixz>
-              <iyy>0.003</iyy>
-              <iyz>0.0</iyz>
-              <izz>0.002</izz>
-            </inertia>
-          </inertial>
-        </link>
-      </model>
-      <model name="large_orange_5">
-        <static>true</static>
-        <pose>25 1.5 0.033 0 0 0</pose>
-        <link name="large_orange_5_link">
-          <visual name="visual">
-            <geometry>
-              <mesh>
-                <uri>model://simulation/models/cones/cone_large_orange/mesh.dae</uri>
-              </mesh>
-            </geometry>
-          </visual>
-          <!-- Different inertial properties for different types of cones -->
-          <inertial>
-            <mass>1.05</mass>
-            <!-- Edit centre of mass later -->
-            <inertia>
-              <ixx>0.003</ixx>
-              <ixy>0.0</ixy>
-              <ixz>0.0</ixz>
-              <iyy>0.003</iyy>
-              <iyz>0.0</iyz>
-              <izz>0.002</izz>
-            </inertia>
-          </inertial>
-        </link>
-      </model>
-      <model name="large_orange_6">
-        <static>true</static>
-        <pose>25 -1.5 0.033 0 0 0</pose>
-        <link name="large_orange_6_link">
-          <visual name="visual">
-            <geometry>
-              <mesh>
-                <uri>model://simulation/models/cones/cone_large_orange/mesh.dae</uri>
-              </mesh>
-            </geometry>
-          </visual>
-          <!-- Different inertial properties for different types of cones -->
-          <inertial>
-            <mass>1.05</mass>
-            <!-- Edit centre of mass later -->
-            <inertia>
-              <ixx>0.003</ixx>
-              <ixy>0.0</ixy>
-              <ixz>0.0</ixz>
-              <iyy>0.003</iyy>
-              <iyz>0.0</iyz>
-              <izz>0.002</izz>
-            </inertia>
-          </inertial>
-        </link>
-      </model>
-      <plugin filename="gz-sim-pose-publisher-system" name="gz::sim::systems::PosePublisher">
-        <use_pose_vector_msg>true</use_pose_vector_msg>
-        <publish_model_pose>true</publish_model_pose>
-        <publish_nested_model_pose>true</publish_nested_model_pose>
-        <publish_link_pose>false</publish_link_pose>
-      </plugin>
+    <model name="blue_1">
+      <static>true</static>
+      <pose>-45 1.5 0.1522 0 0 0</pose>
+      <link name="blue_1_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_blue/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    <model name="blue_2">
+      <static>true</static>
+      <pose>-40 1.5 0.1522 0 0 0</pose>
+      <link name="blue_2_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_blue/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    <model name="blue_3">
+      <static>true</static>
+      <pose>-35 1.5 0.1522 0 0 0</pose>
+      <link name="blue_3_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_blue/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    <model name="blue_4">
+      <static>true</static>
+      <pose>-30 1.5 0.1522 0 0 0</pose>
+      <link name="blue_4_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_blue/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    <model name="blue_5">
+      <static>true</static>
+      <pose>-25 1.5 0.1522 0 0 0</pose>
+      <link name="blue_5_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_blue/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    <model name="blue_6">
+      <static>true</static>
+      <pose>-20 1.5 0.1522 0 0 0</pose>
+      <link name="blue_6_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_blue/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    <model name="blue_7">
+      <static>true</static>
+      <pose>-15 1.5 0.1522 0 0 0</pose>
+      <link name="blue_7_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_blue/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    <model name="blue_8">
+      <static>true</static>
+      <pose>-10 1.5 0.1522 0 0 0</pose>
+      <link name="blue_8_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_blue/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    <model name="blue_9">
+      <static>true</static>
+      <pose>-5 1.5 0.1522 0 0 0</pose>
+      <link name="blue_9_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_blue/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    <model name="blue_10">
+      <static>true</static>
+      <pose>0 1.5 0.1522 0 0 0</pose>
+      <link name="blue_10_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_blue/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    <model name="blue_11">
+      <static>true</static>
+      <pose>5 1.5 0.1522 0 0 0</pose>
+      <link name="blue_11_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_blue/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    <model name="blue_12">
+      <static>true</static>
+      <pose>10 1.5 0.1522 0 0 0</pose>
+      <link name="blue_12_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_blue/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    <model name="blue_13">
+      <static>true</static>
+      <pose>15 1.5 0.1522 0 0 0</pose>
+      <link name="blue_13_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_blue/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    <model name="blue_14">
+      <static>true</static>
+      <pose>20 1.5 0.1522 0 0 0</pose>
+      <link name="blue_14_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_blue/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    <model name="yellow_1">
+      <static>true</static>
+      <pose>-45 -1.5 0.1522 0 0 0</pose>
+      <link name="yellow_1_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_yellow/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    <model name="yellow_2">
+      <static>true</static>
+      <pose>-40 -1.5 0.1522 0 0 0</pose>
+      <link name="yellow_2_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_yellow/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    <model name="yellow_3">
+      <static>true</static>
+      <pose>-35 -1.5 0.1522 0 0 0</pose>
+      <link name="yellow_3_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_yellow/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    <model name="yellow_4">
+      <static>true</static>
+      <pose>-30 -1.5 0.1522 0 0 0</pose>
+      <link name="yellow_4_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_yellow/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    <model name="yellow_5">
+      <static>true</static>
+      <pose>-25 -1.5 0.1522 0 0 0</pose>
+      <link name="yellow_5_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_yellow/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    <model name="yellow_6">
+      <static>true</static>
+      <pose>-20 -1.5 0.1522 0 0 0</pose>
+      <link name="yellow_6_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_yellow/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    <model name="yellow_7">
+      <static>true</static>
+      <pose>-15 -1.5 0.1522 0 0 0</pose>
+      <link name="yellow_7_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_yellow/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    <model name="yellow_8">
+      <static>true</static>
+      <pose>-10 -1.5 0.1522 0 0 0</pose>
+      <link name="yellow_8_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_yellow/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    <model name="yellow_9">
+      <static>true</static>
+      <pose>-5 -1.5 0.1522 0 0 0</pose>
+      <link name="yellow_9_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_yellow/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    <model name="yellow_10">
+      <static>true</static>
+      <pose>0 -1.5 0.1522 0 0 0</pose>
+      <link name="yellow_10_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_yellow/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    <model name="yellow_11">
+      <static>true</static>
+      <pose>5 -1.5 0.1522 0 0 0</pose>
+      <link name="yellow_11_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_yellow/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    <model name="yellow_12">
+      <static>true</static>
+      <pose>10 -1.5 0.1522 0 0 0</pose>
+      <link name="yellow_12_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_yellow/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    <model name="yellow_13">
+      <static>true</static>
+      <pose>15 -1.5 0.1522 0 0 0</pose>
+      <link name="yellow_13_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_yellow/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    <model name="yellow_14">
+      <static>true</static>
+      <pose>20 -1.5 0.1522 0 0 0</pose>
+      <link name="yellow_14_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_yellow/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    <model name="orange_1">
+      <static>true</static>
+      <pose>30 1.5 0.1522 0 0 0</pose>
+      <link name="orange_1_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_orange/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    <model name="orange_2">
+      <static>true</static>
+      <pose>30 -1.5 0.1522 0 0 0</pose>
+      <link name="orange_2_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_orange/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    <model name="orange_3">
+      <static>true</static>
+      <pose>35 1.5 0.1522 0 0 0</pose>
+      <link name="orange_3_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_orange/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    <model name="orange_4">
+      <static>true</static>
+      <pose>35 -1.5 0.1522 0 0 0</pose>
+      <link name="orange_4_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_orange/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    <model name="orange_5">
+      <static>true</static>
+      <pose>40 1.5 0.1522 0 0 0</pose>
+      <link name="orange_5_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_orange/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    <model name="orange_6">
+      <static>true</static>
+      <pose>40 -1.5 0.1522 0 0 0</pose>
+      <link name="orange_6_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_orange/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    <model name="orange_7">
+      <static>true</static>
+      <pose>45 1.5 0.1522 0 0 0</pose>
+      <link name="orange_7_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_orange/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    <model name="orange_8">
+      <static>true</static>
+      <pose>45 -1.5 0.1522 0 0 0</pose>
+      <link name="orange_8_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_orange/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    <model name="orange_9">
+      <static>true</static>
+      <pose>50 1.5 0.1522 0 0 0</pose>
+      <link name="orange_9_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_orange/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    <model name="orange_10">
+      <static>true</static>
+      <pose>50 -1.5 0.1522 0 0 0</pose>
+      <link name="orange_10_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_orange/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    <model name="orange_11">
+      <static>true</static>
+      <pose>50 0.75 0.1522 0 0 0</pose>
+      <link name="orange_11_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_orange/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    <model name="orange_12">
+      <static>true</static>
+      <pose>50 -0.75 0.1522 0 0 0</pose>
+      <link name="orange_12_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_orange/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    <model name="large_orange_1">
+      <static>true</static>
+      <pose>-50 1.5 0.0333 0 0 0</pose>
+      <link name="large_orange_1_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_large_orange/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    <model name="large_orange_2">
+      <static>true</static>
+      <pose>-50 -1.5 0.0333 0 0 0</pose>
+      <link name="large_orange_2_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_large_orange/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    <model name="large_orange_3">
+      <static>true</static>
+      <pose>-50.5 1.5 0.0333 0 0 0</pose>
+      <link name="large_orange_3_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_large_orange/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    <model name="large_orange_4">
+      <static>true</static>
+      <pose>-50.5 -1.5 0.0333 0 0 0</pose>
+      <link name="large_orange_4_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_large_orange/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    <model name="large_orange_5">
+      <static>true</static>
+      <pose>25 1.5 0.0333 0 0 0</pose>
+      <link name="large_orange_5_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_large_orange/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    <model name="large_orange_6">
+      <static>true</static>
+      <pose>25 -1.5 0.0333 0 0 0</pose>
+      <link name="large_orange_6_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_large_orange/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+    <model name="dyn_blue_16">
+      <pose>632 -600 0.1522 0 0 0</pose>
+      <link name="dyn_blue_16_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_blue/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <inertial>
+          <pose>0 0 -0.0872 0 0 0</pose>
+          <mass>0.65</mass>
+          <inertia>
+            <ixx>0.00582</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.00582</iyy>
+            <iyz>0</iyz>
+            <izz>0.00384</izz>
+          </inertia>
+        </inertial>
+        <collision name="foot">
+          <pose>0 0 -0.14135 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.225 0.225 0.0207</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.9</mu>
+                <mu2>0.9</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_low">
+          <pose>0 0 -0.0605 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.06</radius>
+              <length>0.141</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_high">
+          <pose>0 0 0.081 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.028</radius>
+              <length>0.142</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+      </link>
+    </model>
+    <model name="dyn_blue_15">
+      <pose>630 -600 0.1522 0 0 0</pose>
+      <link name="dyn_blue_15_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_blue/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <inertial>
+          <pose>0 0 -0.0872 0 0 0</pose>
+          <mass>0.65</mass>
+          <inertia>
+            <ixx>0.00582</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.00582</iyy>
+            <iyz>0</iyz>
+            <izz>0.00384</izz>
+          </inertia>
+        </inertial>
+        <collision name="foot">
+          <pose>0 0 -0.14135 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.225 0.225 0.0207</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.9</mu>
+                <mu2>0.9</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_low">
+          <pose>0 0 -0.0605 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.06</radius>
+              <length>0.141</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_high">
+          <pose>0 0 0.081 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.028</radius>
+              <length>0.142</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+      </link>
+    </model>
+    <model name="dyn_blue_14">
+      <pose>628 -600 0.1522 0 0 0</pose>
+      <link name="dyn_blue_14_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_blue/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <inertial>
+          <pose>0 0 -0.0872 0 0 0</pose>
+          <mass>0.65</mass>
+          <inertia>
+            <ixx>0.00582</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.00582</iyy>
+            <iyz>0</iyz>
+            <izz>0.00384</izz>
+          </inertia>
+        </inertial>
+        <collision name="foot">
+          <pose>0 0 -0.14135 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.225 0.225 0.0207</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.9</mu>
+                <mu2>0.9</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_low">
+          <pose>0 0 -0.0605 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.06</radius>
+              <length>0.141</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_high">
+          <pose>0 0 0.081 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.028</radius>
+              <length>0.142</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+      </link>
+    </model>
+    <model name="dyn_blue_13">
+      <pose>626 -600 0.1522 0 0 0</pose>
+      <link name="dyn_blue_13_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_blue/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <inertial>
+          <pose>0 0 -0.0872 0 0 0</pose>
+          <mass>0.65</mass>
+          <inertia>
+            <ixx>0.00582</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.00582</iyy>
+            <iyz>0</iyz>
+            <izz>0.00384</izz>
+          </inertia>
+        </inertial>
+        <collision name="foot">
+          <pose>0 0 -0.14135 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.225 0.225 0.0207</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.9</mu>
+                <mu2>0.9</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_low">
+          <pose>0 0 -0.0605 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.06</radius>
+              <length>0.141</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_high">
+          <pose>0 0 0.081 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.028</radius>
+              <length>0.142</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+      </link>
+    </model>
+    <model name="dyn_blue_12">
+      <pose>624 -600 0.1522 0 0 0</pose>
+      <link name="dyn_blue_12_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_blue/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <inertial>
+          <pose>0 0 -0.0872 0 0 0</pose>
+          <mass>0.65</mass>
+          <inertia>
+            <ixx>0.00582</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.00582</iyy>
+            <iyz>0</iyz>
+            <izz>0.00384</izz>
+          </inertia>
+        </inertial>
+        <collision name="foot">
+          <pose>0 0 -0.14135 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.225 0.225 0.0207</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.9</mu>
+                <mu2>0.9</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_low">
+          <pose>0 0 -0.0605 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.06</radius>
+              <length>0.141</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_high">
+          <pose>0 0 0.081 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.028</radius>
+              <length>0.142</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+      </link>
+    </model>
+    <model name="dyn_blue_11">
+      <pose>622 -600 0.1522 0 0 0</pose>
+      <link name="dyn_blue_11_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_blue/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <inertial>
+          <pose>0 0 -0.0872 0 0 0</pose>
+          <mass>0.65</mass>
+          <inertia>
+            <ixx>0.00582</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.00582</iyy>
+            <iyz>0</iyz>
+            <izz>0.00384</izz>
+          </inertia>
+        </inertial>
+        <collision name="foot">
+          <pose>0 0 -0.14135 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.225 0.225 0.0207</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.9</mu>
+                <mu2>0.9</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_low">
+          <pose>0 0 -0.0605 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.06</radius>
+              <length>0.141</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_high">
+          <pose>0 0 0.081 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.028</radius>
+              <length>0.142</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+      </link>
+    </model>
+    <model name="dyn_blue_10">
+      <pose>620 -600 0.1522 0 0 0</pose>
+      <link name="dyn_blue_10_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_blue/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <inertial>
+          <pose>0 0 -0.0872 0 0 0</pose>
+          <mass>0.65</mass>
+          <inertia>
+            <ixx>0.00582</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.00582</iyy>
+            <iyz>0</iyz>
+            <izz>0.00384</izz>
+          </inertia>
+        </inertial>
+        <collision name="foot">
+          <pose>0 0 -0.14135 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.225 0.225 0.0207</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.9</mu>
+                <mu2>0.9</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_low">
+          <pose>0 0 -0.0605 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.06</radius>
+              <length>0.141</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_high">
+          <pose>0 0 0.081 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.028</radius>
+              <length>0.142</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+      </link>
+    </model>
+    <model name="dyn_blue_9">
+      <pose>618 -600 0.1522 0 0 0</pose>
+      <link name="dyn_blue_9_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_blue/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <inertial>
+          <pose>0 0 -0.0872 0 0 0</pose>
+          <mass>0.65</mass>
+          <inertia>
+            <ixx>0.00582</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.00582</iyy>
+            <iyz>0</iyz>
+            <izz>0.00384</izz>
+          </inertia>
+        </inertial>
+        <collision name="foot">
+          <pose>0 0 -0.14135 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.225 0.225 0.0207</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.9</mu>
+                <mu2>0.9</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_low">
+          <pose>0 0 -0.0605 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.06</radius>
+              <length>0.141</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_high">
+          <pose>0 0 0.081 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.028</radius>
+              <length>0.142</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+      </link>
+    </model>
+    <model name="dyn_blue_8">
+      <pose>616 -600 0.1522 0 0 0</pose>
+      <link name="dyn_blue_8_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_blue/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <inertial>
+          <pose>0 0 -0.0872 0 0 0</pose>
+          <mass>0.65</mass>
+          <inertia>
+            <ixx>0.00582</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.00582</iyy>
+            <iyz>0</iyz>
+            <izz>0.00384</izz>
+          </inertia>
+        </inertial>
+        <collision name="foot">
+          <pose>0 0 -0.14135 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.225 0.225 0.0207</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.9</mu>
+                <mu2>0.9</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_low">
+          <pose>0 0 -0.0605 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.06</radius>
+              <length>0.141</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_high">
+          <pose>0 0 0.081 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.028</radius>
+              <length>0.142</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+      </link>
+    </model>
+    <model name="dyn_blue_7">
+      <pose>614 -600 0.1522 0 0 0</pose>
+      <link name="dyn_blue_7_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_blue/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <inertial>
+          <pose>0 0 -0.0872 0 0 0</pose>
+          <mass>0.65</mass>
+          <inertia>
+            <ixx>0.00582</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.00582</iyy>
+            <iyz>0</iyz>
+            <izz>0.00384</izz>
+          </inertia>
+        </inertial>
+        <collision name="foot">
+          <pose>0 0 -0.14135 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.225 0.225 0.0207</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.9</mu>
+                <mu2>0.9</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_low">
+          <pose>0 0 -0.0605 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.06</radius>
+              <length>0.141</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_high">
+          <pose>0 0 0.081 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.028</radius>
+              <length>0.142</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+      </link>
+    </model>
+    <model name="dyn_blue_6">
+      <pose>612 -600 0.1522 0 0 0</pose>
+      <link name="dyn_blue_6_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_blue/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <inertial>
+          <pose>0 0 -0.0872 0 0 0</pose>
+          <mass>0.65</mass>
+          <inertia>
+            <ixx>0.00582</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.00582</iyy>
+            <iyz>0</iyz>
+            <izz>0.00384</izz>
+          </inertia>
+        </inertial>
+        <collision name="foot">
+          <pose>0 0 -0.14135 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.225 0.225 0.0207</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.9</mu>
+                <mu2>0.9</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_low">
+          <pose>0 0 -0.0605 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.06</radius>
+              <length>0.141</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_high">
+          <pose>0 0 0.081 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.028</radius>
+              <length>0.142</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+      </link>
+    </model>
+    <model name="dyn_blue_5">
+      <pose>610 -600 0.1522 0 0 0</pose>
+      <link name="dyn_blue_5_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_blue/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <inertial>
+          <pose>0 0 -0.0872 0 0 0</pose>
+          <mass>0.65</mass>
+          <inertia>
+            <ixx>0.00582</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.00582</iyy>
+            <iyz>0</iyz>
+            <izz>0.00384</izz>
+          </inertia>
+        </inertial>
+        <collision name="foot">
+          <pose>0 0 -0.14135 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.225 0.225 0.0207</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.9</mu>
+                <mu2>0.9</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_low">
+          <pose>0 0 -0.0605 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.06</radius>
+              <length>0.141</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_high">
+          <pose>0 0 0.081 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.028</radius>
+              <length>0.142</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+      </link>
+    </model>
+    <model name="dyn_blue_4">
+      <pose>608 -600 0.1522 0 0 0</pose>
+      <link name="dyn_blue_4_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_blue/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <inertial>
+          <pose>0 0 -0.0872 0 0 0</pose>
+          <mass>0.65</mass>
+          <inertia>
+            <ixx>0.00582</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.00582</iyy>
+            <iyz>0</iyz>
+            <izz>0.00384</izz>
+          </inertia>
+        </inertial>
+        <collision name="foot">
+          <pose>0 0 -0.14135 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.225 0.225 0.0207</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.9</mu>
+                <mu2>0.9</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_low">
+          <pose>0 0 -0.0605 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.06</radius>
+              <length>0.141</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_high">
+          <pose>0 0 0.081 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.028</radius>
+              <length>0.142</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+      </link>
+    </model>
+    <model name="dyn_blue_3">
+      <pose>606 -600 0.1522 0 0 0</pose>
+      <link name="dyn_blue_3_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_blue/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <inertial>
+          <pose>0 0 -0.0872 0 0 0</pose>
+          <mass>0.65</mass>
+          <inertia>
+            <ixx>0.00582</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.00582</iyy>
+            <iyz>0</iyz>
+            <izz>0.00384</izz>
+          </inertia>
+        </inertial>
+        <collision name="foot">
+          <pose>0 0 -0.14135 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.225 0.225 0.0207</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.9</mu>
+                <mu2>0.9</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_low">
+          <pose>0 0 -0.0605 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.06</radius>
+              <length>0.141</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_high">
+          <pose>0 0 0.081 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.028</radius>
+              <length>0.142</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+      </link>
+    </model>
+    <model name="dyn_blue_2">
+      <pose>604 -600 0.1522 0 0 0</pose>
+      <link name="dyn_blue_2_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_blue/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <inertial>
+          <pose>0 0 -0.0872 0 0 0</pose>
+          <mass>0.65</mass>
+          <inertia>
+            <ixx>0.00582</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.00582</iyy>
+            <iyz>0</iyz>
+            <izz>0.00384</izz>
+          </inertia>
+        </inertial>
+        <collision name="foot">
+          <pose>0 0 -0.14135 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.225 0.225 0.0207</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.9</mu>
+                <mu2>0.9</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_low">
+          <pose>0 0 -0.0605 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.06</radius>
+              <length>0.141</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_high">
+          <pose>0 0 0.081 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.028</radius>
+              <length>0.142</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+      </link>
+    </model>
+    <model name="dyn_blue_1">
+      <pose>602 -600 0.1522 0 0 0</pose>
+      <link name="dyn_blue_1_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_blue/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <inertial>
+          <pose>0 0 -0.0872 0 0 0</pose>
+          <mass>0.65</mass>
+          <inertia>
+            <ixx>0.00582</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.00582</iyy>
+            <iyz>0</iyz>
+            <izz>0.00384</izz>
+          </inertia>
+        </inertial>
+        <collision name="foot">
+          <pose>0 0 -0.14135 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.225 0.225 0.0207</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.9</mu>
+                <mu2>0.9</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_low">
+          <pose>0 0 -0.0605 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.06</radius>
+              <length>0.141</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_high">
+          <pose>0 0 0.081 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.028</radius>
+              <length>0.142</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+      </link>
+    </model>
+    <model name="dyn_yellow_16">
+      <pose>632 -610 0.1522 0 0 0</pose>
+      <link name="dyn_yellow_16_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_yellow/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <inertial>
+          <pose>0 0 -0.0872 0 0 0</pose>
+          <mass>0.65</mass>
+          <inertia>
+            <ixx>0.00582</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.00582</iyy>
+            <iyz>0</iyz>
+            <izz>0.00384</izz>
+          </inertia>
+        </inertial>
+        <collision name="foot">
+          <pose>0 0 -0.14135 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.225 0.225 0.0207</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.9</mu>
+                <mu2>0.9</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_low">
+          <pose>0 0 -0.0605 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.06</radius>
+              <length>0.141</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_high">
+          <pose>0 0 0.081 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.028</radius>
+              <length>0.142</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+      </link>
+    </model>
+    <model name="dyn_yellow_15">
+      <pose>630 -610 0.1522 0 0 0</pose>
+      <link name="dyn_yellow_15_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_yellow/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <inertial>
+          <pose>0 0 -0.0872 0 0 0</pose>
+          <mass>0.65</mass>
+          <inertia>
+            <ixx>0.00582</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.00582</iyy>
+            <iyz>0</iyz>
+            <izz>0.00384</izz>
+          </inertia>
+        </inertial>
+        <collision name="foot">
+          <pose>0 0 -0.14135 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.225 0.225 0.0207</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.9</mu>
+                <mu2>0.9</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_low">
+          <pose>0 0 -0.0605 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.06</radius>
+              <length>0.141</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_high">
+          <pose>0 0 0.081 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.028</radius>
+              <length>0.142</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+      </link>
+    </model>
+    <model name="dyn_yellow_14">
+      <pose>628 -610 0.1522 0 0 0</pose>
+      <link name="dyn_yellow_14_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_yellow/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <inertial>
+          <pose>0 0 -0.0872 0 0 0</pose>
+          <mass>0.65</mass>
+          <inertia>
+            <ixx>0.00582</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.00582</iyy>
+            <iyz>0</iyz>
+            <izz>0.00384</izz>
+          </inertia>
+        </inertial>
+        <collision name="foot">
+          <pose>0 0 -0.14135 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.225 0.225 0.0207</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.9</mu>
+                <mu2>0.9</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_low">
+          <pose>0 0 -0.0605 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.06</radius>
+              <length>0.141</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_high">
+          <pose>0 0 0.081 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.028</radius>
+              <length>0.142</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+      </link>
+    </model>
+    <model name="dyn_yellow_13">
+      <pose>626 -610 0.1522 0 0 0</pose>
+      <link name="dyn_yellow_13_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_yellow/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <inertial>
+          <pose>0 0 -0.0872 0 0 0</pose>
+          <mass>0.65</mass>
+          <inertia>
+            <ixx>0.00582</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.00582</iyy>
+            <iyz>0</iyz>
+            <izz>0.00384</izz>
+          </inertia>
+        </inertial>
+        <collision name="foot">
+          <pose>0 0 -0.14135 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.225 0.225 0.0207</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.9</mu>
+                <mu2>0.9</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_low">
+          <pose>0 0 -0.0605 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.06</radius>
+              <length>0.141</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_high">
+          <pose>0 0 0.081 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.028</radius>
+              <length>0.142</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+      </link>
+    </model>
+    <model name="dyn_yellow_12">
+      <pose>624 -610 0.1522 0 0 0</pose>
+      <link name="dyn_yellow_12_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_yellow/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <inertial>
+          <pose>0 0 -0.0872 0 0 0</pose>
+          <mass>0.65</mass>
+          <inertia>
+            <ixx>0.00582</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.00582</iyy>
+            <iyz>0</iyz>
+            <izz>0.00384</izz>
+          </inertia>
+        </inertial>
+        <collision name="foot">
+          <pose>0 0 -0.14135 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.225 0.225 0.0207</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.9</mu>
+                <mu2>0.9</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_low">
+          <pose>0 0 -0.0605 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.06</radius>
+              <length>0.141</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_high">
+          <pose>0 0 0.081 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.028</radius>
+              <length>0.142</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+      </link>
+    </model>
+    <model name="dyn_yellow_11">
+      <pose>622 -610 0.1522 0 0 0</pose>
+      <link name="dyn_yellow_11_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_yellow/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <inertial>
+          <pose>0 0 -0.0872 0 0 0</pose>
+          <mass>0.65</mass>
+          <inertia>
+            <ixx>0.00582</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.00582</iyy>
+            <iyz>0</iyz>
+            <izz>0.00384</izz>
+          </inertia>
+        </inertial>
+        <collision name="foot">
+          <pose>0 0 -0.14135 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.225 0.225 0.0207</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.9</mu>
+                <mu2>0.9</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_low">
+          <pose>0 0 -0.0605 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.06</radius>
+              <length>0.141</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_high">
+          <pose>0 0 0.081 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.028</radius>
+              <length>0.142</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+      </link>
+    </model>
+    <model name="dyn_yellow_10">
+      <pose>620 -610 0.1522 0 0 0</pose>
+      <link name="dyn_yellow_10_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_yellow/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <inertial>
+          <pose>0 0 -0.0872 0 0 0</pose>
+          <mass>0.65</mass>
+          <inertia>
+            <ixx>0.00582</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.00582</iyy>
+            <iyz>0</iyz>
+            <izz>0.00384</izz>
+          </inertia>
+        </inertial>
+        <collision name="foot">
+          <pose>0 0 -0.14135 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.225 0.225 0.0207</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.9</mu>
+                <mu2>0.9</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_low">
+          <pose>0 0 -0.0605 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.06</radius>
+              <length>0.141</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_high">
+          <pose>0 0 0.081 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.028</radius>
+              <length>0.142</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+      </link>
+    </model>
+    <model name="dyn_yellow_9">
+      <pose>618 -610 0.1522 0 0 0</pose>
+      <link name="dyn_yellow_9_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_yellow/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <inertial>
+          <pose>0 0 -0.0872 0 0 0</pose>
+          <mass>0.65</mass>
+          <inertia>
+            <ixx>0.00582</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.00582</iyy>
+            <iyz>0</iyz>
+            <izz>0.00384</izz>
+          </inertia>
+        </inertial>
+        <collision name="foot">
+          <pose>0 0 -0.14135 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.225 0.225 0.0207</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.9</mu>
+                <mu2>0.9</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_low">
+          <pose>0 0 -0.0605 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.06</radius>
+              <length>0.141</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_high">
+          <pose>0 0 0.081 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.028</radius>
+              <length>0.142</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+      </link>
+    </model>
+    <model name="dyn_yellow_8">
+      <pose>616 -610 0.1522 0 0 0</pose>
+      <link name="dyn_yellow_8_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_yellow/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <inertial>
+          <pose>0 0 -0.0872 0 0 0</pose>
+          <mass>0.65</mass>
+          <inertia>
+            <ixx>0.00582</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.00582</iyy>
+            <iyz>0</iyz>
+            <izz>0.00384</izz>
+          </inertia>
+        </inertial>
+        <collision name="foot">
+          <pose>0 0 -0.14135 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.225 0.225 0.0207</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.9</mu>
+                <mu2>0.9</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_low">
+          <pose>0 0 -0.0605 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.06</radius>
+              <length>0.141</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_high">
+          <pose>0 0 0.081 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.028</radius>
+              <length>0.142</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+      </link>
+    </model>
+    <model name="dyn_yellow_7">
+      <pose>614 -610 0.1522 0 0 0</pose>
+      <link name="dyn_yellow_7_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_yellow/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <inertial>
+          <pose>0 0 -0.0872 0 0 0</pose>
+          <mass>0.65</mass>
+          <inertia>
+            <ixx>0.00582</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.00582</iyy>
+            <iyz>0</iyz>
+            <izz>0.00384</izz>
+          </inertia>
+        </inertial>
+        <collision name="foot">
+          <pose>0 0 -0.14135 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.225 0.225 0.0207</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.9</mu>
+                <mu2>0.9</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_low">
+          <pose>0 0 -0.0605 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.06</radius>
+              <length>0.141</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_high">
+          <pose>0 0 0.081 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.028</radius>
+              <length>0.142</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+      </link>
+    </model>
+    <model name="dyn_yellow_6">
+      <pose>612 -610 0.1522 0 0 0</pose>
+      <link name="dyn_yellow_6_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_yellow/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <inertial>
+          <pose>0 0 -0.0872 0 0 0</pose>
+          <mass>0.65</mass>
+          <inertia>
+            <ixx>0.00582</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.00582</iyy>
+            <iyz>0</iyz>
+            <izz>0.00384</izz>
+          </inertia>
+        </inertial>
+        <collision name="foot">
+          <pose>0 0 -0.14135 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.225 0.225 0.0207</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.9</mu>
+                <mu2>0.9</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_low">
+          <pose>0 0 -0.0605 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.06</radius>
+              <length>0.141</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_high">
+          <pose>0 0 0.081 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.028</radius>
+              <length>0.142</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+      </link>
+    </model>
+    <model name="dyn_yellow_5">
+      <pose>610 -610 0.1522 0 0 0</pose>
+      <link name="dyn_yellow_5_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_yellow/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <inertial>
+          <pose>0 0 -0.0872 0 0 0</pose>
+          <mass>0.65</mass>
+          <inertia>
+            <ixx>0.00582</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.00582</iyy>
+            <iyz>0</iyz>
+            <izz>0.00384</izz>
+          </inertia>
+        </inertial>
+        <collision name="foot">
+          <pose>0 0 -0.14135 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.225 0.225 0.0207</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.9</mu>
+                <mu2>0.9</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_low">
+          <pose>0 0 -0.0605 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.06</radius>
+              <length>0.141</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_high">
+          <pose>0 0 0.081 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.028</radius>
+              <length>0.142</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+      </link>
+    </model>
+    <model name="dyn_yellow_4">
+      <pose>608 -610 0.1522 0 0 0</pose>
+      <link name="dyn_yellow_4_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_yellow/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <inertial>
+          <pose>0 0 -0.0872 0 0 0</pose>
+          <mass>0.65</mass>
+          <inertia>
+            <ixx>0.00582</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.00582</iyy>
+            <iyz>0</iyz>
+            <izz>0.00384</izz>
+          </inertia>
+        </inertial>
+        <collision name="foot">
+          <pose>0 0 -0.14135 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.225 0.225 0.0207</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.9</mu>
+                <mu2>0.9</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_low">
+          <pose>0 0 -0.0605 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.06</radius>
+              <length>0.141</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_high">
+          <pose>0 0 0.081 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.028</radius>
+              <length>0.142</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+      </link>
+    </model>
+    <model name="dyn_yellow_3">
+      <pose>606 -610 0.1522 0 0 0</pose>
+      <link name="dyn_yellow_3_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_yellow/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <inertial>
+          <pose>0 0 -0.0872 0 0 0</pose>
+          <mass>0.65</mass>
+          <inertia>
+            <ixx>0.00582</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.00582</iyy>
+            <iyz>0</iyz>
+            <izz>0.00384</izz>
+          </inertia>
+        </inertial>
+        <collision name="foot">
+          <pose>0 0 -0.14135 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.225 0.225 0.0207</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.9</mu>
+                <mu2>0.9</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_low">
+          <pose>0 0 -0.0605 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.06</radius>
+              <length>0.141</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_high">
+          <pose>0 0 0.081 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.028</radius>
+              <length>0.142</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+      </link>
+    </model>
+    <model name="dyn_yellow_2">
+      <pose>604 -610 0.1522 0 0 0</pose>
+      <link name="dyn_yellow_2_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_yellow/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <inertial>
+          <pose>0 0 -0.0872 0 0 0</pose>
+          <mass>0.65</mass>
+          <inertia>
+            <ixx>0.00582</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.00582</iyy>
+            <iyz>0</iyz>
+            <izz>0.00384</izz>
+          </inertia>
+        </inertial>
+        <collision name="foot">
+          <pose>0 0 -0.14135 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.225 0.225 0.0207</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.9</mu>
+                <mu2>0.9</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_low">
+          <pose>0 0 -0.0605 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.06</radius>
+              <length>0.141</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_high">
+          <pose>0 0 0.081 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.028</radius>
+              <length>0.142</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+      </link>
+    </model>
+    <model name="dyn_yellow_1">
+      <pose>602 -610 0.1522 0 0 0</pose>
+      <link name="dyn_yellow_1_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_yellow/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <inertial>
+          <pose>0 0 -0.0872 0 0 0</pose>
+          <mass>0.65</mass>
+          <inertia>
+            <ixx>0.00582</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.00582</iyy>
+            <iyz>0</iyz>
+            <izz>0.00384</izz>
+          </inertia>
+        </inertial>
+        <collision name="foot">
+          <pose>0 0 -0.14135 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.225 0.225 0.0207</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.9</mu>
+                <mu2>0.9</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_low">
+          <pose>0 0 -0.0605 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.06</radius>
+              <length>0.141</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_high">
+          <pose>0 0 0.081 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.028</radius>
+              <length>0.142</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+      </link>
+    </model>
+    <model name="dyn_orange_4">
+      <pose>608 -620 0.1522 0 0 0</pose>
+      <link name="dyn_orange_4_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_orange/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <inertial>
+          <pose>0 0 -0.0872 0 0 0</pose>
+          <mass>0.65</mass>
+          <inertia>
+            <ixx>0.00582</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.00582</iyy>
+            <iyz>0</iyz>
+            <izz>0.00384</izz>
+          </inertia>
+        </inertial>
+        <collision name="foot">
+          <pose>0 0 -0.14135 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.225 0.225 0.0207</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.9</mu>
+                <mu2>0.9</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_low">
+          <pose>0 0 -0.0605 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.06</radius>
+              <length>0.141</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_high">
+          <pose>0 0 0.081 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.028</radius>
+              <length>0.142</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+      </link>
+    </model>
+    <model name="dyn_orange_3">
+      <pose>606 -620 0.1522 0 0 0</pose>
+      <link name="dyn_orange_3_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_orange/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <inertial>
+          <pose>0 0 -0.0872 0 0 0</pose>
+          <mass>0.65</mass>
+          <inertia>
+            <ixx>0.00582</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.00582</iyy>
+            <iyz>0</iyz>
+            <izz>0.00384</izz>
+          </inertia>
+        </inertial>
+        <collision name="foot">
+          <pose>0 0 -0.14135 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.225 0.225 0.0207</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.9</mu>
+                <mu2>0.9</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_low">
+          <pose>0 0 -0.0605 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.06</radius>
+              <length>0.141</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_high">
+          <pose>0 0 0.081 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.028</radius>
+              <length>0.142</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+      </link>
+    </model>
+    <model name="dyn_orange_2">
+      <pose>604 -620 0.1522 0 0 0</pose>
+      <link name="dyn_orange_2_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_orange/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <inertial>
+          <pose>0 0 -0.0872 0 0 0</pose>
+          <mass>0.65</mass>
+          <inertia>
+            <ixx>0.00582</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.00582</iyy>
+            <iyz>0</iyz>
+            <izz>0.00384</izz>
+          </inertia>
+        </inertial>
+        <collision name="foot">
+          <pose>0 0 -0.14135 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.225 0.225 0.0207</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.9</mu>
+                <mu2>0.9</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_low">
+          <pose>0 0 -0.0605 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.06</radius>
+              <length>0.141</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_high">
+          <pose>0 0 0.081 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.028</radius>
+              <length>0.142</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+      </link>
+    </model>
+    <model name="dyn_orange_1">
+      <pose>602 -620 0.1522 0 0 0</pose>
+      <link name="dyn_orange_1_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_orange/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <inertial>
+          <pose>0 0 -0.0872 0 0 0</pose>
+          <mass>0.65</mass>
+          <inertia>
+            <ixx>0.00582</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.00582</iyy>
+            <iyz>0</iyz>
+            <izz>0.00384</izz>
+          </inertia>
+        </inertial>
+        <collision name="foot">
+          <pose>0 0 -0.14135 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.225 0.225 0.0207</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.9</mu>
+                <mu2>0.9</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_low">
+          <pose>0 0 -0.0605 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.06</radius>
+              <length>0.141</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_high">
+          <pose>0 0 0.081 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.028</radius>
+              <length>0.142</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+      </link>
+    </model>
+    <model name="dyn_large_orange_6">
+      <pose>612 -630 0.0333 0 0 0</pose>
+      <link name="dyn_large_orange_6_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_large_orange/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <inertial>
+          <pose>0 0 0.0874 0 0 0</pose>
+          <mass>1.5</mass>
+          <inertia>
+            <ixx>0.0377</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.0377</iyy>
+            <iyz>0</iyz>
+            <izz>0.0133</izz>
+          </inertia>
+        </inertial>
+        <collision name="foot">
+          <pose>0 0 -0.0154 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.262 0.262 0.0348</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.9</mu>
+                <mu2>0.9</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_low">
+          <pose>0 0 0.1245 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.086</radius>
+              <length>0.245</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_high">
+          <pose>0 0 0.37 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.05</radius>
+              <length>0.246</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+      </link>
+    </model>
+    <model name="dyn_large_orange_5">
+      <pose>610 -630 0.0333 0 0 0</pose>
+      <link name="dyn_large_orange_5_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_large_orange/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <inertial>
+          <pose>0 0 0.0874 0 0 0</pose>
+          <mass>1.5</mass>
+          <inertia>
+            <ixx>0.0377</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.0377</iyy>
+            <iyz>0</iyz>
+            <izz>0.0133</izz>
+          </inertia>
+        </inertial>
+        <collision name="foot">
+          <pose>0 0 -0.0154 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.262 0.262 0.0348</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.9</mu>
+                <mu2>0.9</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_low">
+          <pose>0 0 0.1245 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.086</radius>
+              <length>0.245</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_high">
+          <pose>0 0 0.37 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.05</radius>
+              <length>0.246</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+      </link>
+    </model>
+    <model name="dyn_large_orange_4">
+      <pose>608 -630 0.0333 0 0 0</pose>
+      <link name="dyn_large_orange_4_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_large_orange/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <inertial>
+          <pose>0 0 0.0874 0 0 0</pose>
+          <mass>1.5</mass>
+          <inertia>
+            <ixx>0.0377</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.0377</iyy>
+            <iyz>0</iyz>
+            <izz>0.0133</izz>
+          </inertia>
+        </inertial>
+        <collision name="foot">
+          <pose>0 0 -0.0154 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.262 0.262 0.0348</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.9</mu>
+                <mu2>0.9</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_low">
+          <pose>0 0 0.1245 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.086</radius>
+              <length>0.245</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_high">
+          <pose>0 0 0.37 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.05</radius>
+              <length>0.246</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+      </link>
+    </model>
+    <model name="dyn_large_orange_3">
+      <pose>606 -630 0.0333 0 0 0</pose>
+      <link name="dyn_large_orange_3_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_large_orange/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <inertial>
+          <pose>0 0 0.0874 0 0 0</pose>
+          <mass>1.5</mass>
+          <inertia>
+            <ixx>0.0377</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.0377</iyy>
+            <iyz>0</iyz>
+            <izz>0.0133</izz>
+          </inertia>
+        </inertial>
+        <collision name="foot">
+          <pose>0 0 -0.0154 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.262 0.262 0.0348</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.9</mu>
+                <mu2>0.9</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_low">
+          <pose>0 0 0.1245 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.086</radius>
+              <length>0.245</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_high">
+          <pose>0 0 0.37 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.05</radius>
+              <length>0.246</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+      </link>
+    </model>
+    <model name="dyn_large_orange_2">
+      <pose>604 -630 0.0333 0 0 0</pose>
+      <link name="dyn_large_orange_2_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_large_orange/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <inertial>
+          <pose>0 0 0.0874 0 0 0</pose>
+          <mass>1.5</mass>
+          <inertia>
+            <ixx>0.0377</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.0377</iyy>
+            <iyz>0</iyz>
+            <izz>0.0133</izz>
+          </inertia>
+        </inertial>
+        <collision name="foot">
+          <pose>0 0 -0.0154 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.262 0.262 0.0348</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.9</mu>
+                <mu2>0.9</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_low">
+          <pose>0 0 0.1245 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.086</radius>
+              <length>0.245</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_high">
+          <pose>0 0 0.37 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.05</radius>
+              <length>0.246</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+      </link>
+    </model>
+    <model name="dyn_large_orange_1">
+      <pose>602 -630 0.0333 0 0 0</pose>
+      <link name="dyn_large_orange_1_link">
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://simulation/models/cones/cone_large_orange/mesh.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <inertial>
+          <pose>0 0 0.0874 0 0 0</pose>
+          <mass>1.5</mass>
+          <inertia>
+            <ixx>0.0377</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.0377</iyy>
+            <iyz>0</iyz>
+            <izz>0.0133</izz>
+          </inertia>
+        </inertial>
+        <collision name="foot">
+          <pose>0 0 -0.0154 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.262 0.262 0.0348</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.9</mu>
+                <mu2>0.9</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_low">
+          <pose>0 0 0.1245 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.086</radius>
+              <length>0.245</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+        <collision name="body_high">
+          <pose>0 0 0.37 0 0 0</pose>
+          <geometry>
+            <cylinder>
+              <radius>0.05</radius>
+              <length>0.246</length>
+            </cylinder>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>0.4</mu>
+                <mu2>0.4</mu2>
+              </ode>
+            </friction>
+            <bounce>
+              <restitution_coefficient>0</restitution_coefficient>
+            </bounce>
+          </surface>
+        </collision>
+      </link>
     </model>
   </world>
 </sdf>

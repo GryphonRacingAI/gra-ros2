@@ -10,6 +10,7 @@
   <arg name="iou_thres" default="0.45"/>
   <arg name="max_det" default="300"/>
   <arg name="device" default="cuda:0"/>
+  <arg name="verbose" default="true"/>
   <arg name="result_conf" default="true"/>
   <arg name="result_line_width" default="1"/>
   <arg name="result_font_size" default="1"/>
@@ -43,6 +44,7 @@
     <param name="result_boxes" value="$(var result_boxes)"/>
     <!-- <param name="classes" value="0, 1, 2, 3" value-sep=", "/> -->
     <param name="device" value="$(var device)"/>
+    <param name="verbose" value="$(var verbose)"/>
   </node>
 
   <node pkg="ultralytics_ros" exec="predict_with_cloud_node" output="screen">

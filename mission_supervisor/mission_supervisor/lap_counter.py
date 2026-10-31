@@ -53,6 +53,7 @@ class LapCounter(Node):
         self.car_position = Point()
         self.cone_positions = []
         self.last_known_cones = None
+        self.orange_clusters = []  # [x, y, hits] of large orange cones in the map frame
         self.previous_position = None
         self.lap_count = 0 
         self.in_cooldown = False
@@ -67,34 +68,52 @@ class LapCounter(Node):
         # Fallback to msg.header.frame_id if it exists, otherwise force 'velodyne'
         source_frame = msg.header.frame_id if hasattr(msg, 'header') and msg.header.frame_id else self.cone_frame
 
-        transformed_cones = []
-        for cone in msg.large_orange_cones[:2]:
+        # The finish line is built from every large orange cone seen so far, not from one message:
+        # a single misdetection (or two cones on the same side) used to move the line for a moment
+        # and count a lap elsewhere on the track. Detections are clustered in the map frame; the
+        # line is the most-observed pair of clusters 2-8 m apart (one cone each side of the track).
+        for cone in msg.large_orange_cones:
             try:
                 point_stamped = PointStamped()
                 point_stamped.header.frame_id = source_frame
-                
+
                 # FIX: Use Time() to ask for the most recent available transform
-                point_stamped.header.stamp = Time() 
+                point_stamped.header.stamp = Time()
                 point_stamped.point = cone.position
 
                 # TRANSFORM: velodyne -> map
                 transformed = self.tf_buffer.transform(
                     point_stamped,
                     self.target_frame,
-                    timeout=Duration(seconds=0.1) 
+                    timeout=Duration(seconds=0.1)
                 )
-
-                transformed_cone = copy.deepcopy(cone)
-                transformed_cone.position = transformed.point
-                transformed_cones.append(transformed_cone)
-
             except TransformException as ex:
                 # We downgrade this to a debug print so it doesn't spam if a single frame drops
                 self.get_logger().debug(f"Could not transform cone from {source_frame} to {self.target_frame}: {ex}")
-                return 
-        
-        if len(transformed_cones) == 2:
-            self.last_known_cones = transformed_cones
+                return
+            p = (transformed.point.x, transformed.point.y)
+            for c in self.orange_clusters:
+                if math.dist(p, (c[0], c[1])) < 0.7:
+                    c[2] += 1
+                    c[0] += (p[0] - c[0]) / c[2]
+                    c[1] += (p[1] - c[1]) / c[2]
+                    break
+            else:
+                self.orange_clusters.append([p[0], p[1], 1])
+
+        seen = [c for c in self.orange_clusters if c[2] >= 3]
+        pairs = [(a, b) for i, a in enumerate(seen) for b in seen[i + 1:]
+                 if 2.0 < math.dist((a[0], a[1]), (b[0], b[1])) < 8.0]
+        if pairs:
+            a, b = max(pairs, key=lambda p: min(p[0][2], p[1][2]))
+            line = []
+            for c in (a, b):
+                cone = copy.deepcopy(msg.large_orange_cones[0]) if msg.large_orange_cones else None
+                if cone is None:
+                    return
+                cone.position.x, cone.position.y = c[0], c[1]
+                line.append(cone)
+            self.last_known_cones = line
 
     def odom_callback(self, msg):
         # We must also transform the car's position to 'map' so it shares a coordinate 
@@ -184,7 +203,7 @@ def main(args=None):
         pass
     finally:
         lap_counter.destroy_node()
-        rclpy.shutdown()
+        rclpy.try_shutdown()  # Ctrl-C already shut the context down
 
 if __name__ == '__main__':
     main()

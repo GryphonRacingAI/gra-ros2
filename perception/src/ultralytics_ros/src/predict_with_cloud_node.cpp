@@ -35,6 +35,11 @@ PredictWithCloudNode::PredictWithCloudNode(const rclcpp::NodeOptions & options)
   this->declare_parameter<float>("ransac_distance_threshold", 0.03);
   this->declare_parameter<float>("preprocessing_filter_threshold", 0.0);
   this->declare_parameter<bool>("gz_camera_convention", true);
+  this->declare_parameter<bool>("bbox_range_fallback", true);
+  this->declare_parameter<double>("cone_height", 0.31);
+  this->declare_parameter<double>("large_cone_height", 0.48);
+  this->declare_parameter<double>("bbox_min_height_px", 10.0);
+  this->declare_parameter<double>("bbox_max_range", 13.0);
 
   // Store parameters as private members
   this->get_parameter("camera_info_topic", camera_info_topic_);
@@ -48,6 +53,11 @@ PredictWithCloudNode::PredictWithCloudNode(const rclcpp::NodeOptions & options)
   this->get_parameter("ransac_distance_threshold", ransac_distance_threshold_);
   this->get_parameter("preprocessing_filter_threshold", preprocessing_filter_threshold_);
   this->get_parameter("gz_camera_convention", gz_camera_convention_);
+  this->get_parameter("bbox_range_fallback", bbox_range_fallback_);
+  this->get_parameter("cone_height", cone_height_);
+  this->get_parameter("large_cone_height", large_cone_height_);
+  this->get_parameter("bbox_min_height_px", bbox_min_height_px_);
+  this->get_parameter("bbox_max_range", bbox_max_range_);
 
   camera_info_sub_.subscribe(this, camera_info_topic_);
   lidar_sub_.subscribe(this, lidar_topic_);
@@ -199,7 +209,13 @@ void PredictWithCloudNode::projectCloud(const pcl::PointCloud<pcl::PointXYZ>::Pt
     }
     
     RCLCPP_DEBUG(this->get_logger(), "Detection %zu raw cloud size: %zu", i, detection_cloud_raw->points.size());
+    const auto & detection2d = yolo_result_msg->detections.detections[i];
+    std::string class_id_str = detection2d.results[0].hypothesis.class_id;
+    auto it = class_map.find(class_id_str);
+    const uint8_t cone_type = (it != class_map.end()) ? it->second : 0; // Default to UNKNOWN if not found
 
+    bool have_position = false;
+    geometry_msgs::msg::Point position;
     if (!detection_cloud_raw->points.empty())
     {
       // Transform the detection cloud to the header frame
@@ -212,33 +228,42 @@ void PredictWithCloudNode::projectCloud(const pcl::PointCloud<pcl::PointXYZ>::Pt
       pcl::PointCloud<pcl::PointXYZ>::Ptr closest_detection_cloud = euclideanClusterExtraction(detection_cloud);
       RCLCPP_DEBUG(this->get_logger(), "Detection %zu cluster size: %zu", i, closest_detection_cloud->points.size());
 
-      *combine_detection_cloud += *closest_detection_cloud;
+      // An empty cluster (none within [min_cluster_size, max_cluster_size]) used to be published
+      // as a cone at (0, 0, 0), the centre of an empty bounding box, which SLAM then mapped.
+      if (!closest_detection_cloud->points.empty())
+      {
+        *combine_detection_cloud += *closest_detection_cloud;
 
-      // Create the 3D bounding box
-      createBoundingBox(detection3d_array_msg, closest_detection_cloud,
-                        yolo_result_msg->detections.detections[i].results);
-
-      // Add cone to ConeArray
-      common_msgs::msg::Cone cone_msg;
-      std::string class_id_str = yolo_result_msg->detections.detections[i].results[0].hypothesis.class_id;
-      auto it = class_map.find(class_id_str);
-      cone_msg.type = (it != class_map.end()) ? it->second : 0; // Default to UNKNOWN if not found
-      cone_msg.position.x = detection3d_array_msg.detections.back().bbox.center.position.x;
-      cone_msg.position.y = detection3d_array_msg.detections.back().bbox.center.position.y;
-      cone_msg.position.z = detection3d_array_msg.detections.back().bbox.center.position.z;
-      // Place cone in the correct array
-      switch (cone_msg.type) {
-        case 1: cone_array_msg.yellow_cones.push_back(cone_msg); break;
-        case 2: cone_array_msg.blue_cones.push_back(cone_msg); break;
-        case 3: cone_array_msg.orange_cones.push_back(cone_msg); break;
-        case 4: cone_array_msg.large_orange_cones.push_back(cone_msg); break;
-        case 0:
-        default: cone_array_msg.unknown_cones.push_back(cone_msg); break;
+        // Create the 3D bounding box
+        createBoundingBox(detection3d_array_msg, closest_detection_cloud, detection2d.results);
+        position = detection3d_array_msg.detections.back().bbox.center.position;
+        have_position = true;
       }
     }
-    else
+    // No lidar points on this cone (the 16 rings miss cones between ~10 and ~16 m): fall back to
+    // the camera, range from the box height and bearing from the box centre.
+    if (!have_position && bbox_range_fallback_)
     {
-      RCLCPP_DEBUG(this->get_logger(), "Detection %zu: No points passed the filtering.", i);
+      have_position = positionFromBbox(detection2d, cone_type == 4, header, position);
+    }
+    if (!have_position)
+    {
+      RCLCPP_DEBUG(this->get_logger(), "Detection %zu: no position (no lidar cluster, no camera estimate), dropped.", i);
+      continue;
+    }
+
+    // Add cone to ConeArray
+    common_msgs::msg::Cone cone_msg;
+    cone_msg.type = cone_type;
+    cone_msg.position = position;
+    // Place cone in the correct array
+    switch (cone_msg.type) {
+      case 1: cone_array_msg.yellow_cones.push_back(cone_msg); break;
+      case 2: cone_array_msg.blue_cones.push_back(cone_msg); break;
+      case 3: cone_array_msg.orange_cones.push_back(cone_msg); break;
+      case 4: cone_array_msg.large_orange_cones.push_back(cone_msg); break;
+      case 0:
+      default: cone_array_msg.unknown_cones.push_back(cone_msg); break;
     }
   }
 
@@ -248,6 +273,41 @@ void PredictWithCloudNode::projectCloud(const pcl::PointCloud<pcl::PointXYZ>::Pt
 
   // Publish the ConeArray
   cone_array_pub_->publish(cone_array_msg);
+}
+
+bool PredictWithCloudNode::positionFromBbox(const vision_msgs::msg::Detection2D& detection2d_msg, bool large_cone,
+                                            const std_msgs::msg::Header& header, geometry_msgs::msg::Point& position)
+{
+  // Pinhole: distance along the optical axis = fy * cone height / box height. The heights are the
+  // cone heights as YOLO boxes them (calibrated in sim: 0.31 m for the 0.325 m cones).
+  const double box_h = detection2d_msg.bbox.size_y;
+  if (box_h < bbox_min_height_px_ || cam_model_.fy() <= 0.0)
+  {
+    return false;
+  }
+  const double depth = cam_model_.fy() * (large_cone ? large_cone_height_ : cone_height_) / box_h;
+  if (depth > bbox_max_range_)
+  {
+    return false;
+  }
+  const cv::Point3d ray = cam_model_.projectPixelTo3dRay(
+      cv::Point2d(detection2d_msg.bbox.center.position.x, detection2d_msg.bbox.center.position.y));
+  const double k = depth / ray.z;  // optical frame: x right, y down, z forward
+  pcl::PointCloud<pcl::PointXYZ>::Ptr point(new pcl::PointCloud<pcl::PointXYZ>());
+  if (gz_camera_convention_)
+  {
+    point->push_back(pcl::PointXYZ(depth, -ray.x * k, -ray.y * k));  // camera frame: x forward, y left, z up
+  }
+  else
+  {
+    point->push_back(pcl::PointXYZ(ray.x * k, ray.y * k, depth));
+  }
+  pcl::PointCloud<pcl::PointXYZ>::Ptr in_header = cloud2TransformedCloud(point, cam_model_.tfFrame(), header.frame_id,
+                                                                         header.stamp);
+  position.x = in_header->points[0].x;
+  position.y = in_header->points[0].y;
+  position.z = in_header->points[0].z;
+  return true;
 }
 
 void PredictWithCloudNode::processPointsWithBbox(const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud,
@@ -469,7 +529,9 @@ PredictWithCloudNode::cloud2TransformedCloud(const pcl::PointCloud<pcl::PointXYZ
   }
   catch (tf2::TransformException& e)
   {
-    RCLCPP_DEBUG(this->get_logger(), "TF transform exception (using original cloud): %s", e.what());
+    // Projecting an untransformed cloud gives wrong cone positions, so make this visible.
+    RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 5000,
+                         "TF transform exception (using original cloud): %s", e.what());
     return cloud;
   }
 }
