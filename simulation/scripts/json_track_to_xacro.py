@@ -42,7 +42,7 @@ def build_xacro(track_name: str, cones: dict[str, list[tuple[float, float]]]) ->
     lines = [
         '<?xml version="1.0" ?>',
         '<sdf version=\'1.7\' xmlns:xacro="http://www.ros.org/wiki/xacro">',
-        "  <world name='sim_world'>",
+        "  <world name='map'>",
         "",
         '    <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics">',
         "      </plugin>",

@@ -21,7 +21,7 @@ While a cone is active its pose is that of its dyn_* body and the blue_N model s
 Poses come from Gazebo's dynamic_pose topic; only Gazebo transport is used, no ROS.
 FSAI_DYNAMIC_CONES=0 disables the node (cones then have no collision at all).
 
-usage: cone_activator.py <track.sdf> [--world sim_world] [--activate 7] [--release 12] [--rest 1.5]
+usage: cone_activator.py <track.sdf> [--world map] [--activate 7] [--release 12] [--rest 1.5]
 """
 import argparse
 import math
@@ -181,7 +181,7 @@ class Activator:
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
     ap.add_argument('track')
-    ap.add_argument('--world', default='sim_world')
+    ap.add_argument('--world', default='map')
     ap.add_argument('--activate', type=float, default=7.0)
     ap.add_argument('--release', type=float, default=12.0)
     ap.add_argument('--rest', type=float, default=1.5)
