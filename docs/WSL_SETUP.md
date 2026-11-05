@@ -48,7 +48,7 @@ activator the cones are immovable. Measured RTF with the activator: 0.90-0.96 (b
    python3 -m venv ros_venv
    touch ros_venv/COLCON_IGNORE        # stop colcon scanning the venv
    source ros_venv/bin/activate
-   pip install -r src/perception/src/ultralytics_ros/requirements.txt
+   pip install -r src/perception/ultralytics_ros/requirements.txt
    pip install pycuda git+https://github.com/GryphonRacingAI/fastslam64.git
    pip install "numpy<2"
    deactivate
@@ -88,16 +88,20 @@ ros2 launch simulation dynamic_event.launch.py event:=trackdrive        # gui:=f
 ros2 launch ultralytics_ros predict_with_cloud.launch.xml use_sim_time:=true yolo_model:=conev11n.pt input_topic:=/zed2i/depth_camera/image verbose:=false
 ros2 run mission_supervisor lap_counter --ros-args -p use_sim_time:=true
 ros2 run slam fastslam_node.py --ros-args -p use_sim_time:=true
-ros2 run path_planning pathfinder.py --ros-args -p use_sim_time:=true -p event:=trackdrive
-ros2 run control mppi_ros_modified.py --ros-args -p use_sim_time:=true --params-file src/control/config/mppi_params.yaml
+ros2 run path_planning pathfinder_slam.py --ros-args -p use_sim_time:=true -p event:=trackdrive
+ros2 run control mppi_ros_modified.py --ros-args -p use_sim_time:=true --params-file src/control/config/mppip.yaml
 ros2 run mission_supervisor mission_control --ros-args -p use_sim_time:=true -p event:=trackdrive
 ```
+
+`pathfinder_slam.py` is the planner used with this SLAM pipeline (plans in base_link from `/slam/*`, publishes an
+odom-frame `/path`; event-aware, skidpad and recovery logic). `pathfinder.py` is the local-frame `track_pathfinder`
+used by `tmux/startup.sh`. `mppi_ros_modified.py` follows the `frame_id` of `/path`, so it works with either.
 
 Events: `trackdrive` (track_small, 10 laps), `mppi_track`, `autocross` (drive1, FSG 2019, 1 lap),
 `acceleration`, `skidpad`. Use the same `event` for the simulation, pathfinder and mission_control.
 
 `predict_with_cloud_node` reads its parameters (topics, cluster sizes) from
-`perception/src/ultralytics_ros/config/predict_with_cloud_node.yaml`, which `main()` loads with
+`perception/ultralytics_ros/config/predict_with_cloud_node.yaml`, which `main()` loads with
 higher priority than launch-file parameters. Edit the YAML, not the launch arguments.
 
 ## 4. Checking it works

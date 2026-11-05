@@ -20,6 +20,7 @@ find_package(Eigen3 REQUIRED)
 # Install Python scripts only (no module)
 install(PROGRAMS
   scripts/pathfinder.py
+  scripts/pathfinder_slam.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
