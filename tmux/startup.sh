@@ -66,6 +66,9 @@ CAN="${CAN:-1}"
 CAN_IFACE="${CAN_IFACE:-vcan0}"
 DISPLAY_VAR="${DISPLAY:-:0}"
 CONES="${CONES:-yolo}"
+# SLAM=1: FastSLAM + the SLAM-based planner (pathfinder_slam.py) instead of the local-frame
+# track_pathfinder. Off by default: the default stack is unchanged. Needs CONES=yolo, CONTROLLER=mppi.
+SLAM="${SLAM:-0}"
 CLOCK_TIMEOUT_S="${CLOCK_TIMEOUT_S:-45}"
 
 if [ -z "${LOG_DIR:-}" ]; then
@@ -107,6 +110,11 @@ case "$CONES" in
 		exit 1
 		;;
 esac
+
+if [ "$SLAM" = "1" ] && { [ "$CONES" != "yolo" ] || [ "$CONTROLLER" != "mppi" ]; }; then
+	echo "SLAM=1 needs CONES=yolo and CONTROLLER=mppi (pure pursuit is local-frame only)" >&2
+	exit 1
+fi
 
 if [ "$CONES" = "perfect" ] && [ "$CONTROLLER" = "pp" ]; then
 	log "WARNING: CONES=perfect publishes an odom-frame path; pure pursuit is local-frame only. Prefer CONTROLLER=mppi."
@@ -253,6 +261,7 @@ if [ "$CAN" != "0" ]; then
 		REQUIRE_PERCEPTION="false"
 	else
 		PATH_NODE="track_pathfinder"
+		[ "$SLAM" = "1" ] && PATH_NODE="centreline_track_pathfinder"
 		REQUIRE_PERCEPTION="true"
 	fi
 	start_component "supervisor" 1 \
@@ -274,9 +283,28 @@ else
 	start_component "yolo" 1 \
 		"ros2 launch ultralytics_ros predict_with_cloud.launch.xml use_sim_time:=true sim:=true device:=cuda:0 yolo_model:=conev11n.pt" \
 		"venv"
-	start_component "path" 1 \
-		"ros2 run path_planning pathfinder.py --ros-args -p use_sim_time:=true --params-file ${PATHFINDER_PARAMS}" \
-		"venv"
+	if [ "$SLAM" = "1" ]; then
+		# FastSLAM needs /laps (map freeze after lap 2). With CAN=1 the lap counter is already running.
+		if [ "$CAN" = "0" ]; then
+			start_component "laps" 1 \
+				"ros2 run mission_supervisor lap_counter --ros-args -p use_sim_time:=true"
+		fi
+		start_component "slam" 1 \
+			"ros2 run slam fastslam_node.py --ros-args -p use_sim_time:=true" \
+			"venv"
+		start_component "path" 1 \
+			"ros2 run path_planning pathfinder_slam.py --ros-args -p use_sim_time:=true -p event:=${EVENT}" \
+			"venv"
+		# Without the CAN path there is no supervisor: mission_control ends the event (chequered flag, brakes).
+		if [ "$CAN" = "0" ]; then
+			start_component "mission" 1 \
+				"ros2 run mission_supervisor mission_control --ros-args -p use_sim_time:=true -p event:=${EVENT}"
+		fi
+	else
+		start_component "path" 1 \
+			"ros2 run path_planning pathfinder.py --ros-args -p use_sim_time:=true --params-file ${PATHFINDER_PARAMS}" \
+			"venv"
+	fi
 fi
 
 # --- Controller (one of) ---
@@ -284,6 +312,13 @@ MPPI_PARAMS="$WS/install/control/share/control/config/mppip.yaml"
 PP_PARAMS="$WS/install/control/share/control/config/ppp.yaml"
 [ -f "$MPPI_PARAMS" ] || MPPI_PARAMS="$WS/src/control/config/mppip.yaml"
 [ -f "$PP_PARAMS" ] || PP_PARAMS="$WS/src/control/config/ppp.yaml"
+
+# Acceleration is a straight line and its cones end before the finish line: let MPPI keep going straight.
+if [ "$SLAM" = "1" ] && [ "$EVENT" = "acceleration" ]; then
+	ACC_PARAMS="$WS/install/control/share/control/config/mppip_acceleration.yaml"
+	[ -f "$ACC_PARAMS" ] || ACC_PARAMS="$WS/src/control/config/mppip_acceleration.yaml"
+	MPPI_PARAMS="${MPPI_PARAMS} --params-file ${ACC_PARAMS}"
+fi
 
 LOCAL_FRAME_ARGS=""
 if [ "$CONES" = "perfect" ] && [ "$CONTROLLER" = "mppi" ]; then
