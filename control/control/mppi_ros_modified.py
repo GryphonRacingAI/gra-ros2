@@ -28,7 +28,7 @@ from nav_msgs.msg import Path, Odometry
 from sensor_msgs.msg import PointCloud2
 from ackermann_msgs.msg import AckermannDrive, AckermannDriveStamped
 from geometry_msgs.msg import PoseStamped
-from std_msgs.msg import Float64
+from std_msgs.msg import Bool, Float64
 
 import sensor_msgs_py.point_cloud2 as pc2
 
@@ -163,6 +163,7 @@ class MPPIController(Node):
         self.sub_path = self.create_subscription(Path, self.path_topic, self.path_callback, 10)
         self.sub_cones = self.create_subscription(PointCloud2, '/slam/cones', self.cone_callback, 10)
         self.sub_steer = self.create_subscription(Float64, '/steer_angle', self.steer_callback, 10)
+        self.sub_flag = self.create_subscription(Bool, '/chequered_flag', self.flag_callback, 1)
 
         self.pub_drive = self.create_publisher(AckermannDriveStamped, '/drive', 10)
         self.pub_ackermann = self.create_publisher(AckermannDrive, '/ackermann_cmd', 10)
@@ -170,6 +171,7 @@ class MPPIController(Node):
 
         self.timer = self.create_timer(self.dt, self.control_loop)
 
+        self.chequered = False
         self.vehicle_state = None   # odom-frame pose + speed
         self.path_is_local = False
         self.path_frame_id = 'odom'
@@ -194,6 +196,13 @@ class MPPIController(Node):
         q = msg.pose.pose.orientation
         _, _, yaw = euler_from_quaternion([q.x, q.y, q.z, q.w])
         self.vehicle_state = np.array([p.x, p.y, yaw, msg.twist.twist.linear.x], dtype=float)
+
+    def flag_callback(self, msg):
+        # End of the event (mission_supervisor / mission_control): stop asking for speed. The VCU brakes
+        # on the flag too, but with the ideal drive nothing else would stop the car.
+        if msg.data and not self.chequered:
+            self.get_logger().info("chequered flag: requesting standstill")
+        self.chequered = bool(msg.data)
 
     def steer_callback(self, msg):
         self.steer_measured = float(msg.data)
@@ -283,6 +292,9 @@ class MPPIController(Node):
 
         # Don't sleep here: with use_sim_time the clock only advances when this (single-threaded)
         # executor processes /clock, so sleep_for() blocked the node forever.
+        if self.chequered:
+            self.pub_ackermann.publish(AckermannDrive(speed=0.0, steering_angle=0.0))
+            return
         if self.vehicle_state is None:
             self.get_logger().info("Waiting for vehicle state", throttle_duration_sec=3.0)
             return
@@ -299,7 +311,9 @@ class MPPIController(Node):
         # usually brings new cones into view, but stop at its end instead of circling there with
         # the creep speed (acceleration: the last gate before the finish line).
         stale = (self.get_clock().now() - self.last_path_time).nanoseconds * 1e-9 > self.path_timeout
-        if stale and np.linalg.norm(self.path_arr[-1] - np.array([x, y])) < 2.0:
+        # only for straight events (path_extension > 0): elsewhere a short gap in the planner's output near
+        # the end of the last path must not freeze the car for good (it keeps creeping and sees new cones)
+        if self.path_extension > 0.0 and stale and np.linalg.norm(self.path_arr[-1] - np.array([x, y])) < 2.0:
             self.get_logger().warn("reached the end of the last /path: stopping", throttle_duration_sec=2.0)
             self.pub_ackermann.publish(AckermannDrive(speed=0.0, steering_angle=0.0))
             self.u0[:] = 0.0
