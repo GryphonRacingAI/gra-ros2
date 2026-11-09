@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <sdf version='1.9' xmlns:xacro="http://www.ros.org/wiki/xacro">
-    <!-- drive:=torque (realistic, default) | ideal (old velocity-controlled rear wheels) -->
-    <xacro:arg name="drive" default="torque"/>
+    <!-- drive:=ideal (default: velocity-controlled rear wheels) | torque (realistic, ads_dv_vcu_sim) -->
+    <xacro:arg name="drive" default="ideal"/>
     <xacro:property name="drive" value="$(arg drive)"/>
     <model name='ads_dv' canonical_link='base_footprint'>
 

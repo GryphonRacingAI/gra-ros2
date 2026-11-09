@@ -67,6 +67,8 @@ def vehicle_nodes(context):
         ]
     )
 
+    if drive not in ('ideal', 'torque'):
+        raise RuntimeError(f"drive must be 'ideal' or 'torque', got '{drive}'")
     if drive == 'ideal':
         command_node = Node(
             package='simulation',
@@ -111,7 +113,7 @@ def vehicle_nodes(context):
 
 def generate_launch_description():
 
-    # vehicle model: the xacro, so drive:=torque|ideal can be chosen (ads_dv.sdf = drive:=torque)
+    # vehicle model: the xacro, so drive:=torque|ideal can be chosen (ads_dv.sdf = the xacro default, drive:=ideal)
     model_file = os.path.join(get_package_share_directory('simulation'),
                                'models/vehicle/ads_dv.xacro')
 
@@ -132,9 +134,12 @@ def generate_launch_description():
         "verbosity", default_value=TextSubstitution(text="1")
     )
     drive_launch_arg = DeclareLaunchArgument(
-        "drive", default_value=TextSubstitution(text="torque"),
-        description="torque: realistic ADS-DV drivetrain (VCU emulator, tyre grip, brakes); "
-                    "ideal: wheel speed set directly (old behaviour)"
+        "drive", default_value=TextSubstitution(text="ideal"),
+        description="ideal (default, as before): wheel speed set directly from /ackermann_cmd by "
+                    "ackermann_to_speed_steer; the VCU is the CAN path (vcu_sim.py). "
+                    "torque: realistic ADS-DV drivetrain (ads_dv_vcu_sim: VCU emulator, tyre grip, "
+                    "brakes). It publishes /vcu2ai itself and always reports AS_DRIVING, so do NOT "
+                    "use it together with vcu_sim.py / ackermann_can / the mission supervisor"
     )
     odom_launch_arg = DeclareLaunchArgument(
         "odom", default_value=TextSubstitution(text="wheel"),

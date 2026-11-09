@@ -25,8 +25,11 @@ Gazebo (ads_dv + track) -> ads_dv_vcu_sim (VCU + drivetrain) / vcu_odometry (whe
 | odometry | wheel speeds + IMU yaw rate, gyro bias calibrated at standstill | as on the car |
 | cones | free rigid bodies (foot box + 2 cylinders), 0.65 kg small / 1.5 kg large, tip and slide when hit; static until the car is within 9 m | FS handbook sizes; masses assumed (see `models/cones/cone.xacro`) |
 
-`drive:=ideal` and `odom:=ground_truth` (launch args, or `FSAI_DRIVE` / `FSAI_ODOM` for the
-launcher) give the old behaviour: wheel speed set directly and Gazebo's exact pose as /odom.
+This is `drive:=torque`, which is **opt-in** (launch arg, or `FSAI_DRIVE=torque`, the launcher's default). The launch
+file's default is `drive:=ideal` (wheel speed set directly by `ackermann_to_speed_steer`, Gazebo's exact pose as
+/odom), which is what `tmux/startup.sh` and the CAN path (`vcu_sim.py`, `ackermann_can`, mission supervisor)
+expect. `drive:=torque` starts `ads_dv_vcu_sim`, which publishes `/vcu2ai` itself and always reports
+`AS_DRIVING`, so never combine it with `vcu_sim.py`. `odom:=ground_truth` gives Gazebo's pose instead of wheel/IMU odometry.
 
 **Cones.** A dynamic cone resting on the ground costs a persistent contact per physics step; 292
 dynamic cones cut the real-time factor of the 4-core VM from 0.92 to 0.57 (static cones with the same
@@ -84,7 +87,7 @@ export PATH=$PATH:/usr/lib/wsl/lib:/usr/local/cuda/bin              # nvidia-smi
 One terminal per line, in this order (after the environment above):
 
 ```bash
-ros2 launch simulation dynamic_event.launch.py event:=trackdrive        # gui:=false: no window
+ros2 launch simulation dynamic_event.launch.py event:=trackdrive drive:=torque   # gui:=false: no window
 ros2 launch ultralytics_ros predict_with_cloud.launch.xml use_sim_time:=true yolo_model:=conev11n.pt input_topic:=/zed2i/depth_camera/image verbose:=false
 ros2 run mission_supervisor lap_counter --ros-args -p use_sim_time:=true
 ros2 run slam fastslam_node.py --ros-args -p use_sim_time:=true
@@ -96,6 +99,12 @@ ros2 run mission_supervisor mission_control --ros-args -p use_sim_time:=true -p 
 `pathfinder_slam.py` is the planner used with this SLAM pipeline (plans in base_link from `/slam/*`, publishes an
 odom-frame `/path`; event-aware, skidpad and recovery logic). `pathfinder.py` is the local-frame `track_pathfinder`
 used by `tmux/startup.sh`. `mppi_ros_modified.py` follows the `frame_id` of `/path`, so it works with either.
+
+**Under the team launcher.** `SLAM=1 CAN=0 CONTROLLER=mppi tmux/startup.sh` (env `EVENT=...`) starts this pipeline from dev's
+`tmux/startup.sh`: FastSLAM + `pathfinder_slam.py` instead of `track_pathfinder`, `lap_counter` and `mission_control` (with
+`CAN=1` the mission supervisor ends the event instead). Without `SLAM=1` the script is unchanged. On WSL export
+`GALLIUM_DRIVER=d3d12 MESA_D3D12_DEFAULT_ADAPTER_NAME=NVIDIA GZ_IP=127.0.0.1 ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST` first.
+For `EVENT=acceleration` it also passes `control/config/mppip_acceleration.yaml` (the track's cones end before the finish line).
 
 Events: `trackdrive` (track_small, 10 laps), `mppi_track`, `autocross` (drive1, FSG 2019, 1 lap),
 `acceleration`, `skidpad`. Use the same `event` for the simulation, pathfinder and mission_control.
