@@ -295,6 +295,9 @@ else
 		start_component "path" 1 \
 			"ros2 run path_planning pathfinder_slam.py --ros-args -p use_sim_time:=true -p event:=${EVENT}" \
 			"venv"
+		# every nearby cone straight from the lidar, for the MPPI cone cost (/lidar_cones)
+		start_component "lidarcones" 1 \
+			"ros2 run control lidar_cone_obstacles.py --ros-args -p use_sim_time:=true"
 		# Without the CAN path there is no supervisor: mission_control ends the event (chequered flag, brakes).
 		if [ "$CAN" = "0" ]; then
 			start_component "mission" 1 \
