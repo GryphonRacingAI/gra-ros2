@@ -44,8 +44,12 @@ sensor:
     - 0.01
     - 0.001
   FAR_RANGE: 10.5
+  # Live, the 10-15 m band is worse than that bag showed (range bias +0.23 m, sd 0.47 m, errors that
+  # repeat from frame to frame) and with sd 0.6 m the filter believed those cones too soon: the pose
+  # was pulled up to 1-5 m off the (much better) odometry and the path left the track on lap 2.
+  # sd 1.5 m: far cones still start a landmark, the accurate near measurements place it.
   FAR_VARIANCE:
-    - 0.36
+    - 2.25
     - 0.004
 
 endurance:

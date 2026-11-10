@@ -626,6 +626,9 @@ class FastSLAMCore:
             ])
             best_covariances = FlatParticle.get_covariances(self.particles, best_idx)
             best_colors = FlatParticle.get_colors(self.particles, best_idx)
+            # existence score of each landmark (block: header 6 | means 2 | covariances 4 | prob 1 | colour 1, x MAX_LANDMARKS)
+            ml = int(self.config.MAX_LANDMARKS)
+            best_probs = FlatParticle.get_particle(self.particles, best_idx)[6 + 6 * ml:6 + 7 * ml]
         except Exception as e:
             raise RuntimeError(f"postprocessing particles failed: {e}")
 
@@ -643,6 +646,7 @@ class FastSLAMCore:
                     "position": lm,
                     "covariance": cov,
                     "type": safe_cone_type(color_val),
+                    "prob": float(best_probs[i]),
                 })
 
         # Trigger freeze only after we have a real map from this step.
@@ -707,6 +711,7 @@ class FastSLAMNode(Node):
         # Nearby mapped cones as obstacles for the MPPI controller, in its frame (odom).
         self.obstacles_pub = self.create_publisher(PointCloud2, "/slam/cones", 1)
         self.obstacle_radius = float(self.declare_parameter("obstacle_radius", 25.0).value)
+        self.min_publish_prob = float(self.declare_parameter("min_publish_prob", 22.0).value)
 
         # Subscribers.
         self.odom_sub = Subscriber(self, Odometry, "/odom")
@@ -838,9 +843,16 @@ class FastSLAMNode(Node):
         # Publish outputs.
         self._publish_transforms(odom_msg, estimated_pose)
         self._publish_pose_stamped(estimated_pose, odom_msg.header.stamp)
-        self._publish_cone_map(final_map_data, odom_msg.header.stamp)
-        self._publish_map_markers(final_map_data, odom_msg.header.stamp)
-        self._publish_obstacles(final_map_data, odom_msg, estimated_pose)
+        # A landmark starts at 15, gains 4 per sighting and loses 0.7 each time it should have been
+        # seen and was not (update.cu). Below min_publish_prob (default 22: two more sightings than
+        # misses since it was created) it is a detection that was never confirmed or a ghost on its
+        # way out: it stays in the filter but is hidden from the planner and the controller. On lap 2
+        # such unconfirmed landmarks appeared inside the track next to cones that were already
+        # mapped, and the car swerved around them into the real cones.
+        confident = [lm for lm in final_map_data if lm.get("prob", 50.0) >= self.min_publish_prob]
+        self._publish_cone_map(confident, odom_msg.header.stamp)
+        self._publish_map_markers(confident, odom_msg.header.stamp)
+        self._publish_obstacles(confident, odom_msg, estimated_pose)
 
         self._status_log(current_time, elapsed_time, mode, estimated_pose, len(final_map_data), len(measurements_rb))
 
