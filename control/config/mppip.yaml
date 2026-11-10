@@ -11,6 +11,7 @@ mppi_controller:
     horizon: 30           # steps (1.5 s)
     num_rollouts: 400
     lambda: 2.0
+    lambda_spread: 0.15   # temperature >= this x (median - best sample cost): keeps several samples in the average
     sigma_u: [1.5, 0.06]  # sampling noise std: accel (m/s^2), steering command (rad)
     alpha: 0.6            # time correlation of the sampling noise
 
@@ -23,7 +24,7 @@ mppi_controller:
     w_grip: 20.0          # lateral accel above 1.2 x a_lat_max (incl. unwinding steering at speed)
     w_steer_rate: 150.0   # (change of steering command)^2
     w_accel: 0.05
-    w_obstacle: 150.0
+    w_obstacle: 300.0       # (clearance shortfall, m)^2 per footprint circle; see the footprint block below
 
     # Vehicle (ADS-DV; see simulation/src/ads_dv_vcu_sim.cpp)
     max_accel: 4.0        # VCU torque limit: ~4.7 m/s^2 at low speed, less above 8 m/s
@@ -37,15 +38,25 @@ mppi_controller:
 
     # Path Following
     path_spacing: 0.5     # path resampled every 0.5 m
-    path_smoothing: 3.0   # moving average over +-3 m before curvature (waypoints jitter)
-    safety_distance: 0.6
-    cone_radius: 0.2
+    path_smoothing: 1.5   # m, half window of the moving average before curvature (waypoints jitter)
+    cone_radius: 0.12     # cone base half-width (0.114)
+    obstacle_window: 5.0  # m: only cones this close to the previous plan enter the cone cost (CPU)
+    debug_costs: false
+    # Car footprint (ADS-DV): the model point is the rear axle, base_link (centre, /odom) is rear_to_base ahead of it,
+    # the path frame (velodyne) is base_to_path_frame further ahead. Cones are checked with circles along the car.
+    rear_to_base: 0.767
+    base_to_path_frame: 0.52
+    circle_offsets: [-0.5, 0.0, 0.767, 1.534, 1.95]   # from the rear axle: tail, rear wheels, middle, front wheels, nose
+    circle_radii: [0.35, 0.67, 0.40, 0.58, 0.30]      # cover the body (+-0.245) and the wheel edges (rear 0.668, front 0.57)
+    obstacle_margin: 0.3    # clearance wanted beyond touching (m)
+    w_collision: 0.0     # per step and circle that touches a cone
     speed_lead: 0.25      # speed request = planned speed this far ahead (s)
     path_timeout: 1.0     # no new /path for this long (s) and at the end of the last one: stop
     path_extension: 0.0   # m to extend the path straight ahead (acceleration only)
 
     # Speed Profile
-    a_lat_max: 5.0        # planned lateral accel (tyres hold ~13 m/s^2; margin for path noise)
+    a_lat_max: 3.5        # planned lateral accel (tyres hold ~13 m/s^2; margin for path noise)
     v_max_straight: 10.0
     v_min: 2.0
     a_brake_plan: 3.0     # planned braking before slow sections
+    a_accel_plan: 2.0     # planned acceleration out of slow sections (exit of the hairpin)

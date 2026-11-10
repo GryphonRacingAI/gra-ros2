@@ -15,6 +15,7 @@ heading error, tracking a curvature- and braking-limited speed profile, staying 
 lateral grip limit, smooth controls, distance to cones.
 """
 import math
+import time
 
 import numpy as np
 import rclpy
@@ -108,6 +109,7 @@ class MPPIController(Node):
         self.horizon = self.declare_parameter('horizon', 30).value
         self.num_rollouts = self.declare_parameter('num_rollouts', 400).value
         self.lambda_ = self.declare_parameter('lambda', 2.0).value
+        self.lambda_spread = self.declare_parameter('lambda_spread', 0.15).value  # temperature >= this x (median - best cost)
         self.sigma_u = np.array(self.declare_parameter('sigma_u', [1.5, 0.06]).value)
         self.alpha = self.declare_parameter('alpha', 0.6).value  # time correlation of the noise
 
@@ -139,8 +141,19 @@ class MPPIController(Node):
         # Path Following
         self.path_spacing = self.declare_parameter('path_spacing', 0.5).value
         self.path_smoothing = self.declare_parameter('path_smoothing', 3.0).value  # m, half window
-        self.safety_distance = self.declare_parameter('safety_distance', 0.6).value
-        self.cone_radius = self.declare_parameter('cone_radius', 0.2).value
+        # Car footprint for the cone cost. The model point is the REAR AXLE (kinematic bicycle); base_link
+        # (centre of the car, where /odom is) is rear_to_base ahead of it and the path frame (velodyne) is
+        # base_to_path_frame further ahead. Cones are checked with circles along the car (offsets from the
+        # rear axle, covering the body from the tail to the nose), with the radius that covers the body or the wheels there.
+        self.rear_to_base = self.declare_parameter('rear_to_base', 0.767).value
+        self.base_to_path_frame = self.declare_parameter('base_to_path_frame', 0.52).value
+        self.circle_offsets = np.array(self.declare_parameter('circle_offsets', [-0.5, 0.0, 0.767, 1.534, 1.95]).value, dtype=float)
+        self.circle_radii = np.array(self.declare_parameter('circle_radii', [0.35, 0.67, 0.40, 0.58, 0.30]).value, dtype=float)
+        self.obstacle_margin = self.declare_parameter('obstacle_margin', 0.2).value  # m of clearance wanted beyond touching
+        self.w_collision = self.declare_parameter('w_collision', 3000.0).value        # per step, per circle, touching a cone
+        self.cone_radius = self.declare_parameter('cone_radius', 0.16).value
+        self.obstacle_window = self.declare_parameter('obstacle_window', 4.0).value  # m around the previous plan
+        self.debug_costs = self.declare_parameter('debug_costs', False).value  # log the cost terms of the best sample every 1 s
         self.speed_lead = self.declare_parameter('speed_lead', 0.25).value  # s ahead for the speed request
         self.path_timeout = self.declare_parameter('path_timeout', 1.0).value  # s without a new path -> stop
         self.path_extension = self.declare_parameter('path_extension', 0.0).value  # m, straight events only
@@ -150,6 +163,9 @@ class MPPIController(Node):
         self.v_max_straight = self.declare_parameter('v_max_straight', 10.0).value
         self.v_min = self.declare_parameter('v_min', 2.0).value
         self.a_brake_plan = self.declare_parameter('a_brake_plan', 3.0).value
+        # planned acceleration out of slow sections: accelerating hard while still steering out of a
+        # hairpin pushed the car wide into the exit cones (tyre grip is shared by both directions)
+        self.a_accel_plan = self.declare_parameter('a_accel_plan', 0.0).value  # 0 = no limit
 
         self.path_processor = PathProcessor(PathProcessorConfig(
             a_lat_max=self.a_lat_max,
@@ -162,6 +178,15 @@ class MPPIController(Node):
         self.sub_odom = self.create_subscription(Odometry, '/odom', self.odom_callback, 10)
         self.sub_path = self.create_subscription(Path, self.path_topic, self.path_callback, 10)
         self.sub_cones = self.create_subscription(PointCloud2, '/slam/cones', self.cone_callback, 10)
+        # Cones seen by the lidar right now, colour or not (lidar_cone_obstacles.py), added to the SLAM
+        # cones: the apex cones of a hairpin are beside the car, outside the camera's view, and often
+        # missing from the map. Empty topic name: SLAM cones only.
+        self.lidar_obstacles = np.empty((0, 3))
+        self.lidar_obstacles_time = None
+        self.lidar_obstacles_max_age = self.declare_parameter('lidar_obstacles_max_age', 0.3).value
+        lidar_topic = self.declare_parameter('lidar_obstacles_topic', '/lidar_cones').value
+        if lidar_topic:
+            self.create_subscription(PointCloud2, lidar_topic, self.lidar_cone_callback, 1)
         self.sub_steer = self.create_subscription(Float64, '/steer_angle', self.steer_callback, 10)
         self.sub_flag = self.create_subscription(Bool, '/chequered_flag', self.flag_callback, 1)
 
@@ -184,6 +209,7 @@ class MPPIController(Node):
         self.obstacles = np.empty((0, 3))
 
         self.u0 = np.zeros((self.horizon, 2))
+        self._loop_stats = []
         self.rng = np.random.default_rng()
 
         self.get_logger().info(
@@ -256,6 +282,9 @@ class MPPIController(Node):
         v_ref[-1] = min(v_ref[-1], self.v_min)
         for i in range(len(v_ref) - 2, -1, -1):
             v_ref[i] = min(v_ref[i], math.sqrt(v_ref[i + 1] ** 2 + 2.0 * self.a_brake_plan * (s[i + 1] - s[i])))
+        if self.a_accel_plan > 0.0:  # forward pass: gradual acceleration out of slow sections
+            for i in range(1, len(v_ref)):
+                v_ref[i] = min(v_ref[i], math.sqrt(v_ref[i - 1] ** 2 + 2.0 * self.a_accel_plan * (s[i] - s[i - 1])))
         self.path_arr, self.path_heading, self.path_v_ref = pts, heading, v_ref
         self.last_path_time = self.get_clock().now()
 
@@ -270,9 +299,26 @@ class MPPIController(Node):
         self.obstacles = np.hstack([points_np, r])
         self.obstacles_frame = msg.header.frame_id or 'odom'
 
+    def lidar_cone_callback(self, msg):
+        pts = pc2.read_points_numpy(msg, field_names=("x", "y"), skip_nans=True).reshape(-1, 2)
+        if (msg.header.frame_id or 'odom') != 'odom':
+            return  # only odom-frame clouds are merged with the SLAM cones
+        self.lidar_obstacles = np.hstack([pts, self.cone_radius * np.ones((len(pts), 1))])
+        self.lidar_obstacles_time = self.get_clock().now()
+
+    def plan_frame_ahead(self):
+        """How far the origin of a local plan frame is ahead of base_link."""
+        return self.base_to_path_frame if self.path_frame_id == 'velodyne' else 0.0
+
     def obstacles_in(self, local):
         """Obstacles in the frame the plan is made in. A local plan needs cones relative to the car."""
         obs = self.obstacles
+        if (self.lidar_obstacles.shape[0] > 0 and self.lidar_obstacles_time is not None
+                and (obs.shape[0] == 0 or self.obstacles_frame == 'odom')
+                and (self.get_clock().now() - self.lidar_obstacles_time).nanoseconds * 1e-9 < self.lidar_obstacles_max_age):
+            obs = np.vstack([obs, self.lidar_obstacles]) if obs.shape[0] > 0 else self.lidar_obstacles
+            if self.obstacles.shape[0] == 0:
+                self.obstacles_frame = 'odom'
         body_frames = (self.expected_path_frame, 'base_link', 'velodyne')
         cones_local = self.obstacles_frame in body_frames
         if obs.shape[0] == 0 or local == cones_local:
@@ -280,15 +326,16 @@ class MPPIController(Node):
         x, y, yaw, _ = self.vehicle_state
         c, s = math.cos(yaw), math.sin(yaw)
         out = obs.copy()
-        if local:   # odom -> car
+        if local:   # odom -> path frame (the car's base_link, then moved to the origin of the path frame)
             dx, dy = obs[:, 0] - x, obs[:, 1] - y
-            out[:, 0], out[:, 1] = c * dx + s * dy, -s * dx + c * dy
+            out[:, 0], out[:, 1] = c * dx + s * dy - self.plan_frame_ahead(), -s * dx + c * dy
         else:       # car -> odom
             out[:, 0], out[:, 1] = x + c * obs[:, 0] - s * obs[:, 1], y + s * obs[:, 0] + c * obs[:, 1]
         return out
 
     def control_loop(self):
         """ Main MPPI Iteration (Called at 1/dt Hz) """
+        _t_loop = time.perf_counter()
 
         # Don't sleep here: with use_sim_time the clock only advances when this (single-threaded)
         # executor processes /clock, so sleep_for() blocked the node forever.
@@ -304,7 +351,14 @@ class MPPIController(Node):
 
         local = self.path_is_local
         _, _, _, v = self.vehicle_state
-        x, y, yaw = (0.0, 0.0, 0.0) if local else self.vehicle_state[:3]
+        # model point = rear axle (see rear_to_base)
+        if local:
+            x, y, yaw = -(self.rear_to_base + self.plan_frame_ahead()), 0.0, 0.0
+        else:
+            bx, by, yaw = self.vehicle_state[:3]
+            x, y = bx - self.rear_to_base * math.cos(yaw), by - self.rear_to_base * math.sin(yaw)
+        # the path is followed by the centre of the car
+        centre0 = np.array([x + self.rear_to_base * math.cos(yaw), y + self.rear_to_base * math.sin(yaw)])
         obstacles = self.obstacles_in(local)
 
         # No new path for a while (the planner sees no gates): keep following the last one, which
@@ -313,7 +367,7 @@ class MPPIController(Node):
         stale = (self.get_clock().now() - self.last_path_time).nanoseconds * 1e-9 > self.path_timeout
         # only for straight events (path_extension > 0): elsewhere a short gap in the planner's output near
         # the end of the last path must not freeze the car for good (it keeps creeping and sees new cones)
-        if self.path_extension > 0.0 and stale and np.linalg.norm(self.path_arr[-1] - np.array([x, y])) < 2.0:
+        if self.path_extension > 0.0 and stale and np.linalg.norm(self.path_arr[-1] - centre0) < 2.0:
             self.get_logger().warn("reached the end of the last /path: stopping", throttle_duration_sec=2.0)
             self.pub_ackermann.publish(AckermannDrive(speed=0.0, steering_angle=0.0))
             self.u0[:] = 0.0
@@ -322,7 +376,7 @@ class MPPIController(Node):
         X0 = np.array([x, y, yaw, max(v, 0.0), steer])
 
         # path points from the closest one onwards, enough to cover the horizon
-        d_car = np.linalg.norm(self.path_arr - X0[:2], axis=1)
+        d_car = np.linalg.norm(self.path_arr - centre0, axis=1)
         i0 = int(np.argmin(d_car))
         reach = (max(v, self.v_max_straight) * self.dt * self.horizon) / self.path_spacing + 10
         i1 = min(len(self.path_arr), i0 + int(reach))
@@ -353,11 +407,14 @@ class MPPIController(Node):
         P = X[:, 1:, :]  # (K, H, 5)
 
         # ---- cost
-        diff = P[:, :, None, :2] - ref[None, None, :, :]                 # (K, H, M, 2)
+        hd = np.stack([np.cos(P[:, :, 2]), np.sin(P[:, :, 2])], axis=-1)   # (K, H, 2)
+        centre = P[:, :, :2] + self.rear_to_base * hd                       # centre of the car
+        diff = centre[:, :, None, :] - ref[None, None, :, :]             # (K, H, M, 2)
         dist2 = np.einsum('khmi,khmi->khm', diff, diff)
         j = np.argmin(dist2, axis=2)                                    # nearest path point
         d2 = np.take_along_axis(dist2, j[..., None], axis=2)[..., 0]
         cost = self.w_path * d2.sum(axis=1)
+        parts = {'path': cost.copy()} if self.debug_costs else None
         h_err = normalize_angle(P[:, :, 2] - ref_heading[j])
         cost += self.w_heading * (h_err ** 2).sum(axis=1)
         # progress along the path over the horizon; without it, stopping in a tight corner can be
@@ -370,17 +427,47 @@ class MPPIController(Node):
         dsteer = np.diff(np.concatenate([np.full((K, 1), steer), U[:, :, 1]], axis=1), axis=1)
         cost += self.w_steer_rate * (dsteer ** 2).sum(axis=1)
         cost += self.w_accel * (U[:, :, 0] ** 2).sum(axis=1)
+        if parts is not None:
+            parts['progress'] = -self.w_progress * j[:, -1] * self.path_spacing
+            parts['speed'] = (np.where(dv > 0.0, self.w_overspeed, self.w_speed) * dv ** 2).sum(axis=1)
+            parts['obst'] = np.zeros(K)
 
         if obstacles.shape[0] > 0:
-            near = np.linalg.norm(obstacles[:, :2] - X0[:2], axis=1) < 20.0
-            obs = obstacles[near]
+            # all footprint circles at once in float32: a loop over circles in float64 took ~110 ms
+            # with 50 cones and dropped the 20 Hz control loop to ~10 Hz
+            # cones within obstacle_window m of the previous plan (the samples stay close to it; the
+            # map has 50+ cones in reach later in the run and the cost grows with K x H x circles x cones)
+            nominal = P[0, ::3, :2]                                               # sample 0 = previous plan
+            d_nom = np.min(np.linalg.norm(obstacles[None, :, :2] - nominal[:, None, :], axis=-1), axis=0)
+            obs = obstacles[d_nom < self.obstacle_window].astype(np.float32)
             if obs.shape[0] > 0:
-                d_obs = np.linalg.norm(P[:, :, None, :2] - obs[None, None, :, :2], axis=-1) - obs[None, None, :, 2]
-                d_pen = np.clip(self.safety_distance - d_obs, 0.0, None)
-                cost += np.clip(self.w_obstacle * np.sum(d_pen ** 2, axis=(1, 2)), 0.0, 1e4)
+                cpos = (P[:, :, None, :2].astype(np.float32)
+                        + self.circle_offsets.astype(np.float32)[None, None, :, None] * hd.astype(np.float32)[:, :, None, :])
+                dx = cpos[..., None, 0] - obs[:, 0]                                      # (K, H, C, N)
+                dy = cpos[..., None, 1] - obs[:, 1]
+                d_obs = np.sqrt(dx * dx + dy * dy) - obs[:, 2] - self.circle_radii.astype(np.float32)[None, None, :, None]
+                d_pen = np.maximum(self.obstacle_margin - d_obs, 0.0)
+                c_obs = np.minimum(self.w_obstacle * (d_pen * d_pen).sum(axis=(1, 3)), 1e4).sum(axis=1)
+                cost += c_obs
+                if parts is not None:
+                    parts['obst'] = c_obs
+                if self.w_collision > 0.0:
+                    cost += self.w_collision * (d_obs < 0.0).sum(axis=(1, 2, 3))
 
+        if parts is not None:
+            self._dbg_n = getattr(self, '_dbg_n', 0) + 1
+            if self._dbg_n % 20 == 0:
+                b = int(np.argmin(cost))
+                self.get_logger().info(
+                    f"costs(best) v={v:.1f} plan_v_end={P[b, -1, 3]:.1f} ref_v0={ref_v[0]:.1f} path_m={len(self.path_arr) * self.path_spacing:.1f} "
+                    f"ref_m={len(ref) * self.path_spacing:.1f} total={cost[b]:.0f} " + ' '.join(f"{k}={v_[b]:.0f}" for k, v_ in parts.items())
+                    + f" | fastest sample: v_end={P[:, -1, 3].max():.1f} total={cost[int(np.argmax(P[:, -1, 3]))]:.0f} "
+                    + ' '.join(f"{k}={v_[int(np.argmax(P[:, -1, 3]))]:.0f}" for k, v_ in parts.items()))
         # ---- MPPI update
-        w = np.exp(-(cost - cost.min()) / self.lambda_)
+        # Adaptive temperature: when the costs of the samples are far apart (a cone in the way costs
+        # hundreds), a fixed lambda gives all the weight to one sample and the steering jitters.
+        lam = max(self.lambda_, self.lambda_spread * (float(np.median(cost)) - float(cost.min())))
+        w = np.exp(-(cost - cost.min()) / lam)
         w /= w.sum() + 1e-12
         self.u0 = self.u0 + np.einsum('k,khi->hi', w, noise)
         self.u0[:, 0] = clamp(self.u0[:, 0], -self.p['max_decel'], self.p['max_accel'])
@@ -413,6 +500,12 @@ class MPPIController(Node):
 
         self.publish_viz_path(plan[:, :2], self.path_frame_id if local else 'odom')
 
+        # timing: report the mean and worst loop time every 200 iterations (10 s); the loop must stay well
+        # under dt, otherwise the timer runs back to back and starves perception/SLAM of CPU
+        self._loop_stats.append((time.perf_counter() - _t_loop) * 1000.0)
+        if len(self._loop_stats) >= 200:
+            self.get_logger().info(f"loop time: mean {np.mean(self._loop_stats):.1f} ms, max {np.max(self._loop_stats):.1f} ms (dt {self.dt * 1000:.0f} ms)")
+            self._loop_stats = []
         # Shift controls for receding horizon
         self.u0 = np.vstack([self.u0[1:], self.u0[-1:]])
 
