@@ -73,6 +73,9 @@ class CentrelineAlgorithm:
         self.max_gate_distance = 8.0
         self.smoothing_window = 3
         self.cone_vertical_tolerance = 1.5 
+        self.default_track_width = 3.0   # m, used until two real gates are in view
+        self.lone_cone_factor = 1.35     # nearest other-colour cone further than this x track width: partner missing
+        self.lone_cone_bias = 0.45       # m a one-boundary waypoint is moved from the centre towards its (mapped) boundary
         
         # Last 2 Previously published /path values
         self.path_buffer : np.ndarray
@@ -115,10 +118,15 @@ class CentrelineAlgorithm:
         # standstill, and requiring two kept the car from ever starting.
         waypoints = [np.array([0.0, 0.0])]
         waypoints.extend(self._chain_from_car(midpoints))
+        # One-boundary waypoints follow a single cone line, so they do not zig-zag like gate
+        # midpoints do, and averaging them with their neighbours only pulls a tight corner's path
+        # inwards (0.4 m in the mppi_track hairpin, onto the unseen inner cones): keep them as is.
+        lone = {tuple(np.round(m, 6)) for m, l in zip(midpoints, self.lone_mids) if l}
+        keep = [tuple(np.round(w, 6)) in lone for w in waypoints]
         if len(waypoints) < 2 or (len(waypoints) == 2 and waypoints[1][0] < 1.0):
             return None
 
-        waypoints = self._smooth_path(waypoints)
+        waypoints = self._smooth_path(waypoints, keep=keep)
         waypoints = [wp for wp in waypoints if wp[0] >= 0.0] # ahead of the car
         
         if len(waypoints) < 2:
@@ -167,20 +175,76 @@ class CentrelineAlgorithm:
         """
         midpoints = []
         self.gates = []  # (yellow -> blue) vector of each midpoint's gate, for the direction check
+        self.lone_mids = []  # per midpoint: placed from one boundary only (see below)
+        width = self._track_width(yellow_cones, blue_cones)
         for side, other, is_yellow in ((yellow_cones, blue_cones, True), (blue_cones, yellow_cones, False)):
             if len(other) == 0:
                 continue
             for c in side:
                 dists = np.linalg.norm(other - c, axis=1)
                 j = int(np.argmin(dists))
-                # Accept pairing if within track width
-                if dists[j] < self.max_gate_distance:
-                    mid = (c + other[j]) / 2.0
-                    if all(np.linalg.norm(mid - m) > 0.5 for m in midpoints):
-                        midpoints.append(mid)
-                        self.gates.append(other[j] - c if is_yellow else c - other[j])
+                # no gate partner within max_gate_distance: still usable as a one-boundary waypoint
+                # (below) if it is near the car; the far cone then only tells which side the track is on
+                far = dists[j] >= self.max_gate_distance
+                if far and (dists[j] > 14.0 or np.linalg.norm(c) > 10.0):
+                    continue
+                across = other[j] - c
+                lone = False
+                if dists[j] > self.lone_cone_factor * width:
+                    # The closest cone of the other colour is much further than the track is wide:
+                    # this cone's partner is not in the map (inner cones of a hairpin are outside
+                    # the camera's and the lidar's view when the car passes them). The midpoint of
+                    # such a skewed "gate" lies on the unseen boundary, so place the waypoint half
+                    # a track width from this cone, square to its own boundary line instead.
+                    normal = self._boundary_normal(c, side, across)
+                    if normal is not None:
+                        # stay a little closer to the boundary that is mapped (the controller's cone
+                        # cost guards that one; nothing guards the unseen one)
+                        across = normal * (width - 2.0 * self.lone_cone_bias)
+                        # a waypoint this close to a mapped cone is not on the track: the
+                        # "boundary line" was bent by a ghost or duplicate landmark
+                        mid = c + across / 2.0
+                        nearest = min(np.linalg.norm(side - mid, axis=1).min(), np.linalg.norm(other - mid, axis=1).min())
+                        if nearest < 0.3 * width:
+                            continue
+                        lone = True
+                    elif far:
+                        continue
+                mid = c + across / 2.0
+                if all(np.linalg.norm(mid - m) > 0.5 for m in midpoints):
+                    midpoints.append(mid)
+                    self.gates.append(across if is_yellow else -across)
+                    self.lone_mids.append(lone)
 
         return midpoints
+
+    def _track_width(self, yellow_cones, blue_cones):
+        """Track width from the cones in view: the lower quartile of every cone's distance to the
+        closest cone of the other colour (2.5-6 m), else the default.
+
+        Cones whose partner is missing or that pair diagonally are further from the other colour
+        than the track is wide, never closer, so the low end of the distribution is the width (the
+        median of the mutually-closest pairs gave 5.5 m at the hairpin and put one-boundary
+        waypoints 2.5 m from the cone line, next to the other boundary)."""
+        if len(yellow_cones) + len(blue_cones) < 6 or len(yellow_cones) == 0 or len(blue_cones) == 0:
+            return self.default_track_width
+        d = np.linalg.norm(yellow_cones[:, None, :] - blue_cones[None, :, :], axis=2)
+        nearest = np.concatenate([d.min(axis=1), d.min(axis=0)])
+        return float(np.clip(np.percentile(nearest, 25), 2.5, 6.0))
+
+    def _boundary_normal(self, cone, same, towards, max_neighbour=6.0):
+        """Unit vector square to the boundary line through `cone` (direction from its nearest
+        same-colour neighbours), on the side `towards` points to. None if the cone has no neighbour."""
+        d = np.linalg.norm(same - cone, axis=1)
+        near = [i for i in np.argsort(d) if 1.0 < d[i] < max_neighbour][:2]   # > 1 m: not a duplicate of this cone
+        if not near:
+            return None
+        if len(near) == 2 and np.dot(same[near[0]] - cone, same[near[1]] - cone) < 0:
+            tangent = same[near[1]] - same[near[0]]      # one neighbour on each side
+        else:
+            tangent = same[near[0]] - cone
+        n = np.array([-tangent[1], tangent[0]]) / (np.linalg.norm(tangent) + 1e-9)
+        return n if np.dot(n, towards) >= 0 else -n
 
     def _chain_from_car(self, midpoints, max_step=8.0, max_turn=math.radians(75)):
         """Order midpoints by walking from the car to the nearest next one.
@@ -216,9 +280,9 @@ class CentrelineAlgorithm:
             chain.append(m)
         return chain
 
-    def _smooth_path(self, waypoints, window_size=None):
+    def _smooth_path(self, waypoints, window_size=None, keep=None):
         """
-        Smooth waypoints using moving average filter
+        Smooth waypoints using moving average filter (waypoints flagged in `keep` are not moved)
         """
         if window_size is None:
             window_size = self.smoothing_window
@@ -234,7 +298,7 @@ class CentrelineAlgorithm:
             end = min(len(waypoints), i + window_size // 2 + 1)
             
             window = waypoints[start:end]
-            smoothed_point = np.mean(window, axis=0)
+            smoothed_point = waypoints[i] if keep is not None and keep[i] else np.mean(window, axis=0)
             smoothed.append(smoothed_point)
         
         smoothed.append(waypoints[-1])
@@ -328,6 +392,7 @@ class CentrelineTrackPathfinder(Node):
         self.slam_pose = None
         self.odom_pose = None
         self.odom_hist = deque(maxlen=300)
+        self.last_good = None       # (time, path in odom) of the last planned path
         self.correction = None      # smoothed map -> odom correction (x, y, yaw)
         self.correction_t = None
         self.correction_tau = float(self.declare_parameter('correction_tau', 1.0).value)  # s
@@ -449,12 +514,24 @@ class CentrelineTrackPathfinder(Node):
             path_local = self.centreline_planner.calculate_path(
                 yellow_local.tolist(), blue_local.tolist()
             )
-            if path_local is None:
-                path_local = self.recovery_arc(yellow_local, blue_local)
-
+            ox, oy, o_yaw = self.odom_pose
+            now = self.get_clock().now().nanoseconds * 1e-9
+            path_out = None
             if path_local is not None:
-                ox, oy, o_yaw = self.odom_pose
                 path_out = base_link_to_odom(path_local, ox, oy, o_yaw)
+                self.last_good = (now, path_out)
+            else:
+                # One map update without a gate pairing (a ghost or mislabelled cone breaks the chain
+                # for a moment): keep driving the last good path, which is in odom and so still
+                # valid, as long as it is recent and the car is on it. Before, the 5 m recovery arc
+                # was published at once and the controller slowed to a crawl on it.
+                path_out = self.held_path(ox, oy, now)
+                if path_out is None:
+                    path_local = self.recovery_arc(yellow_local, blue_local)
+                    if path_local is not None:
+                        path_out = base_link_to_odom(path_local, ox, oy, o_yaw)
+
+            if path_out is not None:
                 self.get_logger().debug(
                     f"[PATHFINDER OUTPUT] {len(path_out)} waypoints in {self.output_frame}"
                 )
@@ -467,7 +544,11 @@ class CentrelineTrackPathfinder(Node):
                 )
                 self.publish_path(path_out, self.output_frame, msg.header.stamp)
                 if self.test_mode:
-                    path_viz = base_link_to_map(path_local, rx, ry, r_yaw)
+                    # path_out is in odom; back to the car frame, then into the map for RViz
+                    c, s_ = math.cos(o_yaw), math.sin(o_yaw)
+                    d = path_out - np.array([ox, oy])
+                    path_car = np.column_stack((c * d[:, 0] + s_ * d[:, 1], -s_ * d[:, 0] + c * d[:, 1]))
+                    path_viz = base_link_to_map(path_car, rx, ry, r_yaw)
                     self.publish_viz(path_viz, self.viz_frame, msg.header.stamp)
             else:
                 self.get_logger().warn(
@@ -477,6 +558,22 @@ class CentrelineTrackPathfinder(Node):
         except Exception as e:
             self.get_logger().error(f"Planning Error: {e}")
     
+    def held_path(self, ox, oy, now, max_age=2.0, max_offset=1.5, min_ahead=4.0):
+        """The last good path from the car's nearest point on, if it is recent, the car is on it
+        and at least min_ahead m of it are left; otherwise None."""
+        if self.last_good is None or now - self.last_good[0] > max_age:
+            return None
+        pts = self.last_good[1]
+        d = np.hypot(pts[:, 0] - ox, pts[:, 1] - oy)
+        i = int(np.argmin(d))
+        if d[i] > max_offset:
+            return None
+        rest = np.vstack([[ox, oy], pts[i + 1:]])
+        if np.sum(np.hypot(*np.diff(rest, axis=0).T)) < min_ahead:
+            return None
+        self.get_logger().info("[PATHFINDER] no gate this update: holding the last path", throttle_duration_sec=2.0)
+        return rest
+
     def recovery_arc(self, yellow_local, blue_local, radius=4.5, length=5.0):
         """No gate ahead, but one boundary is: turn towards the other one.
 
