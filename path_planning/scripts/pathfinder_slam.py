@@ -22,44 +22,26 @@ def quaternion_to_yaw(qx, qy, qz, qw):
     return math.atan2(siny_cosp, cosy_cosp)
 
 
-def map_to_base_link(points, rx, ry, yaw):
-    """Transform (N, 2) points from map frame to base_link (car-local).
-
-    Car pose (rx, ry, yaw) must be in map. +x is forward, +y is left.
-    Uses the same rotation as fastslam_node._process_cones.
-    """
+def to_local(points, x, y, yaw):
+    """(N, 2) points from a world frame (map or odom) into the frame of the pose (x, y, yaw) given
+    in that world frame: +x forward, +y left. Same rotation as fastslam_node._process_cones."""
     if len(points) == 0:
         return np.empty((0, 2))
     pts = np.asarray(points, dtype=float)
-    dx = pts[:, 0] - rx
-    dy = pts[:, 1] - ry
+    dx = pts[:, 0] - x
+    dy = pts[:, 1] - y
     c, s = math.cos(yaw), math.sin(yaw)
     return np.column_stack((dx * c + dy * s, -dx * s + dy * c))
 
 
-def base_link_to_odom(points, ox, oy, yaw):
-    """Transform (N, 2) points from base_link to odom frame.
-
-    Car pose (ox, oy, yaw) is from /odom. Output matches MPPI vehicle_state frame.
-    """
+def to_world(points, x, y, yaw):
+    """Inverse of to_local: (N, 2) points in the frame of the pose (x, y, yaw) into the world frame
+    (map or odom) the pose is given in."""
     if len(points) == 0:
         return np.empty((0, 2))
     pts = np.asarray(points, dtype=float)
     c, s = math.cos(yaw), math.sin(yaw)
-    out_x = ox + pts[:, 0] * c - pts[:, 1] * s
-    out_y = oy + pts[:, 0] * s + pts[:, 1] * c
-    return np.column_stack((out_x, out_y))
-
-
-def base_link_to_map(points, rx, ry, yaw):
-    """Transform (N, 2) points from base_link to map frame using /slam/pose."""
-    if len(points) == 0:
-        return np.empty((0, 2))
-    pts = np.asarray(points, dtype=float)
-    c, s = math.cos(yaw), math.sin(yaw)
-    out_x = rx + pts[:, 0] * c - pts[:, 1] * s
-    out_y = ry + pts[:, 0] * s + pts[:, 1] * c
-    return np.column_stack((out_x, out_y))
+    return np.column_stack((x + pts[:, 0] * c - pts[:, 1] * s, y + pts[:, 0] * s + pts[:, 1] * c))
 
 
 class CentrelineAlgorithm:
@@ -78,6 +60,11 @@ class CentrelineAlgorithm:
         self.default_track_width = 3.0   # m, used until two real gates are in view
         self.lone_cone_factor = 1.35     # nearest other-colour cone further than this x track width: partner missing
         self.lone_cone_bias = 0.45       # m a one-boundary waypoint is moved from the centre towards its (mapped) boundary
+        self.lone_partner_max = 14.0     # m, a far "partner" beyond this does not even tell which side the track is on
+        self.lone_cone_range = 10.0      # m, cones without a partner in max_gate_distance are only used this close to the car
+        self.min_cone_clearance = 0.3    # x track width: a one-boundary waypoint closer than this to a mapped cone is dropped
+        self.chain_max_step = 8.0        # m between consecutive waypoints
+        self.chain_max_turn = math.radians(75.0)   # largest heading change between consecutive waypoints
         
         # Last 2 Previously published /path values
         self.path_buffer : np.ndarray
@@ -110,7 +97,7 @@ class CentrelineAlgorithm:
             return None
 
         # greedy cone sorting - for each sorted yellow, find closest blue
-        midpoints = self._pair_and_midpoint(y_filtered, b_filtered)
+        midpoints, gates, lone_flags = self._pair_and_midpoint(y_filtered, b_filtered)
 
         if len(midpoints) == 0:
             return None
@@ -119,11 +106,11 @@ class CentrelineAlgorithm:
         # on widely spaced tracks (acceleration: 5 m) the second gate is often not seen from
         # standstill, and requiring two kept the car from ever starting.
         waypoints = [np.array([0.0, 0.0])]
-        waypoints.extend(self._chain_from_car(midpoints))
+        waypoints.extend(self._chain_from_car(midpoints, gates))
         # One-boundary waypoints follow a single cone line, so they do not zig-zag like gate
         # midpoints do, and averaging them with their neighbours only pulls a tight corner's path
         # inwards (0.4 m in the mppi_track hairpin, onto the unseen inner cones): keep them as is.
-        lone = {tuple(np.round(m, 6)) for m, l in zip(midpoints, self.lone_mids) if l}
+        lone = {tuple(np.round(m, 6)) for m, l in zip(midpoints, lone_flags) if l}
         keep = [tuple(np.round(w, 6)) in lone for w in waypoints]
         if len(waypoints) < 2 or (len(waypoints) == 2 and waypoints[1][0] < 1.0):
             return None
@@ -168,7 +155,8 @@ class CentrelineAlgorithm:
         Pair yellow and blue cones to form gates.
         Strategy: each yellow cone with its closest blue cone AND each blue cone with its
         closest yellow cone, by plain distance (cones may be reused), then drop duplicates.
-        Returns list of midpoint waypoints.
+        Returns (midpoints, gates, lone): the waypoints, each one's yellow -> blue gate vector (for
+        the direction check in _chain_from_car) and whether it was placed from one boundary only.
 
         The old version paired each yellow with the closest *unused* blue at the same forward
         x (|dx| < cone_vertical_tolerance). In corners the gate cones are not side by side in
@@ -176,8 +164,8 @@ class CentrelineAlgorithm:
         the car stopped mid-corner.
         """
         midpoints = []
-        self.gates = []  # (yellow -> blue) vector of each midpoint's gate, for the direction check
-        self.lone_mids = []  # per midpoint: placed from one boundary only (see below)
+        gates = []      # (yellow -> blue) vector of each midpoint's gate
+        lone_mids = []  # per midpoint: placed from one boundary only (see below)
         width = self._track_width(yellow_cones, blue_cones)
         for side, other, is_yellow in ((yellow_cones, blue_cones, True), (blue_cones, yellow_cones, False)):
             if len(other) == 0:
@@ -188,7 +176,7 @@ class CentrelineAlgorithm:
                 # no gate partner within max_gate_distance: still usable as a one-boundary waypoint
                 # (below) if it is near the car; the far cone then only tells which side the track is on
                 far = dists[j] >= self.max_gate_distance
-                if far and (dists[j] > 14.0 or np.linalg.norm(c) > 10.0):
+                if far and (dists[j] > self.lone_partner_max or np.linalg.norm(c) > self.lone_cone_range):
                     continue
                 across = other[j] - c
                 lone = False
@@ -207,7 +195,7 @@ class CentrelineAlgorithm:
                         # "boundary line" was bent by a ghost or duplicate landmark
                         mid = c + across / 2.0
                         nearest = min(np.linalg.norm(side - mid, axis=1).min(), np.linalg.norm(other - mid, axis=1).min())
-                        if nearest < 0.3 * width:
+                        if nearest < self.min_cone_clearance * width:
                             continue
                         lone = True
                     elif far:
@@ -215,10 +203,10 @@ class CentrelineAlgorithm:
                 mid = c + across / 2.0
                 if all(np.linalg.norm(mid - m) > 0.5 for m in midpoints):
                     midpoints.append(mid)
-                    self.gates.append(across if is_yellow else -across)
-                    self.lone_mids.append(lone)
+                    gates.append(across if is_yellow else -across)
+                    lone_mids.append(lone)
 
-        return midpoints
+        return midpoints, gates, lone_mids
 
     def _track_width(self, yellow_cones, blue_cones):
         """Track width from the cones in view: the lower quartile of every cone's distance to the
@@ -248,14 +236,15 @@ class CentrelineAlgorithm:
         n = np.array([-tangent[1], tangent[0]]) / (np.linalg.norm(tangent) + 1e-9)
         return n if np.dot(n, towards) >= 0 else -n
 
-    def _chain_from_car(self, midpoints, max_step=8.0, max_turn=math.radians(75)):
+    def _chain_from_car(self, midpoints, gates):
         """Order midpoints by walking from the car to the nearest next one.
 
         Sorting by forward x breaks in hairpins (the track comes back towards the car). Each step
         must be shorter than max_step and turn less than max_turn, so midpoints from another part
-        of the track are not joined in.
+        of the track are not joined in. `gates` holds each midpoint's yellow -> blue vector.
         """
-        remaining = [(np.asarray(m, dtype=float), np.asarray(g, dtype=float)) for m, g in zip(midpoints, self.gates)]
+        max_step, max_turn = self.chain_max_step, self.chain_max_turn
+        remaining = [(np.asarray(m, dtype=float), np.asarray(g, dtype=float)) for m, g in zip(midpoints, gates)]
         pos, heading = np.zeros(2), 0.0
         chain = []
         while remaining:
@@ -432,6 +421,14 @@ class CentrelineTrackPathfinder(Node):
             )
 
         self.centreline_planner = CentrelineAlgorithm(self.get_logger(), lookahead_distance=lookahead)
+        # tuning of the centreline planner (defaults = the values in CentrelineAlgorithm) and of the recovery arc
+        cp = self.centreline_planner
+        for name in ('max_gate_distance', 'default_track_width', 'lone_cone_factor', 'lone_cone_bias',
+                     'lone_partner_max', 'lone_cone_range', 'min_cone_clearance', 'chain_max_step'):
+            setattr(cp, name, float(self.declare_parameter(name, getattr(cp, name)).value))
+        cp.chain_max_turn = math.radians(float(self.declare_parameter('chain_max_turn_deg', math.degrees(cp.chain_max_turn)).value))
+        self.recovery_radius = float(self.declare_parameter('recovery_radius', 4.5).value)   # m
+        self.recovery_length = float(self.declare_parameter('recovery_length', 5.0).value)   # m
         self.event = self.declare_parameter('event', 'trackdrive').value
         self.skidpad = SkidpadPlanner(self.get_logger()) if self.event == 'skidpad' else None
         self.done_pub = self.create_publisher(Bool, '/mission/path_complete', 1)
@@ -515,7 +512,7 @@ class CentrelineTrackPathfinder(Node):
         else:
             self.lap_idx = int(win[int(np.argmin(d))])
         ahead = self.lap_loop[(self.lap_idx + 2 + np.arange(int(length / 0.5))) % n]
-        local = map_to_base_link(ahead, rx, ry, r_yaw)
+        local = to_local(ahead, rx, ry, r_yaw)
         gap = np.where(np.hypot(*np.diff(local, axis=0).T) > 2.0)[0]
         if len(gap):
             local = local[:gap[0] + 1]                           # never bridge a hole in the stored line
@@ -523,7 +520,7 @@ class CentrelineTrackPathfinder(Node):
             return self._lap_mode('live', "stored lap is not ahead of the car")
         cones = [np.asarray(c, dtype=float).reshape(-1, 2) for c in cones_local if len(c)]
         if len(self.lidar_cones_odom) and self.odom_pose is not None:
-            cones.append(map_to_base_link(self.lidar_cones_odom, *self.odom_pose))   # same maths: odom -> base_link
+            cones.append(to_local(self.lidar_cones_odom, *self.odom_pose))   # odom -> base_link
         if cones:
             c = np.vstack(cones); c = c[(c[:, 0] > -1.0) & (np.hypot(c[:, 0], c[:, 1]) < length + 2.0)]
             if len(c):
@@ -575,14 +572,14 @@ class CentrelineTrackPathfinder(Node):
         if self.skidpad is not None:
             self.plan_skidpad(msg, yellow_map, blue_map)
             return
-        yellow_local = map_to_base_link(yellow_map, rx, ry, r_yaw)
-        blue_local = map_to_base_link(blue_map, rx, ry, r_yaw)
+        yellow_local = to_local(yellow_map, rx, ry, r_yaw)
+        blue_local = to_local(blue_map, rx, ry, r_yaw)
         # Orange cones (start/finish line, acceleration braking zone) mark the lane on both sides
         # and only where it is straight: put each on the side of the car it is on. Without them the
         # path ended at the last blue/yellow gate before the acceleration finish line.
         orange_map = [[c.position.x, c.position.y] for c in list(msg.orange_cones) + list(msg.large_orange_cones)]
         if orange_map:
-            orange_local = map_to_base_link(orange_map, rx, ry, r_yaw)
+            orange_local = to_local(orange_map, rx, ry, r_yaw)
             yellow_local = np.vstack([yellow_local.reshape(-1, 2), orange_local[orange_local[:, 1] < 0]])
             blue_local = np.vstack([blue_local.reshape(-1, 2), orange_local[orange_local[:, 1] >= 0]])
 
@@ -614,7 +611,7 @@ class CentrelineTrackPathfinder(Node):
             now = self.get_clock().now().nanoseconds * 1e-9
             path_out = None
             if path_local is not None:
-                path_out = base_link_to_odom(path_local, ox, oy, o_yaw)
+                path_out = to_world(path_local, ox, oy, o_yaw)
                 self.last_good = (now, path_out)
             else:
                 # One map update without a gate pairing (a ghost or mislabelled cone breaks the chain
@@ -625,7 +622,7 @@ class CentrelineTrackPathfinder(Node):
                 if path_out is None:
                     path_local = self.recovery_arc(yellow_local, blue_local)
                     if path_local is not None:
-                        path_out = base_link_to_odom(path_local, ox, oy, o_yaw)
+                        path_out = to_world(path_local, ox, oy, o_yaw)
 
             if path_out is not None:
                 self.get_logger().debug(
@@ -641,10 +638,7 @@ class CentrelineTrackPathfinder(Node):
                 self.publish_path(path_out, self.output_frame, msg.header.stamp)
                 if self.test_mode:
                     # path_out is in odom; back to the car frame, then into the map for RViz
-                    c, s_ = math.cos(o_yaw), math.sin(o_yaw)
-                    d = path_out - np.array([ox, oy])
-                    path_car = np.column_stack((c * d[:, 0] + s_ * d[:, 1], -s_ * d[:, 0] + c * d[:, 1]))
-                    path_viz = base_link_to_map(path_car, rx, ry, r_yaw)
+                    path_viz = to_world(to_local(path_out, ox, oy, o_yaw), rx, ry, r_yaw)
                     self.publish_viz(path_viz, self.viz_frame, msg.header.stamp)
             else:
                 self.get_logger().warn(
@@ -670,7 +664,7 @@ class CentrelineTrackPathfinder(Node):
         self.get_logger().info("[PATHFINDER] no gate this update: holding the last path", throttle_duration_sec=2.0)
         return rest
 
-    def recovery_arc(self, yellow_local, blue_local, radius=4.5, length=5.0):
+    def recovery_arc(self, yellow_local, blue_local):
         """No gate ahead, but one boundary is: turn towards the other one.
 
         Blue cones are the left edge, so if only blue is ahead the track lies to the right (and to
@@ -684,6 +678,7 @@ class CentrelineTrackPathfinder(Node):
         if (n_y == 0) == (n_b == 0):
             return None  # nothing ahead, or both colours (then the planner's failure is something else)
         side = -1.0 if n_b > 0 else 1.0  # right if we only see blue
+        radius, length = self.recovery_radius, self.recovery_length
         s = np.arange(0.0, length + 1e-9, 0.5)
         self.get_logger().warn(
             f"[PATHFINDER] only {'blue' if n_b else 'yellow'} cones ahead: turning {'right' if side < 0 else 'left'} to find the track",
@@ -700,9 +695,9 @@ class CentrelineTrackPathfinder(Node):
         if len(window) < 2:
             return
         # same map -> base_link -> odom chain as the centreline path
-        path_local = map_to_base_link(window, rx, ry, r_yaw)
+        path_local = to_local(window, rx, ry, r_yaw)
         ox, oy, o_yaw = self.odom_pose
-        self.publish_path(base_link_to_odom(path_local, ox, oy, o_yaw), self.output_frame, msg.header.stamp)
+        self.publish_path(to_world(path_local, ox, oy, o_yaw), self.output_frame, msg.header.stamp)
         if self.test_mode:
             self.publish_viz(window, self.viz_frame, msg.header.stamp)
 
