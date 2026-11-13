@@ -23,6 +23,7 @@ import rclpy.executors
 from rclpy.node import Node
 
 from control.path_processor import PathProcessor, PathProcessorConfig
+from control.geometry import to_local, to_world, yaw_from_quaternion
 
 # ROS Messages
 from nav_msgs.msg import Path, Odometry
@@ -34,22 +35,6 @@ from std_msgs.msg import Bool, Float64
 import sensor_msgs_py.point_cloud2 as pc2
 
 
-def euler_from_quaternion(quat):
-    x, y, z, w = quat
-    sinr_cosp = 2.0 * (w * x + y * z)
-    cosr_cosp = 1.0 - 2.0 * (x * x + y * y)
-    roll = math.atan2(sinr_cosp, cosr_cosp)
-
-    sinp = 2.0 * (w * y - z * x)
-    pitch = math.copysign(math.pi / 2, sinp) if abs(sinp) >= 1 else math.asin(sinp)
-
-    siny_cosp = 2.0 * (w * z + x * y)
-    cosy_cosp = 1.0 - 2.0 * (y * y + z * z)
-    yaw = math.atan2(siny_cosp, cosy_cosp)
-    return roll, pitch, yaw
-
-
-# Helper Functions
 def clamp(x, lo, hi):
     return np.minimum(np.maximum(x, lo), hi)
 
@@ -92,6 +77,65 @@ def rollout(X0, U, dt, p):
         X[:, h + 1, 3] = v_next
         X[:, h + 1, 4] = de_next
     return X
+
+
+def rollout_cost(P, U, steer0, ref, ref_heading, ref_v, obstacles, c, debug=False):
+    """Cost of every sampled rollout. No ROS: `c` is anything with the weights as attributes (the node,
+    or a SimpleNamespace in a test).
+
+    P (K, H, 5): rollout states [x, y, yaw, v, steer] of the rear axle after each step; U (K, H, 2): the
+    controls [accel, steer]; steer0: steering angle now; ref (M, 2), ref_heading (M,), ref_v (M,): the
+    reference path, its heading and speed; obstacles (N, 3): cones [x, y, radius] in the plan frame.
+    Returns (cost (K,), parts): parts is the per-term breakdown if debug, else None.
+    """
+    K = P.shape[0]
+    hd = np.stack([np.cos(P[:, :, 2]), np.sin(P[:, :, 2])], axis=-1)   # (K, H, 2)
+    centre = P[:, :, :2] + c.rear_to_base * hd                          # centre of the car
+    diff = centre[:, :, None, :] - ref[None, None, :, :]             # (K, H, M, 2)
+    dist2 = np.einsum('khmi,khmi->khm', diff, diff)
+    j = np.argmin(dist2, axis=2)                                    # nearest path point
+    d2 = np.take_along_axis(dist2, j[..., None], axis=2)[..., 0]
+    cost = c.w_path * d2.sum(axis=1)
+    parts = {'path': cost.copy()} if debug else None
+    h_err = normalize_angle(P[:, :, 2] - ref_heading[j])
+    cost += c.w_heading * (h_err ** 2).sum(axis=1)
+    # progress along the path over the horizon; without it, stopping in a tight corner can be
+    # cheaper than driving through it
+    cost -= c.w_progress * j[:, -1] * c.path_spacing
+    dv = P[:, :, 3] - ref_v[j]
+    cost += (np.where(dv > 0.0, c.w_overspeed, c.w_speed) * dv ** 2).sum(axis=1)
+    a_lat = P[:, :, 3] ** 2 * np.tan(P[:, :, 4]) / c.p['wheelbase']
+    cost += c.w_grip * (np.clip(np.abs(a_lat) - c.a_lat_max * 1.2, 0.0, None) ** 2).sum(axis=1)
+    dsteer = np.diff(np.concatenate([np.full((K, 1), steer0), U[:, :, 1]], axis=1), axis=1)
+    cost += c.w_steer_rate * (dsteer ** 2).sum(axis=1)
+    cost += c.w_accel * (U[:, :, 0] ** 2).sum(axis=1)
+    if parts is not None:
+        parts['progress'] = -c.w_progress * j[:, -1] * c.path_spacing
+        parts['speed'] = (np.where(dv > 0.0, c.w_overspeed, c.w_speed) * dv ** 2).sum(axis=1)
+        parts['obst'] = np.zeros(K)
+
+    if obstacles.shape[0] > 0:
+        # all footprint circles at once in float32: a loop over circles in float64 took ~110 ms
+        # with 50 cones and dropped the 20 Hz control loop to ~10 Hz
+        # cones within obstacle_window m of the previous plan (the samples stay close to it; the
+        # map has 50+ cones in reach later in the run and the cost grows with K x H x circles x cones)
+        nominal = P[0, ::3, :2]                                               # sample 0 = previous plan
+        d_nom = np.min(np.linalg.norm(obstacles[None, :, :2] - nominal[:, None, :], axis=-1), axis=0)
+        obs = obstacles[d_nom < c.obstacle_window].astype(np.float32)
+        if obs.shape[0] > 0:
+            cpos = (P[:, :, None, :2].astype(np.float32)
+                    + c.circle_offsets.astype(np.float32)[None, None, :, None] * hd.astype(np.float32)[:, :, None, :])
+            dx = cpos[..., None, 0] - obs[:, 0]                                      # (K, H, C, N)
+            dy = cpos[..., None, 1] - obs[:, 1]
+            d_obs = np.sqrt(dx * dx + dy * dy) - obs[:, 2] - c.circle_radii.astype(np.float32)[None, None, :, None]
+            d_pen = np.maximum(c.obstacle_margin - d_obs, 0.0)
+            c_obs = np.minimum(c.w_obstacle * (d_pen * d_pen).sum(axis=(1, 3)), 1e4).sum(axis=1)
+            cost += c_obs
+            if parts is not None:
+                parts['obst'] = c_obs
+            if c.w_collision > 0.0:
+                cost += c.w_collision * (d_obs < 0.0).sum(axis=(1, 2, 3))
+    return cost, parts
 
 
 class MPPIController(Node):
@@ -210,6 +254,7 @@ class MPPIController(Node):
 
         self.u0 = np.zeros((self.horizon, 2))
         self._loop_stats = []
+        self._dbg_n = 0
         self.rng = np.random.default_rng()
 
         self.get_logger().info(
@@ -220,7 +265,7 @@ class MPPIController(Node):
         """ Update vehicle state from Odometry """
         p = msg.pose.pose.position
         q = msg.pose.pose.orientation
-        _, _, yaw = euler_from_quaternion([q.x, q.y, q.z, q.w])
+        yaw = yaw_from_quaternion(q)
         self.vehicle_state = np.array([p.x, p.y, yaw, msg.twist.twist.linear.x], dtype=float)
 
     def flag_callback(self, msg):
@@ -312,25 +357,22 @@ class MPPIController(Node):
 
     def obstacles_in(self, local):
         """Obstacles in the frame the plan is made in. A local plan needs cones relative to the car."""
-        obs = self.obstacles
+        obs, frame = self.obstacles, self.obstacles_frame
         if (self.lidar_obstacles.shape[0] > 0 and self.lidar_obstacles_time is not None
-                and (obs.shape[0] == 0 or self.obstacles_frame == 'odom')
+                and (obs.shape[0] == 0 or frame == 'odom')
                 and (self.get_clock().now() - self.lidar_obstacles_time).nanoseconds * 1e-9 < self.lidar_obstacles_max_age):
+            # the lidar cones are in odom; without SLAM cones they are the whole obstacle set
             obs = np.vstack([obs, self.lidar_obstacles]) if obs.shape[0] > 0 else self.lidar_obstacles
-            if self.obstacles.shape[0] == 0:
-                self.obstacles_frame = 'odom'
-        body_frames = (self.expected_path_frame, 'base_link', 'velodyne')
-        cones_local = self.obstacles_frame in body_frames
+            frame = 'odom'
+        cones_local = frame in (self.expected_path_frame, 'base_link', 'velodyne')
         if obs.shape[0] == 0 or local == cones_local:
             return obs
         x, y, yaw, _ = self.vehicle_state
-        c, s = math.cos(yaw), math.sin(yaw)
         out = obs.copy()
-        if local:   # odom -> path frame (the car's base_link, then moved to the origin of the path frame)
-            dx, dy = obs[:, 0] - x, obs[:, 1] - y
-            out[:, 0], out[:, 1] = c * dx + s * dy - self.plan_frame_ahead(), -s * dx + c * dy
+        if local:   # odom -> the car's base_link, then moved to the origin of the path frame
+            out[:, :2] = to_local(obs[:, :2], x, y, yaw) - [self.plan_frame_ahead(), 0.0]
         else:       # car -> odom
-            out[:, 0], out[:, 1] = x + c * obs[:, 0] - s * obs[:, 1], y + s * obs[:, 0] + c * obs[:, 1]
+            out[:, :2] = to_world(obs[:, :2], x, y, yaw)
         return out
 
     def control_loop(self):
@@ -407,55 +449,9 @@ class MPPIController(Node):
         P = X[:, 1:, :]  # (K, H, 5)
 
         # ---- cost
-        hd = np.stack([np.cos(P[:, :, 2]), np.sin(P[:, :, 2])], axis=-1)   # (K, H, 2)
-        centre = P[:, :, :2] + self.rear_to_base * hd                       # centre of the car
-        diff = centre[:, :, None, :] - ref[None, None, :, :]             # (K, H, M, 2)
-        dist2 = np.einsum('khmi,khmi->khm', diff, diff)
-        j = np.argmin(dist2, axis=2)                                    # nearest path point
-        d2 = np.take_along_axis(dist2, j[..., None], axis=2)[..., 0]
-        cost = self.w_path * d2.sum(axis=1)
-        parts = {'path': cost.copy()} if self.debug_costs else None
-        h_err = normalize_angle(P[:, :, 2] - ref_heading[j])
-        cost += self.w_heading * (h_err ** 2).sum(axis=1)
-        # progress along the path over the horizon; without it, stopping in a tight corner can be
-        # cheaper than driving through it
-        cost -= self.w_progress * j[:, -1] * self.path_spacing
-        dv = P[:, :, 3] - ref_v[j]
-        cost += (np.where(dv > 0.0, self.w_overspeed, self.w_speed) * dv ** 2).sum(axis=1)
-        a_lat = P[:, :, 3] ** 2 * np.tan(P[:, :, 4]) / self.p['wheelbase']
-        cost += self.w_grip * (np.clip(np.abs(a_lat) - self.a_lat_max * 1.2, 0.0, None) ** 2).sum(axis=1)
-        dsteer = np.diff(np.concatenate([np.full((K, 1), steer), U[:, :, 1]], axis=1), axis=1)
-        cost += self.w_steer_rate * (dsteer ** 2).sum(axis=1)
-        cost += self.w_accel * (U[:, :, 0] ** 2).sum(axis=1)
+        cost, parts = rollout_cost(P, U, steer, ref, ref_heading, ref_v, obstacles, self, self.debug_costs)
         if parts is not None:
-            parts['progress'] = -self.w_progress * j[:, -1] * self.path_spacing
-            parts['speed'] = (np.where(dv > 0.0, self.w_overspeed, self.w_speed) * dv ** 2).sum(axis=1)
-            parts['obst'] = np.zeros(K)
-
-        if obstacles.shape[0] > 0:
-            # all footprint circles at once in float32: a loop over circles in float64 took ~110 ms
-            # with 50 cones and dropped the 20 Hz control loop to ~10 Hz
-            # cones within obstacle_window m of the previous plan (the samples stay close to it; the
-            # map has 50+ cones in reach later in the run and the cost grows with K x H x circles x cones)
-            nominal = P[0, ::3, :2]                                               # sample 0 = previous plan
-            d_nom = np.min(np.linalg.norm(obstacles[None, :, :2] - nominal[:, None, :], axis=-1), axis=0)
-            obs = obstacles[d_nom < self.obstacle_window].astype(np.float32)
-            if obs.shape[0] > 0:
-                cpos = (P[:, :, None, :2].astype(np.float32)
-                        + self.circle_offsets.astype(np.float32)[None, None, :, None] * hd.astype(np.float32)[:, :, None, :])
-                dx = cpos[..., None, 0] - obs[:, 0]                                      # (K, H, C, N)
-                dy = cpos[..., None, 1] - obs[:, 1]
-                d_obs = np.sqrt(dx * dx + dy * dy) - obs[:, 2] - self.circle_radii.astype(np.float32)[None, None, :, None]
-                d_pen = np.maximum(self.obstacle_margin - d_obs, 0.0)
-                c_obs = np.minimum(self.w_obstacle * (d_pen * d_pen).sum(axis=(1, 3)), 1e4).sum(axis=1)
-                cost += c_obs
-                if parts is not None:
-                    parts['obst'] = c_obs
-                if self.w_collision > 0.0:
-                    cost += self.w_collision * (d_obs < 0.0).sum(axis=(1, 2, 3))
-
-        if parts is not None:
-            self._dbg_n = getattr(self, '_dbg_n', 0) + 1
+            self._dbg_n += 1
             if self._dbg_n % 20 == 0:
                 b = int(np.argmin(cost))
                 self.get_logger().info(

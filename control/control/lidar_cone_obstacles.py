@@ -15,7 +15,6 @@ max_extent with at least min_points -> centre pushed back by cone_radius (the li
 of a cone) -> base_link -> odom with the /odom pose. Colour is unknown, so this only feeds the
 obstacle cost, never the planner.
 """
-import math
 from collections import defaultdict
 
 import numpy as np
@@ -27,6 +26,8 @@ from rclpy.qos import qos_profile_sensor_data
 from sensor_msgs.msg import PointCloud2
 import sensor_msgs_py.point_cloud2 as pc2
 from std_msgs.msg import Header
+
+from control.geometry import to_world, yaw_from_quaternion
 
 
 def cluster_cones(xy, cell=0.25, max_extent=0.5, min_points=2):
@@ -84,6 +85,7 @@ class LidarConeObstacles(Node):
         self.min_hits = int(self.declare_parameter('min_hits', 2).value)
         self.memory = np.empty((0, 5))  # x, y, last seen (s), hits, unused
 
+        self.n_clouds = 0
         self.odom = None
         self.odom_hist = []  # (stamp s, x, y, yaw): the cloud is placed with the pose at its own stamp
         self.create_subscription(Odometry, '/odom', self.odom_cb, 20)
@@ -93,7 +95,7 @@ class LidarConeObstacles(Node):
 
     def odom_cb(self, msg):
         p, q = msg.pose.pose.position, msg.pose.pose.orientation
-        self.odom = (p.x, p.y, math.atan2(2 * (q.w * q.z + q.x * q.y), 1 - 2 * (q.y * q.y + q.z * q.z)))
+        self.odom = (p.x, p.y, yaw_from_quaternion(q))
         t = msg.header.stamp.sec + msg.header.stamp.nanosec * 1e-9
         self.odom_hist.append((t,) + self.odom)
         if len(self.odom_hist) > 200:
@@ -124,17 +126,13 @@ class LidarConeObstacles(Node):
             centres[:, 0] += self.lidar_x                                # lidar -> base_link
         now = msg.header.stamp.sec + msg.header.stamp.nanosec * 1e-9
         (ox, oy, yaw), dt = self.pose_at(now)
-        self.n_clouds = getattr(self, 'n_clouds', 0) + 1
+        self.n_clouds += 1
         if self.n_clouds % 50 == 0:
             self.get_logger().info(f"clouds {self.n_clouds}: pose dt {dt * 1000:.0f} ms, "
                                    f"remembered {len(self.memory)}, published {int((self.memory[:, 3] >= self.min_hits).sum())}")
         if dt > 0.05:  # no pose for this cloud: do not place it
             return
-        c, s = math.cos(yaw), math.sin(yaw)
-        world = np.zeros((len(centres), 2))
-        if len(centres):
-            world[:, 0] = ox + c * centres[:, 0] - s * centres[:, 1]
-            world[:, 1] = oy + s * centres[:, 0] + c * centres[:, 1]
+        world = to_world(centres, ox, oy, yaw)
         self.remember(world, now)
         # forget cones far from the car (their old pose estimate is the least reliable)
         far = np.hypot(self.memory[:, 0] - ox, self.memory[:, 1] - oy) > self.max_range
