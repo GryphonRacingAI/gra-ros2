@@ -619,7 +619,10 @@ class CentrelineTrackPathfinder(Node):
                 # valid, as long as it is recent and the car is on it. Before, the 5 m recovery arc
                 # was published at once and the controller slowed to a crawl on it.
                 path_out = self.held_path(ox, oy, now)
-                if path_out is None:
+                # Not on the acceleration straight: there the cones of one colour can run out first near
+                # the end, and the arc steered the car off the lane (the controller extends the last
+                # path straight ahead on that event instead).
+                if path_out is None and self.event != 'acceleration':
                     path_local = self.recovery_arc(yellow_local, blue_local)
                     if path_local is not None:
                         path_out = to_world(path_local, ox, oy, o_yaw)
