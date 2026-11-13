@@ -16,6 +16,9 @@
 #   CONES       perfect | yolo     (default: yolo — /cone_array → pathfinder)
 #   CAN         1 | 0              (default: 1)  vcan0 + vcu_sim + ackermann_can
 #   CAN_IFACE   SocketCAN iface    (default: vcan0)
+#   SLAM        1 | 0              (default: 0)  FastSLAM + pathfinder_slam.py (needs CONES=yolo CONTROLLER=mppi)
+#   DRIVE       ideal | torque     (default: ideal; torque with SLAM=1 CAN=0)  sim drivetrain; torque needs CAN=0
+#   ODOM        wheel | ground_truth (default: wheel; only used with DRIVE=torque, ideal is always ground truth)
 #   WS          colcon overlay     (default: parent of src/ or of tmux/)
 #   SESSION     tmux session name  (default: fsai)
 #   DETACH      1 = stay detached
@@ -69,6 +72,17 @@ CONES="${CONES:-yolo}"
 # SLAM=1: FastSLAM + the SLAM-based planner (pathfinder_slam.py) instead of the local-frame
 # track_pathfinder. Off by default: the default stack is unchanged. Needs CONES=yolo, CONTROLLER=mppi.
 SLAM="${SLAM:-0}"
+# DRIVE / ODOM: passed to the sim launch (drive:=, odom:=).
+#   DRIVE=ideal  (default without SLAM, as before): wheel speed set directly; /odom is Gazebo's exact pose.
+#   DRIVE=torque (default with SLAM=1 CAN=0): ADS-DV drivetrain + VCU emulator; /odom from wheel speeds + IMU
+#                (ODOM=wheel) like the real car. This is the setup the SLAM-stack results were measured on.
+#   The torque drive brings its own VCU emulator, so it is only offered with CAN=0.
+if [ "$SLAM" = "1" ] && [ "$CAN" = "0" ]; then
+	DRIVE="${DRIVE:-torque}"
+else
+	DRIVE="${DRIVE:-ideal}"
+fi
+ODOM="${ODOM:-wheel}"
 CLOCK_TIMEOUT_S="${CLOCK_TIMEOUT_S:-45}"
 
 if [ -z "${LOG_DIR:-}" ]; then
@@ -111,6 +125,14 @@ case "$CONES" in
 		;;
 esac
 
+if [ "$DRIVE" != "ideal" ] && [ "$DRIVE" != "torque" ]; then
+	echo "DRIVE must be ideal or torque, got '$DRIVE'" >&2
+	exit 1
+fi
+if [ "$DRIVE" = "torque" ] && [ "$CAN" != "0" ]; then
+	echo "DRIVE=torque needs CAN=0 (the torque drive has its own VCU emulator; vcu_sim on the CAN path would be a second VCU)" >&2
+	exit 1
+fi
 if [ "$SLAM" = "1" ] && { [ "$CONES" != "yolo" ] || [ "$CONTROLLER" != "mppi" ]; }; then
 	echo "SLAM=1 needs CONES=yolo and CONTROLLER=mppi (pure pursuit is local-frame only)" >&2
 	exit 1
@@ -174,7 +196,7 @@ elif [ "$CONES" = "yolo" ]; then
 	log "GPU_SKIP=1 — CUDA preflight skipped; YOLO still device:=cuda:0 (respawn until GPU works)"
 fi
 
-log "tmux startup CONTROLLER=$CONTROLLER EVENT=$EVENT CONES=$CONES CAN=$CAN IFACE=$CAN_IFACE SESSION=$SESSION LOG_DIR=$LOG_DIR"
+log "tmux startup CONTROLLER=$CONTROLLER EVENT=$EVENT CONES=$CONES CAN=$CAN SLAM=$SLAM DRIVE=$DRIVE ODOM=$ODOM IFACE=$CAN_IFACE SESSION=$SESSION LOG_DIR=$LOG_DIR"
 
 # Tear down a previous Gazebo / stack so this launch is the only one.
 if [ -x "$WS/clean_gz.sh" ]; then
@@ -220,7 +242,7 @@ tmux send-keys -t "$SESSION:monitor" "echo 'SESSION=$SESSION CONTROLLER=$CONTROL
 
 # --- Sim ---
 start_component "sim" 1 \
-	"ros2 launch simulation dynamic_event.launch.py autostart:=true event:=${EVENT}"
+	"ros2 launch simulation dynamic_event.launch.py autostart:=true event:=${EVENT} drive:=${DRIVE} odom:=${ODOM}"
 
 source_overlay_here
 if ! wait_for_topic "/clock" "$CLOCK_TIMEOUT_S"; then
