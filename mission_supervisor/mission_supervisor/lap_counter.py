@@ -57,6 +57,11 @@ class LapCounter(Node):
         self.previous_position = None
         self.lap_count = 0 
         self.in_cooldown = False
+        # A crossing only counts once the car has driven this far. Where the car starts just before
+        # the start/finish gate (autocross, drive1), the first crossing is the start, not a lap:
+        # it used to end the event about 3 s after launch.
+        self.min_start_distance = float(self.declare_parameter('min_start_distance', 15.0).value)
+        self.distance_driven = 0.0
 
         # Timer for periodic publishing
         self.publish_timer = self.create_timer(1.0, self.publish_lap_count)
@@ -138,7 +143,13 @@ class LapCounter(Node):
             self.get_logger().debug(f"Could not transform car pose from {car_pt.header.frame_id} to {self.target_frame}: {ex}")
             return
 
-        if self.previous_position is not None and self.last_known_cones is not None and not self.in_cooldown:
+        if self.previous_position is not None:
+            step = math.dist((self.car_position.x, self.car_position.y), (self.previous_position.x, self.previous_position.y))
+            if step < 2.0:  # a jump of the map -> odom correction is not driving
+                self.distance_driven += step
+
+        if (self.previous_position is not None and self.last_known_cones is not None and not self.in_cooldown
+                and self.distance_driven >= self.min_start_distance):
             first_cone = self.last_known_cones[0]
             second_cone = self.last_known_cones[1]
 
