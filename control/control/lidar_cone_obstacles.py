@@ -12,7 +12,7 @@ Pipeline (per cloud): points between ground_z + min_height and ground_z + max_he
 0.325 m; the ground is flat at ground_z in the lidar frame), between min_range and max_range and
 outside the car's own footprint -> grid clustering (cell m, 8-neighbour) -> clusters no wider than
 max_extent with at least min_points -> centre pushed back by cone_radius (the lidar sees the front
-of a cone) -> base_link -> odom with the /odom pose. Colour is unknown, so this only feeds the
+of a cone) -> base_link -> odom with the TF pose at the cloud's stamp. Colour is unknown, so this only feeds the
 obstacle cost, never the planner.
 """
 from collections import defaultdict
@@ -20,14 +20,16 @@ from collections import defaultdict
 import numpy as np
 import rclpy
 import rclpy.executors
-from nav_msgs.msg import Odometry
 from rclpy.node import Node
 from rclpy.qos import qos_profile_sensor_data
 from sensor_msgs.msg import PointCloud2
 import sensor_msgs_py.point_cloud2 as pc2
 from std_msgs.msg import Header
+from tf2_ros.buffer import Buffer
+from tf2_ros.transform_listener import TransformListener
 
-from control.geometry import to_world, yaw_from_quaternion
+from control.geometry import to_world
+from control.tf_pose import pose2d_at
 
 
 def cluster_cones(xy, cell=0.25, max_extent=0.5, min_points=2):
@@ -86,32 +88,18 @@ class LidarConeObstacles(Node):
         self.memory = np.empty((0, 5))  # x, y, last seen (s), hits, unused
 
         self.n_clouds = 0
-        self.odom = None
-        self.odom_hist = []  # (stamp s, x, y, yaw): the cloud is placed with the pose at its own stamp
-        self.create_subscription(Odometry, '/odom', self.odom_cb, 20)
+        self.n_no_pose = 0
+        # the cloud is placed with the odom -> base_link transform at its own stamp (tf2, interpolated)
+        self.tf_buffer = Buffer()
+        self.tf_listener = TransformListener(self.tf_buffer, self)
         self.create_subscription(PointCloud2, self.cloud_topic, self.cloud_cb, qos_profile_sensor_data)
         self.pub = self.create_publisher(PointCloud2, '/lidar_cones', 1)
         self.get_logger().info(f"lidar cone obstacles from {self.cloud_topic} -> /lidar_cones (odom)")
-
-    def odom_cb(self, msg):
-        p, q = msg.pose.pose.position, msg.pose.pose.orientation
-        self.odom = (p.x, p.y, yaw_from_quaternion(q))
-        t = msg.header.stamp.sec + msg.header.stamp.nanosec * 1e-9
-        self.odom_hist.append((t,) + self.odom)
-        if len(self.odom_hist) > 200:
-            del self.odom_hist[:100]
-
-    def pose_at(self, t):
-        """/odom pose nearest in time to t (odom runs at >= 50 Hz, so within 10 ms)."""
-        best = min(self.odom_hist, key=lambda h: abs(h[0] - t))
-        return best[1:], abs(best[0] - t)
 
     def remember(self, world, now):
         self.memory = _remember(self.memory, world, now, self.memory_time, self.merge_dist)
 
     def cloud_cb(self, msg):
-        if self.odom is None:
-            return
         pts = pc2.read_points_numpy(msg, field_names=('x', 'y', 'z'), skip_nans=True).reshape(-1, 3)
         pts = pts[np.all(np.isfinite(pts), axis=1)]
         z = pts[:, 2] - self.ground_z
@@ -125,13 +113,15 @@ class LidarConeObstacles(Node):
             centres = centres + centres / np.maximum(rng, 1e-6) * self.cone_radius
             centres[:, 0] += self.lidar_x                                # lidar -> base_link
         now = msg.header.stamp.sec + msg.header.stamp.nanosec * 1e-9
-        (ox, oy, yaw), dt = self.pose_at(now)
+        pose = pose2d_at(self.tf_buffer, msg.header.stamp)
         self.n_clouds += 1
+        self.n_no_pose += pose is None
         if self.n_clouds % 50 == 0:
-            self.get_logger().info(f"clouds {self.n_clouds}: pose dt {dt * 1000:.0f} ms, "
+            self.get_logger().info(f"clouds {self.n_clouds}: {self.n_no_pose} without a pose, "
                                    f"remembered {len(self.memory)}, published {int((self.memory[:, 3] >= self.min_hits).sum())}")
-        if dt > 0.05:  # no pose for this cloud: do not place it
+        if pose is None:  # no odom -> base_link transform for this cloud: do not place it
             return
+        ox, oy, yaw = pose
         world = to_world(centres, ox, oy, yaw)
         self.remember(world, now)
         # forget cones far from the car (their old pose estimate is the least reliable)
