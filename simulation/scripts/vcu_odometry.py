@@ -25,6 +25,10 @@ def yaw_quat(yaw):
     return 0.0, 0.0, math.sin(yaw / 2.0), math.cos(yaw / 2.0)
 
 
+def yaw_from_quaternion(q):
+    return math.atan2(2 * (q.w * q.z + q.x * q.y), 1 - 2 * (q.y * q.y + q.z * q.z))
+
+
 class VcuOdometry(Node):
     def __init__(self):
         super().__init__('vcu_odometry')
@@ -85,11 +89,11 @@ class VcuOdometry(Node):
         if self.source == 'ground_truth':
             self.odom_pub.publish(msg)
             p, q = msg.pose.pose.position, msg.pose.pose.orientation
-            self.send_tf(msg.header.stamp, p.x, p.y, math.atan2(2 * (q.w * q.z + q.x * q.y), 1 - 2 * (q.y * q.y + q.z * q.z)))
+            self.send_tf(msg.header.stamp, p.x, p.y, yaw_from_quaternion(q))
         elif not self.started:
             p, q = msg.pose.pose.position, msg.pose.pose.orientation
             self.x, self.y = p.x, p.y
-            self.yaw = math.atan2(2 * (q.w * q.z + q.x * q.y), 1 - 2 * (q.y * q.y + q.z * q.z))
+            self.yaw = yaw_from_quaternion(q)
             self.started = True
             self.get_logger().info(f'odometry starts at the spawn pose ({self.x:.2f}, {self.y:.2f}, {self.yaw:.2f})')
 
