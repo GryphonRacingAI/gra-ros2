@@ -7,6 +7,7 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
+find_package(ament_cmake_python REQUIRED)
 find_package(rclpy REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
@@ -18,6 +19,9 @@ find_package(tf2_geometry_msgs REQUIRED)
 find_package(Eigen3 REQUIRED)
 
 # Install Python scripts only (no module)
+# planner logic without ROS: path_planning.centreline, .skidpad, .remember_lap, .geometry
+ament_python_install_package(${PROJECT_NAME})
+
 install(PROGRAMS
   scripts/pathfinder.py
   scripts/pathfinder_slam.py
