@@ -30,7 +30,7 @@ from nav_msgs.msg import Path, Odometry
 from sensor_msgs.msg import PointCloud2
 from ackermann_msgs.msg import AckermannDrive, AckermannDriveStamped
 from geometry_msgs.msg import PoseStamped
-from std_msgs.msg import Bool, Float64
+from std_msgs.msg import Float64
 
 import sensor_msgs_py.point_cloud2 as pc2
 
@@ -232,7 +232,6 @@ class MPPIController(Node):
         if lidar_topic:
             self.create_subscription(PointCloud2, lidar_topic, self.lidar_cone_callback, 1)
         self.sub_steer = self.create_subscription(Float64, '/steer_angle', self.steer_callback, 10)
-        self.sub_flag = self.create_subscription(Bool, '/chequered_flag', self.flag_callback, 1)
 
         self.pub_drive = self.create_publisher(AckermannDriveStamped, '/drive', 10)
         self.pub_ackermann = self.create_publisher(AckermannDrive, '/ackermann_cmd', 10)
@@ -240,7 +239,6 @@ class MPPIController(Node):
 
         self.timer = self.create_timer(self.dt, self.control_loop)
 
-        self.chequered = False
         self.vehicle_state = None   # odom-frame pose + speed
         self.path_is_local = False
         self.path_frame_id = 'odom'
@@ -267,13 +265,6 @@ class MPPIController(Node):
         q = msg.pose.pose.orientation
         yaw = yaw_from_quaternion(q)
         self.vehicle_state = np.array([p.x, p.y, yaw, msg.twist.twist.linear.x], dtype=float)
-
-    def flag_callback(self, msg):
-        # End of the event (mission_supervisor / mission_control): stop asking for speed. The VCU brakes
-        # on the flag too, but with the ideal drive nothing else would stop the car.
-        if msg.data and not self.chequered:
-            self.get_logger().info("chequered flag: requesting standstill")
-        self.chequered = bool(msg.data)
 
     def steer_callback(self, msg):
         self.steer_measured = float(msg.data)
@@ -381,9 +372,6 @@ class MPPIController(Node):
 
         # Don't sleep here: with use_sim_time the clock only advances when this (single-threaded)
         # executor processes /clock, so sleep_for() blocked the node forever.
-        if self.chequered:
-            self.pub_ackermann.publish(AckermannDrive(speed=0.0, steering_angle=0.0))
-            return
         if self.vehicle_state is None:
             self.get_logger().info("Waiting for vehicle state", throttle_duration_sec=3.0)
             return

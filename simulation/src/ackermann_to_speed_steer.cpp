@@ -2,12 +2,17 @@
 // - 'speed_cmd' (std_msgs/msg/Float64): vehicle speed command (angular speed for wheel joint controller)
 // - 'steer_angle_cmd' (std_msgs/msg/Float64): bicycle-model steering angle command
 //
+// It also subscribes to '/chequered_flag' (std_msgs/msg/Bool): while the flag is up the speed and steering
+// commands are zero whatever the controller asks for. On the car the VCU brakes on the flag; this ideal drive has no
+// VCU, so it is the place that stands in for it (the controller itself must not need to know).
+//
 // It also subscribes to 'joint_states' and reads the front left / front right steering joint angles
 // to compute the (approximate) bicycle-model steering angle
 
 #include <rclcpp/rclcpp.hpp>
 #include <ackermann_msgs/msg/ackermann_drive.hpp>
 #include <std_msgs/msg/float64.hpp>
+#include <std_msgs/msg/bool.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
 #include <string>
 
@@ -31,6 +36,19 @@ public:
             ackermann_cmd_topic_, 10,
             std::bind(&AckermannToSpeedSteerNode::ackermannCallback, this, std::placeholders::_1));
 
+        chequered_flag_subscription_ = this->create_subscription<std_msgs::msg::Bool>(
+            "/chequered_flag", 10,
+            [this](const std_msgs::msg::Bool::SharedPtr msg) {
+                if (msg->data && !chequered_) {
+                    RCLCPP_WARN(this->get_logger(), "chequered flag: speed and steering commands held at zero");
+                    speed_cmd_msg_.data = 0.0;
+                    speed_cmd_publisher_->publish(speed_cmd_msg_);
+                    steer_cmd_msg_.data = 0.0;
+                    steer_cmd_publisher_->publish(steer_cmd_msg_);
+                }
+                chequered_ = msg->data;
+            });
+
         joint_state_subscription_ = this->create_subscription<sensor_msgs::msg::JointState>(
             joint_states_topic_, 10,
             std::bind(&AckermannToSpeedSteerNode::jointStateCallback, this, std::placeholders::_1));
@@ -51,6 +69,7 @@ private:
     double right_angle_{0.0};
     bool found_left_{false};
     bool found_right_{false};
+    bool chequered_{false};
     double tanL_{0.0};
     double tanR_{0.0};
     double delta_b_{0.0};
@@ -59,11 +78,11 @@ private:
 
     void ackermannCallback(const ackermann_msgs::msg::AckermannDrive::SharedPtr msg) {
         // Publish speed command
-        speed_cmd_msg_.data = msg->speed / wheel_radius_;
+        speed_cmd_msg_.data = chequered_ ? 0.0 : msg->speed / wheel_radius_;
         speed_cmd_publisher_->publish(speed_cmd_msg_);
         
         // Publish steering angle command
-        steer_cmd_msg_.data = msg->steering_angle;
+        steer_cmd_msg_.data = chequered_ ? 0.0 : msg->steering_angle;
         steer_cmd_publisher_->publish(steer_cmd_msg_);
     }
 
@@ -102,6 +121,7 @@ private:
     rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr steer_angle_publisher_;
     rclcpp::Subscription<ackermann_msgs::msg::AckermannDrive>::SharedPtr ackermann_subscription_;
     rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_state_subscription_;
+    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr chequered_flag_subscription_;
 };
 
 int main(int argc, char * argv[]) {
