@@ -8,7 +8,9 @@ from rclpy.node import Node
 import numpy as np
 from geometry_msgs.msg import PoseStamped
 from nav_msgs.msg import Odometry, Path
-from std_msgs.msg import Bool, Header, ColorRGBA
+from std_msgs.msg import Bool, Header, ColorRGBA, UInt16
+from sensor_msgs.msg import PointCloud2
+import sensor_msgs_py.point_cloud2 as pc2
 from visualization_msgs.msg import Marker, MarkerArray
 from geometry_msgs.msg import Point
 from common_msgs.msg import ConeArray
@@ -402,6 +404,24 @@ class CentrelineTrackPathfinder(Node):
         self.create_subscription(Odometry, '/odom', self.odom_callback, 10)
         self.create_subscription(PoseStamped, '/slam/pose', self.slam_pose_callback, 10)
 
+        # Remembered lap (opt-in, remember_lap:=true; closed circuits only). The line the car drove on
+        # lap 1 is stored in the map frame; from lap 2 on it is the path, as long as the car is on it
+        # and it stays clear of every cone the car can see now. Otherwise the live planner takes over
+        # for that update (track changed, a cone was moved, or the car is not where it thinks it is).
+        self.remember_lap = bool(self.declare_parameter('remember_lap', False).value)
+        self.remember_min_clear = float(self.declare_parameter('remember_min_clear', 0.75).value)   # m, path centre to a cone
+        self.remember_max_offset = float(self.declare_parameter('remember_max_offset', 1.5).value)  # m, car to the stored line
+        self.laps = 0
+        self.lap_trace = []         # map-frame points driven so far (lap 1)
+        self.lap_loop = None        # (N, 2) closed loop in the map frame, 0.5 m spacing
+        self.lap_idx = 0
+        self.lap_mode = None        # 'remembered' / 'live', for the log
+        self.lidar_cones_odom = np.empty((0, 2))
+        if self.remember_lap:
+            self.create_subscription(UInt16, '/laps', self.laps_callback, 10)
+            self.create_subscription(PointCloud2, '/lidar_cones', self.lidar_cones_callback, 1)
+            self.get_logger().info("PATHFINDER: remember_lap on: lap 1 is recorded and followed from lap 2")
+
         self.get_logger().info(
             f"PATHFINDER: map cones -> base_link planning -> {self.output_frame} path"
         )
@@ -447,6 +467,77 @@ class CentrelineTrackPathfinder(Node):
             self.correction = self.correction + a * d
         self.correction_t = t
         self.slam_pose = slam
+
+    def laps_callback(self, msg):
+        self.laps = int(msg.data)
+
+    def lidar_cones_callback(self, msg):
+        pts = pc2.read_points_numpy(msg, field_names=('x', 'y'), skip_nans=True).reshape(-1, 2)
+        self.lidar_cones_odom = pts.astype(float)
+
+    def record_lap(self, rx, ry):
+        """Lap 1: store where the car drives (map frame, a point every 0.5 m). When the first lap is
+        counted, close the loop where the trace comes back to its own beginning."""
+        if self.lap_loop is not None or self.lap_trace is None:
+            return
+        if not self.lap_trace or math.hypot(rx - self.lap_trace[-1][0], ry - self.lap_trace[-1][1]) >= 0.5:
+            self.lap_trace.append((rx, ry))
+        if self.laps < 1 or len(self.lap_trace) < 60:
+            return
+        pts = np.array(self.lap_trace)
+        head = pts[:max(20, len(pts) // 5)]                       # where the lap began
+        d = np.hypot(*(head - pts[-1]).T); j = int(np.argmin(d))
+        if d[j] > 2.0:
+            if len(pts) > 4000:                                    # never came back: give up
+                self.get_logger().warn("[PATHFINDER] remember_lap: the lap did not close, staying with live planning")
+                self.lap_trace = None
+            return
+        loop = pts[j:]
+        # light smoothing of the driven line (closed loop, +-1 m), it is followed as it is otherwise
+        k = 2; pad = np.vstack([loop[-k:], loop, loop[:k]])
+        self.lap_loop = np.array([pad[i:i + 2 * k + 1].mean(axis=0) for i in range(len(loop))])
+        self.lap_idx = 0
+        self.get_logger().info(f"[PATHFINDER] remember_lap: lap 1 stored, {len(loop)} points, "
+                               f"{np.hypot(*np.diff(loop, axis=0).T).sum():.0f} m, closes within {d[j]:.2f} m")
+
+    def remembered_path(self, rx, ry, r_yaw, cones_local, length=20.0):
+        """The stored lap ahead of the car in base_link, or None if it cannot be trusted right now."""
+        if self.lap_loop is None:
+            return None
+        n = len(self.lap_loop)
+        win = (self.lap_idx + np.arange(-6, 40)) % n               # only look around the last position
+        d = np.hypot(self.lap_loop[win, 0] - rx, self.lap_loop[win, 1] - ry)
+        if d.min() > self.remember_max_offset:                    # lost it: search the whole loop once
+            d_all = np.hypot(self.lap_loop[:, 0] - rx, self.lap_loop[:, 1] - ry)
+            if d_all.min() > self.remember_max_offset:
+                return self._lap_mode('live', f"car is {d_all.min():.1f} m from the stored lap")
+            self.lap_idx = int(np.argmin(d_all))
+        else:
+            self.lap_idx = int(win[int(np.argmin(d))])
+        ahead = self.lap_loop[(self.lap_idx + 2 + np.arange(int(length / 0.5))) % n]
+        local = map_to_base_link(ahead, rx, ry, r_yaw)
+        gap = np.where(np.hypot(*np.diff(local, axis=0).T) > 2.0)[0]
+        if len(gap):
+            local = local[:gap[0] + 1]                           # never bridge a hole in the stored line
+        if len(local) < 8 or local[0][0] < -0.5:
+            return self._lap_mode('live', "stored lap is not ahead of the car")
+        cones = [np.asarray(c, dtype=float).reshape(-1, 2) for c in cones_local if len(c)]
+        if len(self.lidar_cones_odom) and self.odom_pose is not None:
+            cones.append(map_to_base_link(self.lidar_cones_odom, *self.odom_pose))   # same maths: odom -> base_link
+        if cones:
+            c = np.vstack(cones); c = c[(c[:, 0] > -1.0) & (np.hypot(c[:, 0], c[:, 1]) < length + 2.0)]
+            if len(c):
+                clear = np.hypot(local[:, None, 0] - c[None, :, 0], local[:, None, 1] - c[None, :, 1]).min()
+                if clear < self.remember_min_clear:
+                    return self._lap_mode('live', f"a cone is {clear:.2f} m from the stored lap")
+        self._lap_mode('remembered', "following the stored lap")
+        return np.vstack([[0.0, 0.0], local])
+
+    def _lap_mode(self, mode, why):
+        if mode != self.lap_mode:
+            self.lap_mode = mode
+            self.get_logger().info(f"[PATHFINDER] remember_lap -> {mode}: {why}")
+        return None
 
     def car_map_pose(self):
         """Car pose in the map: smoothed correction (+) latest odometry."""
@@ -511,9 +602,14 @@ class CentrelineTrackPathfinder(Node):
             )
 
         try:
-            path_local = self.centreline_planner.calculate_path(
-                yellow_local.tolist(), blue_local.tolist()
-            )
+            path_local = None
+            if self.remember_lap:
+                self.record_lap(rx, ry)
+                path_local = self.remembered_path(rx, ry, r_yaw, (yellow_local, blue_local))
+            if path_local is None:
+                path_local = self.centreline_planner.calculate_path(
+                    yellow_local.tolist(), blue_local.tolist()
+                )
             ox, oy, o_yaw = self.odom_pose
             now = self.get_clock().now().nanoseconds * 1e-9
             path_out = None
