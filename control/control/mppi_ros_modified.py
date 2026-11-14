@@ -163,10 +163,10 @@ class MPPIController(Node):
         self.w_speed = self.declare_parameter('w_speed', 1.0).value         # (v - v_ref)^2 below v_ref
         self.w_overspeed = self.declare_parameter('w_overspeed', 5.0).value  # (v - v_ref)^2 above v_ref
         self.w_progress = self.declare_parameter('w_progress', 10.0).value  # reward per metre along the path
-        self.w_grip = self.declare_parameter('w_grip', 5.0).value           # (a_lat over limit)^2
-        self.w_steer_rate = self.declare_parameter('w_steer_rate', 50.0).value  # (d steer cmd)^2
+        self.w_grip = self.declare_parameter('w_grip', 20.0).value           # (a_lat over limit)^2
+        self.w_steer_rate = self.declare_parameter('w_steer_rate', 150.0).value  # (d steer cmd)^2
         self.w_accel = self.declare_parameter('w_accel', 0.05).value        # accel^2
-        self.w_obstacle = self.declare_parameter('w_obstacle', 150.0).value
+        self.w_obstacle = self.declare_parameter('w_obstacle', 300.0).value
 
         # Vehicle (ADS-DV: VCU torque limits, steering actuator; see ads_dv_vcu_sim.cpp)
         self.p = {
@@ -176,7 +176,7 @@ class MPPIController(Node):
             # never plan to stop while there is a path: a stopped car can't steer, so "stand still"
             # became a dead end in tight corners. Stopping is mission_control's job (brakes).
             'v_creep': self.declare_parameter('v_creep', 1.5).value,
-            'max_steer': self.declare_parameter('max_steer', 0.4242).value,
+            'max_steer': self.declare_parameter('max_steer', 0.38).value,
             'steer_rate': self.declare_parameter('steer_rate', 1.0).value,
             'steer_tau': self.declare_parameter('steer_tau', 0.15).value,
             'wheelbase': self.declare_parameter('wheelbase', 1.534).value,
@@ -184,7 +184,7 @@ class MPPIController(Node):
 
         # Path Following
         self.path_spacing = self.declare_parameter('path_spacing', 0.5).value
-        self.path_smoothing = self.declare_parameter('path_smoothing', 3.0).value  # m, half window
+        self.path_smoothing = self.declare_parameter('path_smoothing', 1.5).value  # m, half window
         # Car footprint for the cone cost. The model point is the REAR AXLE (kinematic bicycle); base_link
         # (centre of the car, where /odom is) is rear_to_base ahead of it and the path frame (velodyne) is
         # base_to_path_frame further ahead. Cones are checked with circles along the car (offsets from the
@@ -193,23 +193,23 @@ class MPPIController(Node):
         self.base_to_path_frame = self.declare_parameter('base_to_path_frame', 0.52).value
         self.circle_offsets = np.array(self.declare_parameter('circle_offsets', [-0.5, 0.0, 0.767, 1.534, 1.95]).value, dtype=float)
         self.circle_radii = np.array(self.declare_parameter('circle_radii', [0.35, 0.67, 0.40, 0.58, 0.30]).value, dtype=float)
-        self.obstacle_margin = self.declare_parameter('obstacle_margin', 0.2).value  # m of clearance wanted beyond touching
-        self.w_collision = self.declare_parameter('w_collision', 3000.0).value        # per step, per circle, touching a cone
-        self.cone_radius = self.declare_parameter('cone_radius', 0.16).value
-        self.obstacle_window = self.declare_parameter('obstacle_window', 4.0).value  # m around the previous plan
+        self.obstacle_margin = self.declare_parameter('obstacle_margin', 0.3).value  # m of clearance wanted beyond touching
+        self.w_collision = self.declare_parameter('w_collision', 0.0).value        # per step, per circle, touching a cone
+        self.cone_radius = self.declare_parameter('cone_radius', 0.12).value
+        self.obstacle_window = self.declare_parameter('obstacle_window', 5.0).value  # m around the previous plan
         self.debug_costs = self.declare_parameter('debug_costs', False).value  # log the cost terms of the best sample every 1 s
         self.speed_lead = self.declare_parameter('speed_lead', 0.25).value  # s ahead for the speed request
         self.path_timeout = self.declare_parameter('path_timeout', 1.0).value  # s without a new path -> stop
         self.path_extension = self.declare_parameter('path_extension', 0.0).value  # m, straight events only
 
         # Speed Profile
-        self.a_lat_max = self.declare_parameter('a_lat_max', 5.0).value  # planned; tyres give ~13
+        self.a_lat_max = self.declare_parameter('a_lat_max', 3.5).value  # planned; tyres give ~13
         self.v_max_straight = self.declare_parameter('v_max_straight', 10.0).value
         self.v_min = self.declare_parameter('v_min', 2.0).value
         self.a_brake_plan = self.declare_parameter('a_brake_plan', 3.0).value
         # planned acceleration out of slow sections: accelerating hard while still steering out of a
         # hairpin pushed the car wide into the exit cones (tyre grip is shared by both directions)
-        self.a_accel_plan = self.declare_parameter('a_accel_plan', 0.0).value  # 0 = no limit
+        self.a_accel_plan = self.declare_parameter('a_accel_plan', 2.0).value  # 0 = no limit
 
         self.path_processor = PathProcessor(PathProcessorConfig(
             a_lat_max=self.a_lat_max,
