@@ -57,10 +57,15 @@ class LapCounter(Node):
         self.previous_position = None
         self.lap_count = 0 
         self.in_cooldown = False
-        # A crossing only counts once the car has driven this far. Where the car starts just before
-        # the start/finish gate (autocross, drive1), the first crossing is the start, not a lap:
-        # it used to end the event about 3 s after launch.
-        self.min_start_distance = float(self.declare_parameter('min_start_distance', 15.0).value)
+        # Start rule: where the car is staged just before the start/finish line (FS rules: 6 m for
+        # autocross and trackdrive, 0.3 m for acceleration), the first crossing of that line is the
+        # start, not a lap (counting it ended autocross about 3 s after launch). "That line" is a line
+        # within start_line_within m of where the car stood at launch; a line found further away
+        # (acceleration finish, skidpad timing line 15 m ahead) is not a start line.
+        #   start_state: None = not decided yet, 'pending' = start line ahead, 'done' = started
+        self.start_line_within = float(self.declare_parameter('start_line_within', 8.0).value)
+        self.start_position = None
+        self.start_state = None
         self.distance_driven = 0.0
 
         # Timer for periodic publishing
@@ -148,8 +153,11 @@ class LapCounter(Node):
             if step < 2.0:  # a jump of the map -> odom correction is not driving
                 self.distance_driven += step
 
-        if (self.previous_position is not None and self.last_known_cones is not None and not self.in_cooldown
-                and self.distance_driven >= self.min_start_distance):
+        if self.start_position is None:
+            self.start_position = self.car_position
+        self.update_start_state()
+
+        if self.previous_position is not None and self.last_known_cones is not None and not self.in_cooldown:
             first_cone = self.last_known_cones[0]
             second_cone = self.last_known_cones[1]
 
@@ -163,13 +171,40 @@ class LapCounter(Node):
             if prev_cross * curr_cross < 0:  
                 self.get_logger().info("Crossing detected! Checking proximity to finish line...")
                 if self.is_near_finish_line(first_cone, second_cone, self.car_position):
-                    self.lap_count += 1
-                    self.get_logger().info(f"Lap completed! Total laps: {self.lap_count}")
+                    if self.start_state == 'pending':
+                        self.start_state = 'done'
+                        self.get_logger().info("Start line crossed: laps are counted from here.")
+                    else:
+                        self.lap_count += 1
+                        self.get_logger().info(f"Lap completed! Total laps: {self.lap_count}")
                     self.initiate_cooldown()
                 else:
                     self.get_logger().info("Crossing detected but car is too far from finish line, ignoring.")
        
         self.previous_position = self.car_position
+
+    def update_start_state(self):
+        """Decide whether the next crossing is the start (see start_line_within in __init__)."""
+        if self.start_state == 'done':
+            return
+        # a car that has driven twice the staging distance has passed its start line, seen or not
+        if self.distance_driven > 2.0 * self.start_line_within:
+            self.start_state = 'done'
+            return
+        if self.last_known_cones is None:
+            return
+        a, b = (c.position for c in self.last_known_cones)
+        s, c = self.start_position, self.car_position
+        if math.dist(((a.x + b.x) / 2.0, (a.y + b.y) / 2.0), (s.x, s.y)) > self.start_line_within:
+            self.start_state = 'done'       # this line is not where the car was staged
+            return
+
+        def side(p):
+            return (b.x - a.x) * (p.y - a.y) - (b.y - a.y) * (p.x - a.x)
+        if self.start_state is None:
+            # line found only after the car went over it: the start has happened
+            self.start_state = 'done' if side(s) * side(c) < 0 else 'pending'
+            self.get_logger().info(f"Start line {'already crossed' if self.start_state == 'done' else 'ahead: the first crossing is the start'}.")
 
     def is_near_finish_line(self, first_cone, second_cone, car_position, threshold=4.0):
         def point_line_distance(px, py, x1, y1, x2, y2):
