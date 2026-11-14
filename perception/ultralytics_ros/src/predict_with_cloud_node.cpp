@@ -35,7 +35,7 @@ PredictWithCloudNode::PredictWithCloudNode(const rclcpp::NodeOptions & options)
   this->declare_parameter<float>("ransac_distance_threshold", 0.03);
   this->declare_parameter<float>("preprocessing_filter_threshold", 0.0);
   this->declare_parameter<bool>("gz_camera_convention", true);
-  this->declare_parameter<bool>("bbox_range_fallback", true);
+  this->declare_parameter<bool>("bbox_range_fallback", false);  // sim-calibrated: the launch file enables it for sim
   this->declare_parameter<double>("cone_height", 0.31);
   this->declare_parameter<double>("large_cone_height", 0.48);
   this->declare_parameter<double>("bbox_min_height_px", 10.0);

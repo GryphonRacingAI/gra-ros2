@@ -28,8 +28,10 @@ predict_with_cloud_node:
 
     # Camera fallback for detections without lidar points: the rings miss cones between ~10 and
     # ~16 m entirely. Range = fy * cone height / box height (heights as YOLO boxes them; calibrated
-    # against ground truth in sim), bearing from the box centre. Measured: sigma 0.09 m at 10-13 m.
-    bbox_range_fallback: true
+    # against ground truth in SIM ONLY), bearing from the box centre. Measured: sigma 0.09 m at 10-13 m.
+    # bbox_range_fallback is deliberately NOT set in this file (this file overrides the launch file):
+    # it is off by default and predict_with_cloud.launch.xml switches it on for sim:=true. Calibrate the
+    # two heights below on the real camera before enabling it on the car.
     cone_height: 0.31
     large_cone_height: 0.48
     bbox_min_height_px: 10.0
