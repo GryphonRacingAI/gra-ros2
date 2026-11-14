@@ -37,8 +37,9 @@ from gz.msgs10.pose_pb2 import Pose
 from gz.msgs10.pose_v_pb2 import Pose_V
 from gz.transport13 import Node
 
-CONE_RE = re.compile(r'^(blue|yellow|orange|large_orange)_\d+$')
-POOL_RE = re.compile(r'^dyn_(blue|yellow|orange|large_orange)_\d+$')
+# every track cone: <type>_<anything>, e.g. blue_12, yellow_fill_3, blue_gap_after_blue_51_1, yellow_134_2
+CONE_RE = re.compile(r'^(large_orange|blue|yellow|orange)_\w+$')
+POOL_RE = re.compile(r'^dyn_(large_orange|blue|yellow|orange)_\d+$')
 HIDE_Z = -10.0
 
 
@@ -54,7 +55,7 @@ class Item:
 
     def __init__(self, elem):
         self.name = elem.get('name')
-        self.type = re.sub(r'^dyn_|_\d+$', '', self.name)
+        self.type = (POOL_RE.match(self.name) or CONE_RE.match(self.name)).group(1)
         v = [float(t) for t in elem.find('pose').text.split()]
         self.pose = tuple(v[:3]) + rpy_to_quat(*v[3:6])
         self.home = self.pose  # parking place of a pool body

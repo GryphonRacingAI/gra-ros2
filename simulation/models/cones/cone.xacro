@@ -127,14 +127,15 @@
     </xacro:macro>
 
     <!-- Pool of dynamic cone bodies, parked far from the track until the activator needs them:
-         n of each of blue / yellow / orange / large_orange. -->
+         n of each of blue / yellow / orange / large_orange. Sized for the most cones of one type within
+         the activator's release radius (12 m) on any track: 21 blue (mppi_track hairpin), 16 orange (skidpad). -->
     <xacro:macro name="pool_row" params="type n y">
         <xacro:if value="${n > 0}">
             <xacro:cone_dyn name="dyn_${type}_${n}" type="${type}" pose="${600 + 2 * n} ${y} 0 0 0 0"/>
             <xacro:pool_row type="${type}" n="${n - 1}" y="${y}"/>
         </xacro:if>
     </xacro:macro>
-    <xacro:macro name="cone_pool" params="n_small:=16 n_orange:=4 n_large:=6">
+    <xacro:macro name="cone_pool" params="n_small:=24 n_orange:=18 n_large:=6">
         <xacro:pool_row type="blue" n="${n_small}" y="-600"/>
         <xacro:pool_row type="yellow" n="${n_small}" y="-610"/>
         <xacro:pool_row type="orange" n="${n_orange}" y="-620"/>
