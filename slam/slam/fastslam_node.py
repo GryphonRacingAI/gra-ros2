@@ -117,6 +117,12 @@ def load_config(use_sim: bool):
     )
     config.sensor.COVARIANCE = np.diag(config.sensor.VARIANCE).astype(np.float64)
     # beyond FAR_RANGE: FAR_VARIANCE (default: the same as VARIANCE, i.e. off)
+    # Data association options of the kernel (fastslam64/cuda/fastslam.py, OPTIONAL_ARGS). Defaults here: hard
+    # colour gate (a landmark is never matched by a detection of another colour), no colour vote, Euclidean
+    # gate against THRESHOLD: the behaviour all results so far were measured with.
+    config.COLOR_MISMATCH_FACTOR = float(cfg_get(config, "COLOR_MISMATCH_FACTOR", 1e9))
+    config.COLOR_VOTE = int(cfg_get(config, "COLOR_VOTE", 0))
+    config.GATE_D2 = float(cfg_get(config, "GATE_D2", 0.0))
     config.sensor.FAR_RANGE = float(cfg_get(config.sensor, "FAR_RANGE", 1e9))
     config.sensor.FAR_VARIANCE = np.array(
         cfg_get(config.sensor, "FAR_VARIANCE", list(config.sensor.VARIANCE)), dtype=np.float64
@@ -254,6 +260,7 @@ def get_cone_color(cone_type: int):
 # ------------------ FastSLAM Core ------------------
 class FastSLAMCore:
     def __init__(self, config, logger=None):
+        self.min_frozen_prob = 0.0   # landmarks below this existence score are left out of the frozen map (0 = keep all)
         self.config = config
         self.logger = logger
 
@@ -287,6 +294,9 @@ class FastSLAMCore:
             FAR_VAR_R=float(self.config.sensor.FAR_VARIANCE[0]),
             FAR_VAR_B=float(self.config.sensor.FAR_VARIANCE[1]),
             NEW_LM_D2=float(self.config.NEW_LANDMARK_D2),
+            COLOR_MISMATCH_FACTOR=float(self.config.COLOR_MISMATCH_FACTOR),
+            COLOR_VOTE=int(self.config.COLOR_VOTE),
+            GATE_D2=float(self.config.GATE_D2),
         )
 
         self.memory = CUDAMemory(self.config)
@@ -416,8 +426,22 @@ class FastSLAMCore:
         for k, members in enumerate(sorted(groups.values(), key=min)):
             best = min(members, key=lambda m: covs[m, 0] + covs[m, 3])   # tightest covariance
             o_means[k] = means[members].mean(axis=0)
-            o_covs[k], o_probs[k], o_colors[k] = covs[best], probs[best], colors[best]
+            o_covs[k], o_colors[k] = covs[best], colors[best]
+            # existence score: the members' evidence together (two half-seen copies of one cone are
+            # one well-seen cone), not above the best score any single landmark has reached
+            o_probs[k] = min(float(probs[members].sum()), float(probs.max()))
         return out, len(groups)
+
+    def _drop_weak_landmarks(self, block, n, min_prob):
+        """Remove landmarks with an existence score below `min_prob` from a landmark block.
+        Returns (new block, new landmark count)."""
+        ml = int(self.config.MAX_LANDMARKS)
+        keep = np.nonzero(block[6 * ml:7 * ml][:n] >= min_prob)[0]
+        out = np.zeros_like(block)
+        for width, off in ((2, 0), (4, 2 * ml), (1, 6 * ml), (1, 7 * ml)):
+            src = block[off:off + width * ml].reshape(ml, width)
+            out[off:off + width * ml].reshape(ml, width)[:len(keep)] = src[keep]
+        return out, len(keep)
 
     def freeze_best_map(self, final_map_data, elapsed_time, lap_count):
         if self.frozen_map is not None:
@@ -445,6 +469,17 @@ class FastSLAMCore:
                 if self.frozen_count < n_before:
                     self._warn(f"Merged {n_before - self.frozen_count} duplicate landmarks "
                                f"({n_before} -> {self.frozen_count}, radius {radius} m).")
+            # After the freeze the scores never change again (the frozen block is copied back into
+            # every particle each step), so a landmark below the publish threshold now would be
+            # hidden from the planner and the controller for the rest of the run while the filter
+            # still localised against it. Drop those: what is localised on is what is published.
+            if self.min_frozen_prob > 0.0:
+                n_merged = self.frozen_count
+                self.frozen_map, self.frozen_count = self._drop_weak_landmarks(
+                    self.frozen_map, self.frozen_count, self.min_frozen_prob)
+                if self.frozen_count < n_merged:
+                    self._warn(f"Dropped {n_merged - self.frozen_count} unconfirmed landmarks at the freeze "
+                               f"(existence score < {self.min_frozen_prob:g}).")
             self.frozen_map_data = self._map_data_from_block(self.frozen_map, self.frozen_count)
             self._dump_map(self.frozen_map_data, n_before)
         except Exception as e:
@@ -712,6 +747,7 @@ class FastSLAMNode(Node):
         self.obstacles_pub = self.create_publisher(PointCloud2, "/slam/cones", 1)
         self.obstacle_radius = float(self.declare_parameter("obstacle_radius", 25.0).value)
         self.min_publish_prob = float(self.declare_parameter("min_publish_prob", 22.0).value)
+        self.slam_core.min_frozen_prob = self.min_publish_prob   # same threshold for the frozen map
 
         # Subscribers.
         self.odom_sub = Subscriber(self, Odometry, "/odom")

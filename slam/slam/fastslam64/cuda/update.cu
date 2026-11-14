@@ -270,6 +270,29 @@ __device__ double compute_dist(double *particle, int i, double *measurement, dou
 }
 
 
+// Squared Mahalanobis distance of a measurement [range, bearing] to landmark i in measurement space,
+// with the innovation covariance S = H P H^T + R.
+__device__ double compute_mahalanobis2(double *particle, int i, double *measurement, double *R, int max_landmarks)
+{
+    double *landmark = get_mean(particle, i);
+    double dx = landmark[0] - particle[0];
+    double dy = landmark[1] - particle[1];
+    double q_sq = dx*dx + dy*dy;
+    double q = sqrt(q_sq);
+    if (q < 1e-6) return 1e18;
+
+    double H[] = { dx/q, dy/q, -dy/q_sq, dx/q_sq };
+    double S[] = { 0, 0, 0, 0 };
+    matmul_jacobian(H, get_cov(particle, i, max_landmarks), R, S);
+    double S_inv[] = { 0, 0, 0, 0 };
+    pinv(S, S_inv);
+
+    double m = measurement[0] - q;
+    double n = mod_angle(measurement[1] - mod_angle(atan2(dy, dx) - particle[2]));
+    return m*m*S_inv[0] + n*n*S_inv[3] + m*n*(S_inv[1] + S_inv[2]);
+}
+
+
 __device__ void update_landmarks(int id, double *particle, landmark_measurements *measurements, int *in_range, int *n_matches, double range, double fov, double thresh, int max_landmarks)
 {
     double *measurement_cov = measurements->measurement_cov;
@@ -302,18 +325,30 @@ __device__ void update_landmarks(int id, double *particle, landmark_measurements
     for(int i = 0; i < n_measurements; i++) {
         double R_far[] = { <<FAR_VAR_R>>, 0.0, 0.0, <<FAR_VAR_B>> };
         double *R_i = (measurements->measurements[i][0] > <<FAR_RANGE>>) ? R_far : measurement_cov;
-        double best = 1000000.0;
+        double best = 1e300;
         int best_idx = -1;
+        bool best_mismatch = false;
+        double ms_type = measurements->measurements[i][2];
 
         for(int j = 0; j < n_in_range; j++) {
             double lm_type = get_landmark_color(particle, in_range[j], max_landmarks)[0];
-            double ms_type = measurements->measurements[i][2];
-            if (lm_type != ms_type && lm_type != 0.0 && ms_type != 0.0) continue;
-            double dist = compute_dist(particle, in_range[j], measurements->measurements[i], measurement_cov);
+            // type 0 = unknown: never a mismatch
+            bool mismatch = (lm_type != ms_type && lm_type != 0.0 && ms_type != 0.0);
+            double dist, gate;
+            if (<<GATE_D2>> > 0.0) {
+                dist = compute_mahalanobis2(particle, in_range[j], measurements->measurements[i], R_i, max_landmarks);
+                gate = <<GATE_D2>>;
+                if (mismatch) dist *= <<COLOR_MISMATCH_FACTOR>> * <<COLOR_MISMATCH_FACTOR>>;   // squared distance
+            } else {
+                dist = compute_dist(particle, in_range[j], measurements->measurements[i], measurement_cov);
+                gate = thresh;
+                if (mismatch) dist *= <<COLOR_MISMATCH_FACTOR>>;
+            }
 
-            if(dist <= thresh && dist < best) {
+            if(dist <= gate && dist < best) {
                 best = dist;
                 best_idx = in_range[j];
+                best_mismatch = mismatch;
             }
         }
 
@@ -380,7 +415,17 @@ __device__ void update_landmarks(int id, double *particle, landmark_measurements
 
             particle[3] *= pdf(measurements->measurements[i], measurement_predicted, S);
 
-            increment_landmark_prob(particle, best_idx, max_landmarks);
+            if (best_mismatch && <<COLOR_VOTE>>) {
+                // a sighting of this cone with another type: one vote against the stored type
+                double *prob = get_landmark_prob(particle, best_idx, max_landmarks);
+                prob[0] -= 4.0;
+                if (prob[0] < 15.0) {
+                    get_landmark_color(particle, best_idx, max_landmarks)[0] = ms_type;
+                    prob[0] = 15.0;
+                }
+            } else {
+                increment_landmark_prob(particle, best_idx, max_landmarks);
+            }
 
         } else {
             if (<<NEW_LM_D2>> > 0.0) {

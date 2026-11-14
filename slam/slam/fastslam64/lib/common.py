@@ -11,7 +11,8 @@ class CUDAMemory:
         self.scratchpad_block_size = 2 * config.N * config.MAX_LANDMARKS
         self.scratchpad = cuda.mem_alloc(DOUBLE * self.scratchpad_block_size)
 
-        self.measurements = cuda.mem_alloc(DOUBLE * 2 * config.sensor.MAX_MEASUREMENTS)
+        # update.cu reads 3 doubles per measurement: [range, bearing, type]
+        self.measurements = cuda.mem_alloc(DOUBLE * 3 * config.sensor.MAX_MEASUREMENTS)
         self.weights = cuda.mem_alloc(DOUBLE * config.N)
         self.ancestors = cuda.mem_alloc(DOUBLE * config.N)
         self.ancestors_aux = cuda.mem_alloc(DOUBLE * config.N)
