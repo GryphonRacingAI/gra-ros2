@@ -97,6 +97,8 @@ install(TARGETS
 install(PROGRAMS
   scripts/vcu_odometry.py
   scripts/cone_activator.py
+  scripts/gt_record.py
+  scripts/score_run.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
