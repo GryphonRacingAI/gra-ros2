@@ -2,9 +2,9 @@
 // - 'speed_cmd' (std_msgs/msg/Float64): vehicle speed command (angular speed for wheel joint controller)
 // - 'steer_angle_cmd' (std_msgs/msg/Float64): bicycle-model steering angle command
 //
-// It also subscribes to '/chequered_flag' (std_msgs/msg/Bool): while the flag is up the speed and steering
-// commands are zero whatever the controller asks for. On the car the VCU brakes on the flag; this ideal drive has no
-// VCU, so it is the place that stands in for it (the controller itself must not need to know).
+// It also subscribes to '/chequered_flag' (std_msgs/msg/Bool): while the flag is up the speed command is zero
+// whatever the controller asks for; steering still follows the controller, as on the car (ackermann_can keeps
+// passing the steering request while the VCU brakes). This ideal drive has no VCU, so it stands in for it here.
 //
 // It also subscribes to 'joint_states' and reads the front left / front right steering joint angles
 // to compute the (approximate) bicycle-model steering angle
@@ -40,11 +40,9 @@ public:
             "/chequered_flag", 10,
             [this](const std_msgs::msg::Bool::SharedPtr msg) {
                 if (msg->data && !chequered_) {
-                    RCLCPP_WARN(this->get_logger(), "chequered flag: speed and steering commands held at zero");
+                    RCLCPP_WARN(this->get_logger(), "chequered flag: wheel speed command held at zero");
                     speed_cmd_msg_.data = 0.0;
                     speed_cmd_publisher_->publish(speed_cmd_msg_);
-                    steer_cmd_msg_.data = 0.0;
-                    steer_cmd_publisher_->publish(steer_cmd_msg_);
                 }
                 chequered_ = msg->data;
             });
@@ -82,7 +80,7 @@ private:
         speed_cmd_publisher_->publish(speed_cmd_msg_);
         
         // Publish steering angle command
-        steer_cmd_msg_.data = chequered_ ? 0.0 : msg->steering_angle;
+        steer_cmd_msg_.data = msg->steering_angle;
         steer_cmd_publisher_->publish(steer_cmd_msg_);
     }
 
