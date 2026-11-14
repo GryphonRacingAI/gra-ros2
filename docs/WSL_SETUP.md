@@ -23,22 +23,23 @@ Gazebo (ads_dv + track) -> ads_dv_vcu_sim (VCU + drivetrain) / vcu_odometry (whe
 | lidar | VLP-16: 16 rings 2 deg apart, 0.2 deg horizontal, 1.5 cm range noise | VLP-16 data sheet |
 | IMU | MEMS noise and bias | ZED 2i class |
 | odometry | wheel speeds + IMU yaw rate, gyro bias calibrated at standstill | as on the car |
-| cones | free rigid bodies (foot box + 2 cylinders), 0.65 kg small / 1.5 kg large, tip and slide when hit; static until the car is within 9 m | FS handbook sizes; masses assumed (see `models/cones/cone.xacro`) |
+| cones | free rigid bodies (foot box + 2 cylinders), 0.65 kg small / 1.5 kg large, tip and slide when hit; only solid while the car is within 7-12 m (see Cones below) | FS handbook sizes; masses assumed (see `models/cones/cone.xacro`) |
 
-This is `drive:=torque`, which is **opt-in** (launch arg, or `FSAI_DRIVE=torque`, the launcher's default). The launch
-file's default is `drive:=ideal` (wheel speed set directly by `ackermann_to_speed_steer`, Gazebo's exact pose as
-/odom), which is what `tmux/startup.sh` and the CAN path (`vcu_sim.py`, `ackermann_can`, mission supervisor)
-expect. `drive:=torque` starts `ads_dv_vcu_sim`, which publishes `/vcu2ai` itself and always reports
+This is `drive:=torque`, which is **opt-in**: the launch arg, or `DRIVE=torque` for `tmux/startup.sh` (its default
+with `SLAM=1 CAN=0`). The launch file's default is `drive:=ideal` (wheel speed set directly by
+`ackermann_to_speed_steer`, Gazebo's exact pose as /odom), which is what the CAN path (`vcu_sim.py`,
+`ackermann_can`, mission supervisor) expects. `drive:=torque` starts `ads_dv_vcu_sim`, which publishes `/vcu2ai` itself and always reports
 `AS_DRIVING`, so never combine it with `vcu_sim.py`. `odom:=ground_truth` gives Gazebo's pose instead of wheel/IMU odometry.
 
 **Cones.** A dynamic cone resting on the ground costs a persistent contact per physics step; 292
 dynamic cones cut the real-time factor of the 4-core VM from 0.92 to 0.57 (static cones with the same
-collision shapes cost nothing: 0.90). So the track .sdf files hold static cones, and
-`simulation/scripts/cone_activator.py` (started by `dynamic_event.launch.py`) swaps the cones within
-9 m of the car for dynamic twins (same name and pose) and back to static, at their current pose, once the
-car is 16 m away and they have rested for 1.5 s. Only top-level models can be removed and re-created in
-Gazebo, so the cones are top-level models (no `cones` wrapper, hence no `/model/cones/pose`). Without the
-activator the cones are immovable. Measured RTF with the activator: 0.90-0.96 (before: 0.92).
+collision shapes cost nothing: 0.90). So the track .sdf files hold every cone as a static, visual-only model
+plus a pool of dynamic cone bodies parked far away, and `simulation/scripts/cone_activator.py` (started by
+`dynamic_event.launch.py`) teleports a pooled body onto each cone the car comes within 7 m of and hides the
+static visual underground. Once the car is 12 m away and the body has rested for 1.5 s, the visual is put
+back at the body's final pose and the body returns to the pool. Nothing is created or removed. The cones are
+top-level models (no `cones` wrapper, hence no `/model/cones/pose`). Without the activator the cones have
+no collision at all. Measured RTF with the activator: 0.90-0.96 (before: 0.92).
 
 ## 1. Setup
 
@@ -52,7 +53,7 @@ activator the cones are immovable. Measured RTF with the activator: 0.90-0.96 (b
    touch ros_venv/COLCON_IGNORE        # stop colcon scanning the venv
    source ros_venv/bin/activate
    pip install -r src/perception/ultralytics_ros/requirements.txt
-   pip install pycuda git+https://github.com/GryphonRacingAI/fastslam64.git
+   pip install pycuda          # fastslam64 itself is vendored in slam/slam/fastslam64
    pip install "numpy<2"
    deactivate
    ```
