@@ -41,6 +41,7 @@ class PredictNode(Node):
         self.declare_parameter("max_det", 300)
         self.declare_parameter("classes", list(range(80)))
         self.declare_parameter("device", "cpu")
+        self.declare_parameter("verbose", True)  # per-frame YOLO summary on stdout
         self.declare_parameter("result_conf", True)
         self.declare_parameter("result_line_width", 1)
         self.declare_parameter("result_font_size", 1)
@@ -86,7 +87,7 @@ class PredictNode(Node):
             max_det=max_det,
             classes=classes,
             device=device,
-            verbose=True,
+            verbose=self.get_parameter("verbose").get_parameter_value().bool_value,
             retina_masks=True,
         )
 
@@ -179,7 +180,13 @@ class PredictNode(Node):
 def main(args=None):
     rclpy.init(args=args)
     node = PredictNode()
-    rclpy.spin(node)
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        node.destroy_node()
+        rclpy.try_shutdown()
 
 
 if __name__ == "__main__":

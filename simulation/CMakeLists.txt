@@ -20,6 +20,7 @@ find_package(ros_gz_interfaces REQUIRED)
 find_package(common_msgs REQUIRED)
 find_package(ackermann_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(fsai_api REQUIRED)
 
 # Add executables
 add_executable(perfect_perception src/perfect_perception.cpp)
@@ -55,6 +56,15 @@ ament_target_dependencies(ackermann_to_speed_steer
   sensor_msgs
 )
 
+add_executable(ads_dv_vcu_sim src/ads_dv_vcu_sim.cpp)
+ament_target_dependencies(ads_dv_vcu_sim
+  rclcpp
+  std_msgs
+  ackermann_msgs
+  sensor_msgs
+  fsai_api
+)
+
 add_executable(perfect_path src/perfect_path.cpp)
 ament_target_dependencies(perfect_path
   rclcpp
@@ -74,6 +84,7 @@ ament_target_dependencies(headless_monitor
 
 # Install executables
 install(TARGETS
+  ads_dv_vcu_sim
   perfect_perception
   perfect_SLAM
   ackermann_to_speed_steer
@@ -83,6 +94,14 @@ install(TARGETS
 )
 
 # Install directories
+install(PROGRAMS
+  scripts/vcu_odometry.py
+  scripts/cone_activator.py
+  scripts/gt_record.py
+  scripts/score_run.py
+  DESTINATION lib/${PROJECT_NAME}
+)
+
 install(DIRECTORY config launch models tracks
   DESTINATION share/${PROJECT_NAME}
 )

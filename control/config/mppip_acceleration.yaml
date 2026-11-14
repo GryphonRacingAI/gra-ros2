@@ -1,0 +1,7 @@
+# Extra MPPI parameters for the acceleration event (a straight line; the cones stop before the finish line).
+# Used on top of mppip.yaml: tmux/startup.sh with SLAM=1 EVENT=acceleration passes both files.
+mppi_controller:
+  ros__parameters:
+    v_max_straight: 18.0   # the default straight-line cap is 10 m/s
+    max_vel: 20.0
+    path_extension: 25.0   # keep following the last path 25 m past what the planner can see
