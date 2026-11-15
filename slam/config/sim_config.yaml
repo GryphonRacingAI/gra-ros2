@@ -7,9 +7,25 @@ MAX_LANDMARKS: 600
 SEED: 42
 START_POSITION: [0.0, 0.0, 0.0]
 
+# The particles hold the rear axle pose: it is the point that moves along the heading, which the
+# motion model assumes. base_link (/odom, the car's centre) is this far ahead of it.
+REAR_AXLE_OFFSET: 0.767
+
+# Odometry noise (variances of v [m^2/s^2] and yaw rate [rad^2/s^2] per update), measured: the
+# per-0.1 s increments of /odom vs /ground_truth/odom in the sim bags (mppi_track, trackdrive) give
+# ~0.003-0.006 and ~0.5-1.4e-5 (wheel speeds + a bias-calibrated gyro: < 0.3 deg heading drift in
+# 400 s). These values used to break mapping; that was the kernel bugs and the rear-axle mismatch
+# (see fastslam_node.py), not the noise. Replays of the mppi_track bag, 3 seeds each: ~0 noise
+# and these values both give 0.1 m map residual and 0.2-0.4 m pose error. 3x/10x these
+# ([0.01, 0.0001]) still maps (residual 0.2-0.35 m, pose 0.4-1.2 m); real_config's [0.02, 0.01]
+# (a 0.1 rad/s yaw-rate error, ~1000x this gyro) still does not with 512 particles (nor 2048).
+# Live, full stack (ground truth), with the rear-axle fix and vcu_odometry's slip handling:
+# mppi_track 10 laps, 0 % of the time > 1.5 m off the centreline (max 1.07 m; was 26-37 %), SLAM pose
+# error 0.2-0.5 m for the whole run; trackdrive 10 laps, max 0.70 m off. The long drift after the
+# map freeze was odometry (speed spikes of 1-3 m/s at wheel slip), not the map or the matching.
 CONTROL_VARIANCE:
-  - 0.0
-  - 0
+  - 0.003
+  - 0.00001
 
 THRESHOLD: 2.0
 
@@ -19,8 +35,21 @@ sensor:
   MIN_RANGE: 2
   FOV: 1.22173
   LIDAR_X_OFFSET: 0.52
+  # Measurement noise (range [m^2], bearing [rad^2]), from the mppi_track bag vs the true cones:
+  # within the VLP-16's range (< ~10.5 m) cones come from lidar clusters (radial sd 0.08 m, bearing
+  # sd 0.3-0.85 deg); beyond, mostly from the camera box-height fallback (radial sd ~0.5 m, biased
+  # -0.3 m). One covariance for both (the old [0.09, 0.004]) let the far camera cones pull the map
+  # around: replay map residual 0.28 -> 0.13 m, pose error 0.6 -> 0.3 m with these.
   VARIANCE:
-    - 0.09
+    - 0.01
+    - 0.001
+  FAR_RANGE: 10.5
+  # Live, the 10-15 m band is worse than that bag showed (range bias +0.23 m, sd 0.47 m, errors that
+  # repeat from frame to frame) and with sd 0.6 m the filter believed those cones too soon: the pose
+  # was pulled up to 1-5 m off the (much better) odometry and the path left the track on lap 2.
+  # sd 1.5 m: far cones still start a landmark, the accurate near measurements place it.
+  FAR_VARIANCE:
+    - 2.25
     - 0.004
 
 endurance:
@@ -35,9 +64,14 @@ endurance:
 
   # Prevents freezing a bad/empty map.
   MIN_LANDMARKS_TO_FREEZE: 40
+  # Same-colour landmarks closer than this (m) are merged when the map is frozen (0 = off).
+  MERGE_RADIUS: 0.7
 
   # After freeze, use smoother update gating and covariance.
   # These are the only extra localisation settings exposed.
+  # Only used with match_localisation:=false: by default the node localises on the frozen map by
+  # colour-aware cone matching (see fastslam_node.py), because this particle filter localisation
+  # diverged by metres a few laps after the freeze in sim.
   LOCALIZATION_THRESHOLD: 12
   LOCALIZATION_COVARIANCE:
     - 0.2

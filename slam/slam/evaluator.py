@@ -9,12 +9,7 @@ from common_msgs.msg import ConeArray
 import math
 import numpy as np
 
-
-
-def quaternion_to_yaw(q):
-    siny_cosp = 2.0 * (q.w * q.z + q.x * q.y)
-    cosy_cosp = 1.0 - 2.0 * (q.y*q.y + q.z*q.z)
-    return math.atan2(siny_cosp, cosy_cosp)
+from fsai_common.geometry import yaw_from_quaternion as quaternion_to_yaw
 
 class EvaluatorNode(Node):
     def __init__(self):

@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <sdf version='1.7' xmlns:xacro="http://www.ros.org/wiki/xacro">
-  <world name='sim_world'>
+  <world name='map'>
 
     <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics">
       </plugin>
@@ -27,7 +27,6 @@
 
     <xacro:include filename="$(find simulation)/models/cones/cone.xacro"/>
 
-    <model name="cones">
       <xacro:cone name="blue_1" type="blue" pose="-0.688629150390625 12.499588012695314 0.15 0 0 0"/>
       <xacro:cone name="blue_2" type="blue" pose="-0.626129150390625 14.999588012695314 0.15 0 0 0"/>
       <xacro:cone name="blue_3" type="blue" pose="-0.313629150390625 19.124588012695316 0.15 0 0 0"/>
@@ -118,6 +117,12 @@
       <xacro:cone name="yellow_8" type="yellow" pose="4.811370849609379 29.249588012695312 0.15 0 0 0"/>
       <xacro:cone name="yellow_9" type="yellow" pose="7.373870849609374 31.874588012695312 0.15 0 0 0"/>
       <xacro:cone name="yellow_10" type="yellow" pose="10.917827368100067 32.70692136814713 0.15 0 0 0"/>
+      <!-- yellow_fill_*: inner edge of the top-right hairpin, missing from the source (the track was
+           exported from a partial SLAM map). Blue edge offset 3.7 m inwards, the track's median width. -->
+      <xacro:cone name="yellow_fill_1" type="yellow" pose="15.0 30.72 0.15 0 0 0"/>
+      <xacro:cone name="yellow_fill_2" type="yellow" pose="16.83 29.45 0.15 0 0 0"/>
+      <xacro:cone name="yellow_fill_3" type="yellow" pose="17.97 27.28 0.15 0 0 0"/>
+      <xacro:cone name="yellow_fill_4" type="yellow" pose="19.41 24.36 0.15 0 0 0"/>
       <xacro:cone name="yellow_11" type="yellow" pose="21.248870849609375 17.499588012695312 0.15 0 0 0"/>
       <xacro:cone name="yellow_12" type="yellow" pose="21.882050232110036 14.499699134665917 0.15 0 0 0"/>
       <xacro:cone name="yellow_13" type="yellow" pose="20.139784073194402 20.734654217222435 0.15 0 0 0"/>
@@ -180,14 +185,8 @@
       <xacro:cone name="large_orange_3" type="large_orange" pose="1.7488708496093752 5.6245880126953125 0.033 0 0 0"/>
       <xacro:cone name="large_orange_4" type="large_orange" pose="-1.251129150390625 5.9370880126953125 0.033 0 0 0"/>
 
-      <plugin name="gz::sim::systems::PosePublisher" filename="gz-sim-pose-publisher-system">
-        <use_pose_vector_msg>true</use_pose_vector_msg>
-        <publish_model_pose>true</publish_model_pose>
-        <publish_nested_model_pose>true</publish_nested_model_pose>
-        <publish_link_pose>false</publish_link_pose>
-      </plugin>
 
-    </model>
+    <xacro:cone_pool/>
 
   </world>
 </sdf>

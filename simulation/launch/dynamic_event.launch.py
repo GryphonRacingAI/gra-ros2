@@ -8,7 +8,7 @@ from ament_index_python import get_package_share_directory
 
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
-from launch.actions import SetLaunchConfiguration, GroupAction, SetEnvironmentVariable, TimerAction
+from launch.actions import SetLaunchConfiguration, GroupAction, SetEnvironmentVariable, OpaqueFunction, TimerAction
 from launch.substitutions import (
     EnvironmentVariable,
     LaunchConfiguration,
@@ -21,16 +21,101 @@ from launch.conditions import IfCondition, UnlessCondition
 from launch_ros.actions import Node
 from launch.actions import IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
+import xacro
+
+# AMI (mission) ids as on the ADS-DV, reported by the VCU emulator on /vcu2ai
+AMI_STATE = {'acceleration': 1, 'skidpad': 2, 'autocross': 3, 'trackdrive': 4, 'mppi_track': 4}
+
+
+def vehicle_nodes(context):
+    """Vehicle model (xacro, processed with drive:=...), spawner, robot_state_publisher and the
+    node that turns /ackermann_cmd into Gazebo commands."""
+    drive = LaunchConfiguration('drive').perform(context)
+    model_file = LaunchConfiguration('model_file').perform(context)
+    if model_file.endswith('.xacro'):
+        robot_desc = xacro.process_file(model_file, mappings={'drive': drive}).toxml()
+    else:  # a ready-made .sdf
+        with open(model_file, 'r') as infp:
+            robot_desc = infp.read()
+
+    spawn_vehicle = Node(
+        package="ros_gz_sim",
+        executable="create",
+        name="spawn_vehicle_node",
+        output="both",
+        arguments=[
+            '-world', LaunchConfiguration('world'),
+            '-string', robot_desc,
+            '-name',  LaunchConfiguration('name'),
+            '-x',     LaunchConfiguration('x'),
+            '-y',     LaunchConfiguration('y'),
+            '-z',     LaunchConfiguration('z'),
+            '-R',     LaunchConfiguration('R'),
+            '-P',     LaunchConfiguration('P'),
+            '-Y',     LaunchConfiguration('Y'),
+        ]
+    )
+
+    robot_state_publisher = Node(
+        package='robot_state_publisher',
+        executable='robot_state_publisher',
+        name='robot_state_publisher',
+        output='both',
+        parameters=[
+            {'use_sim_time': True},
+            {'robot_description': robot_desc},
+        ]
+    )
+
+    if drive not in ('ideal', 'torque'):
+        raise RuntimeError(f"drive must be 'ideal' or 'torque', got '{drive}'")
+    if drive == 'ideal':
+        command_node = Node(
+            package='simulation',
+            executable='ackermann_to_speed_steer',
+            name='ackermann_to_speed_steer_node',
+            output='screen',
+            parameters=[
+                {'speed_cmd_topic': '/speed_cmd'},
+                {'steer_cmd_topic': '/steer_angle_cmd'},
+                {'steer_angle_topic': '/steer_angle'},
+                {'ackermann_cmd_topic': '/ackermann_cmd'},
+                {'joint_states_topic': '/joint_states'}
+            ]
+        )
+    else:
+        command_node = Node(
+            package='simulation',
+            executable='ads_dv_vcu_sim',
+            name='ads_dv_vcu_sim',
+            output='screen',
+            parameters=[{
+                'use_sim_time': True,
+                'ami_state': AMI_STATE.get(LaunchConfiguration('event').perform(context), 0),
+            }]
+        )
+    # /odom + odom -> base_link: wheel speeds + IMU like the real car, or Gazebo's exact pose.
+    # The ideal drive publishes no /vcu2ai, so it always uses ground truth.
+    odom_source = LaunchConfiguration('odom').perform(context)
+    if drive == 'ideal':
+        odom_source = 'ground_truth'
+    odometry = Node(
+        package='simulation',
+        executable='vcu_odometry.py',
+        name='vcu_odometry',
+        output='screen',
+        parameters=[{'use_sim_time': True, 'source': odom_source}],
+    )
+    # dev's finding: an immediate /world/<w>/create times out on heavy maps, so wait for the world service
+    delayed_spawn = TimerAction(period=12.0, actions=[spawn_vehicle])
+    return [delayed_spawn, robot_state_publisher, command_node, odometry]
+
 
 def generate_launch_description():
 
-    # vehicle model file (hard-coded, but can be extended to get path from user)
+    # vehicle model: the xacro, so drive:=torque|ideal can be chosen (ads_dv.sdf = the xacro default, drive:=ideal)
     model_file = os.path.join(get_package_share_directory('simulation'),
-                               'models/vehicle/ads_dv.sdf')
-
-    # copy file contents
-    with open(model_file, 'r') as infp:
-        robot_desc = infp.read()
+                               'models/vehicle/ads_dv.xacro')
 
     # args that can be set from the command line or a default will be used
     event_launch_arg = DeclareLaunchArgument(
@@ -47,6 +132,23 @@ def generate_launch_description():
     )
     verbosity_launch_arg = DeclareLaunchArgument(
         "verbosity", default_value=TextSubstitution(text="1")
+    )
+    drive_launch_arg = DeclareLaunchArgument(
+        "drive", default_value=TextSubstitution(text="ideal"),
+        description="ideal (default, as before): wheel speed set directly from /ackermann_cmd by "
+                    "ackermann_to_speed_steer; the VCU is the CAN path (vcu_sim.py). "
+                    "torque: realistic ADS-DV drivetrain (ads_dv_vcu_sim: VCU emulator, tyre grip, "
+                    "brakes). It publishes /vcu2ai itself and always reports AS_DRIVING, so do NOT "
+                    "use it together with vcu_sim.py / ackermann_can / the mission supervisor"
+    )
+    odom_launch_arg = DeclareLaunchArgument(
+        "odom", default_value=TextSubstitution(text="wheel"),
+        description="wheel: /odom from wheel speeds + IMU (drifts, like the real car); "
+                    "ground_truth: Gazebo's exact pose"
+    )
+    gui_launch_arg = DeclareLaunchArgument(
+        "gui", default_value=TextSubstitution(text="true"),
+        description="false runs the Gazebo server only (-s), which saves a lot of CPU"
     )
     
     set_autostart = SetLaunchConfiguration(
@@ -160,7 +262,7 @@ def generate_launch_description():
         ),
         SetLaunchConfiguration(
             name='Y',
-            value='0.0'
+            value='1.57079632679'
         ),
         SetLaunchConfiguration(
             name='world',
@@ -168,7 +270,7 @@ def generate_launch_description():
         ),
         SetLaunchConfiguration(
             name='map_file',
-            value='autocross.sdf'
+            value='drive1.sdf'
         )
         ], 
         scoped=False,
@@ -180,11 +282,11 @@ def generate_launch_description():
     set_trackdrive = GroupAction([
         SetLaunchConfiguration(
              name='x',
-             value='0.0'
+             value='-2.0'
         ),
         SetLaunchConfiguration(
             name='y',
-            value='0.0'
+            value='10.4'
         ),
         SetLaunchConfiguration(
              name='z',
@@ -275,6 +377,7 @@ def generate_launch_description():
         name='gz_args',
         value=[tracks_dir, '/', LaunchConfiguration('map_file'), ' ',
                LaunchConfiguration('autostart_flag'), ' ',
+               IfElseSubstitution(LaunchConfiguration('gui'), if_value='', else_value='-s '),
                '-v ', LaunchConfiguration('verbosity')]
     )
 
@@ -285,44 +388,6 @@ def generate_launch_description():
         launch_arguments={'gz_args': LaunchConfiguration('gz_args')}.items(),
         )
     
-    spawn_vehicle = Node(
-            package="ros_gz_sim",
-            executable="create",
-            name="spawn_vehicle_node",
-            output="both",
-            arguments=[
-                '-world', LaunchConfiguration('world'),
-                '-file',  model_file,
-                '-name',  LaunchConfiguration('name'),
-                '-x',     LaunchConfiguration('x'),
-                '-y',     LaunchConfiguration('y'),
-                '-z',     LaunchConfiguration('z'),
-                '-R',     LaunchConfiguration('R'),
-                '-P',     LaunchConfiguration('P'),
-                '-Y',     LaunchConfiguration('Y'),
-            ]
-    )
-    # Other events still spawn via /world/map/create. Delay so the world
-    # service exists (immediate create times out on heavy maps).
-    # mppi_track embeds ads_dv in the SDF instead — see mppi_track.xacro.
-    delayed_spawn = GroupAction(
-        [TimerAction(period=12.0, actions=[spawn_vehicle])],
-        condition=UnlessCondition(
-            EqualsSubstitution(LaunchConfiguration('event'), 'mppi_track')
-        ),
-    )
-
-    robot_state_publisher = Node(
-        package='robot_state_publisher',
-        executable='robot_state_publisher',
-        name='robot_state_publisher',
-        output='both',
-        parameters=[
-            {'use_sim_time': True},
-            {'robot_description': robot_desc},
-        ]
-    )
-
     initial_sim_world_odom_tf = Node(
         package="tf2_ros",
         executable="static_transform_publisher",
@@ -345,18 +410,15 @@ def generate_launch_description():
                 '/ros_gz_bridge.launch.py']),
         )
 
-    ackermann_to_speed_steer_node = Node(
+    # Cones are static in the world file (cheap); this node makes the ones near the car dynamic so the
+    # car can knock them over (see scripts/cone_activator.py).
+    cone_activator = Node(
         package='simulation',
-        executable='ackermann_to_speed_steer',
-        name='ackermann_to_speed_steer_node',
+        executable='cone_activator.py',
+        name='cone_activator',
         output='screen',
-        parameters=[
-            {'speed_cmd_topic': '/speed_cmd'},
-            {'steer_cmd_topic': '/steer_angle_cmd'},
-            {'steer_angle_topic': '/steer_angle'},
-            {'ackermann_cmd_topic': '/ackermann_cmd'},
-            {'joint_states_topic': '/joint_states'}
-        ]
+        arguments=[[os.path.join(get_package_share_directory('simulation'), 'models', 'tracks', ''),
+                    LaunchConfiguration('map_file')]],
     )
 
     return LaunchDescription([
@@ -365,6 +427,7 @@ def generate_launch_description():
         name_launch_arg,
         autostart_launch_arg,
         verbosity_launch_arg,
+        gui_launch_arg,
 
         set_autostart,
         set_acceleration,
@@ -377,9 +440,10 @@ def generate_launch_description():
         set_gz_args,
         
         ros_gz_sim,
-        delayed_spawn,
-        robot_state_publisher,
+        drive_launch_arg,
+        odom_launch_arg,
+        OpaqueFunction(function=vehicle_nodes),
         initial_sim_world_odom_tf,
         ros_gz_bridge,
-        ackermann_to_speed_steer_node
+        cone_activator,
     ])

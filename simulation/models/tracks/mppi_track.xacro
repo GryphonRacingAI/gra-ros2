@@ -25,18 +25,8 @@
       <uri>model://simulation/models/world/ground_plane</uri>
     </include>
 
-    <!-- Spawn with the world so the GUI scene includes the car. ros_gz
-         create() races /world/map/create on this 371-cone track: it either
-         times out (no model) or succeeds after the GUI has already loaded. -->
-    <include>
-      <name>ads_dv</name>
-      <pose>7.5 46.0 0.05 0 0 0</pose>
-      <uri>model://simulation/models/vehicle</uri>
-    </include>
-
     <xacro:include filename="$(find simulation)/models/cones/cone.xacro"/>
 
-    <model name="cones">
       <xacro:cone name="large_orange_1" type="large_orange" pose="7.440678897505254 44.92467457538323 0.15 0 0 0"/>
       <xacro:cone name="yellow_2" type="yellow" pose="9.43710595437505 44.98980385480482 0.15 0 0 0"/>
       <xacro:cone name="yellow_3" type="yellow" pose="11.433787902535133 45.054013902062486 0.15 0 0 0"/>
@@ -411,14 +401,8 @@
       <xacro:cone name="blue_146" type="blue" pose="4.31684977705784 47.6749328204622 0.15 0 0 0"/>
       <xacro:cone name="blue_gap_after_blue_146_1" type="blue" pose="6.3058416687 47.7377205776 0.1500000000 0 0 0"/>
 
-      <plugin name="gz::sim::systems::PosePublisher" filename="gz-sim-pose-publisher-system">
-        <use_pose_vector_msg>true</use_pose_vector_msg>
-        <publish_model_pose>true</publish_model_pose>
-        <publish_nested_model_pose>true</publish_nested_model_pose>
-        <publish_link_pose>false</publish_link_pose>
-      </plugin>
 
-    </model>
+    <xacro:cone_pool/>
 
   </world>
 </sdf>

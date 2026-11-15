@@ -94,6 +94,11 @@ private:
   bool gz_camera_convention_;
   float ransac_distance_threshold_;
   float preprocessing_filter_threshold_;
+  bool bbox_range_fallback_;
+  double cone_height_;
+  double large_cone_height_;
+  double bbox_min_height_px_;
+  double bbox_max_range_;
 
 public:
   PredictWithCloudNode(const rclcpp::NodeOptions & options);
@@ -115,6 +120,8 @@ public:
   void createBoundingBox(vision_msgs::msg::Detection3DArray& detection3d_array_msg,
                          const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud,
                          const std::vector<vision_msgs::msg::ObjectHypothesisWithPose>& detections_results_msg);
+  bool positionFromBbox(const vision_msgs::msg::Detection2D& detection2d_msg, bool large_cone,
+                        const std_msgs::msg::Header& header, geometry_msgs::msg::Point& position);
   void removeGroundPlane(const pcl::PointCloud<pcl::PointXYZ>::Ptr& input_cloud,
                          pcl::PointCloud<pcl::PointXYZ>::Ptr& output_cloud);
   pcl::PointCloud<pcl::PointXYZ>::Ptr downsampleCloudMsg(const sensor_msgs::msg::PointCloud2::ConstSharedPtr& cloud_msg);

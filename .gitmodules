@@ -1,3 +1,7 @@
 [submodule "zed-ros2-wrapper"]
 	path = zed-ros2-wrapper
 	url = https://github.com/stereolabs/zed-ros2-wrapper.git
+[submodule "slam/slam/fastslam64"]
+	path = slam/slam/fastslam64
+	url = https://github.com/GryphonRacingAI/fastslam64.git
+	shallow = true

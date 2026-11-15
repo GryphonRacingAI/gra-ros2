@@ -53,9 +53,20 @@ class LapCounter(Node):
         self.car_position = Point()
         self.cone_positions = []
         self.last_known_cones = None
+        self.orange_clusters = []  # [x, y, hits] of large orange cones in the map frame
         self.previous_position = None
         self.lap_count = 0 
         self.in_cooldown = False
+        # Start rule: where the car is staged just before the start/finish line (FS rules: 6 m for
+        # autocross and trackdrive, 0.3 m for acceleration), the first crossing of that line is the
+        # start, not a lap (counting it ended autocross about 3 s after launch). "That line" is a line
+        # within start_line_within m of where the car stood at launch; a line found further away
+        # (acceleration finish, skidpad timing line 15 m ahead) is not a start line.
+        #   start_state: None = not decided yet, 'pending' = start line ahead, 'done' = started
+        self.start_line_within = float(self.declare_parameter('start_line_within', 8.0).value)
+        self.start_position = None
+        self.start_state = None
+        self.distance_driven = 0.0
 
         # Timer for periodic publishing
         self.publish_timer = self.create_timer(1.0, self.publish_lap_count)
@@ -67,34 +78,52 @@ class LapCounter(Node):
         # Fallback to msg.header.frame_id if it exists, otherwise force 'velodyne'
         source_frame = msg.header.frame_id if hasattr(msg, 'header') and msg.header.frame_id else self.cone_frame
 
-        transformed_cones = []
-        for cone in msg.large_orange_cones[:2]:
+        # The finish line is built from every large orange cone seen so far, not from one message:
+        # a single misdetection (or two cones on the same side) used to move the line for a moment
+        # and count a lap elsewhere on the track. Detections are clustered in the map frame; the
+        # line is the most-observed pair of clusters 2-8 m apart (one cone each side of the track).
+        for cone in msg.large_orange_cones:
             try:
                 point_stamped = PointStamped()
                 point_stamped.header.frame_id = source_frame
-                
+
                 # FIX: Use Time() to ask for the most recent available transform
-                point_stamped.header.stamp = Time() 
+                point_stamped.header.stamp = Time()
                 point_stamped.point = cone.position
 
                 # TRANSFORM: velodyne -> map
                 transformed = self.tf_buffer.transform(
                     point_stamped,
                     self.target_frame,
-                    timeout=Duration(seconds=0.1) 
+                    timeout=Duration(seconds=0.1)
                 )
-
-                transformed_cone = copy.deepcopy(cone)
-                transformed_cone.position = transformed.point
-                transformed_cones.append(transformed_cone)
-
             except TransformException as ex:
                 # We downgrade this to a debug print so it doesn't spam if a single frame drops
                 self.get_logger().debug(f"Could not transform cone from {source_frame} to {self.target_frame}: {ex}")
-                return 
-        
-        if len(transformed_cones) == 2:
-            self.last_known_cones = transformed_cones
+                return
+            p = (transformed.point.x, transformed.point.y)
+            for c in self.orange_clusters:
+                if math.dist(p, (c[0], c[1])) < 0.7:
+                    c[2] += 1
+                    c[0] += (p[0] - c[0]) / c[2]
+                    c[1] += (p[1] - c[1]) / c[2]
+                    break
+            else:
+                self.orange_clusters.append([p[0], p[1], 1])
+
+        seen = [c for c in self.orange_clusters if c[2] >= 3]
+        pairs = [(a, b) for i, a in enumerate(seen) for b in seen[i + 1:]
+                 if 2.0 < math.dist((a[0], a[1]), (b[0], b[1])) < 8.0]
+        if pairs:
+            a, b = max(pairs, key=lambda p: min(p[0][2], p[1][2]))
+            line = []
+            for c in (a, b):
+                cone = copy.deepcopy(msg.large_orange_cones[0]) if msg.large_orange_cones else None
+                if cone is None:
+                    return
+                cone.position.x, cone.position.y = c[0], c[1]
+                line.append(cone)
+            self.last_known_cones = line
 
     def odom_callback(self, msg):
         # We must also transform the car's position to 'map' so it shares a coordinate 
@@ -119,6 +148,15 @@ class LapCounter(Node):
             self.get_logger().debug(f"Could not transform car pose from {car_pt.header.frame_id} to {self.target_frame}: {ex}")
             return
 
+        if self.previous_position is not None:
+            step = math.dist((self.car_position.x, self.car_position.y), (self.previous_position.x, self.previous_position.y))
+            if step < 2.0:  # a jump of the map -> odom correction is not driving
+                self.distance_driven += step
+
+        if self.start_position is None:
+            self.start_position = self.car_position
+        self.update_start_state()
+
         if self.previous_position is not None and self.last_known_cones is not None and not self.in_cooldown:
             first_cone = self.last_known_cones[0]
             second_cone = self.last_known_cones[1]
@@ -133,13 +171,40 @@ class LapCounter(Node):
             if prev_cross * curr_cross < 0:  
                 self.get_logger().info("Crossing detected! Checking proximity to finish line...")
                 if self.is_near_finish_line(first_cone, second_cone, self.car_position):
-                    self.lap_count += 1
-                    self.get_logger().info(f"Lap completed! Total laps: {self.lap_count}")
+                    if self.start_state == 'pending':
+                        self.start_state = 'done'
+                        self.get_logger().info("Start line crossed: laps are counted from here.")
+                    else:
+                        self.lap_count += 1
+                        self.get_logger().info(f"Lap completed! Total laps: {self.lap_count}")
                     self.initiate_cooldown()
                 else:
                     self.get_logger().info("Crossing detected but car is too far from finish line, ignoring.")
        
         self.previous_position = self.car_position
+
+    def update_start_state(self):
+        """Decide whether the next crossing is the start (see start_line_within in __init__)."""
+        if self.start_state == 'done':
+            return
+        # a car that has driven twice the staging distance has passed its start line, seen or not
+        if self.distance_driven > 2.0 * self.start_line_within:
+            self.start_state = 'done'
+            return
+        if self.last_known_cones is None:
+            return
+        a, b = (c.position for c in self.last_known_cones)
+        s, c = self.start_position, self.car_position
+        if math.dist(((a.x + b.x) / 2.0, (a.y + b.y) / 2.0), (s.x, s.y)) > self.start_line_within:
+            self.start_state = 'done'       # this line is not where the car was staged
+            return
+
+        def side(p):
+            return (b.x - a.x) * (p.y - a.y) - (b.y - a.y) * (p.x - a.x)
+        if self.start_state is None:
+            # line found only after the car went over it: the start has happened
+            self.start_state = 'done' if side(s) * side(c) < 0 else 'pending'
+            self.get_logger().info(f"Start line {'already crossed' if self.start_state == 'done' else 'ahead: the first crossing is the start'}.")
 
     def is_near_finish_line(self, first_cone, second_cone, car_position, threshold=4.0):
         def point_line_distance(px, py, x1, y1, x2, y2):
@@ -184,7 +249,7 @@ def main(args=None):
         pass
     finally:
         lap_counter.destroy_node()
-        rclpy.shutdown()
+        rclpy.try_shutdown()  # Ctrl-C already shut the context down
 
 if __name__ == '__main__':
     main()

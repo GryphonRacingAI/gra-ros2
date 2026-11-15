@@ -83,7 +83,6 @@ def build_xacro(
         "",
         '    <xacro:include filename="$(find simulation)/models/cones/cone.xacro"/>',
         "",
-        '    <model name="cones">',
     ]
 
     ox, oy = inner_orange
@@ -113,14 +112,7 @@ def build_xacro(
     lines.extend(
         [
             "",
-            '      <plugin name="gz::sim::systems::PosePublisher" filename="gz-sim-pose-publisher-system">',
-            "        <use_pose_vector_msg>true</use_pose_vector_msg>",
-            "        <publish_model_pose>true</publish_model_pose>",
-            "        <publish_nested_model_pose>true</publish_nested_model_pose>",
-            "        <publish_link_pose>false</publish_link_pose>",
-            "      </plugin>",
-            "",
-            "    </model>",
+            '    <xacro:cone_pool/>',
             "",
             "  </world>",
             "</sdf>",

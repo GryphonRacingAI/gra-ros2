@@ -42,7 +42,7 @@ def build_xacro(track_name: str, cones: dict[str, list[tuple[float, float]]]) ->
     lines = [
         '<?xml version="1.0" ?>',
         '<sdf version=\'1.7\' xmlns:xacro="http://www.ros.org/wiki/xacro">',
-        "  <world name='sim_world'>",
+        "  <world name='map'>",
         "",
         '    <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics">',
         "      </plugin>",
@@ -69,7 +69,6 @@ def build_xacro(track_name: str, cones: dict[str, list[tuple[float, float]]]) ->
         "",
         '    <xacro:include filename="$(find simulation)/models/cones/cone.xacro"/>',
         "",
-        '    <model name="cones">',
     ]
 
     for cone_type in ("blue", "yellow", "large_orange"):
@@ -83,14 +82,7 @@ def build_xacro(track_name: str, cones: dict[str, list[tuple[float, float]]]) ->
     lines.extend(
         [
             "",
-            '      <plugin name="gz::sim::systems::PosePublisher" filename="gz-sim-pose-publisher-system">',
-            "        <use_pose_vector_msg>true</use_pose_vector_msg>",
-            "        <publish_model_pose>true</publish_model_pose>",
-            "        <publish_nested_model_pose>true</publish_nested_model_pose>",
-            "        <publish_link_pose>false</publish_link_pose>",
-            "      </plugin>",
-            "",
-            "    </model>",
+            '    <xacro:cone_pool/>',
             "",
             "  </world>",
             "</sdf>",

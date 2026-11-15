@@ -12,6 +12,7 @@
   <arg name="iou_thres" default="0.45"/>
   <arg name="max_det" default="300"/>
   <arg name="device" default="cuda:0"/>
+  <arg name="verbose" default="true"/>
   <arg name="result_conf" default="true"/>
   <arg name="result_line_width" default="1"/>
   <arg name="result_font_size" default="1"/>
@@ -27,6 +28,8 @@
   <arg name="min_cluster_size" default="10"/>
   <arg name="max_cluster_size" default="600"/>
   <arg name="gz_camera_convention" default="false"/>
+  <!-- range from the YOLO box height for detections without lidar points; calibrated in sim only -->
+  <arg name="bbox_range_fallback" default="false"/>
 
   <set_parameter name="use_sim_time" value="$(var use_sim_time)"/>
 
@@ -47,6 +50,7 @@
       <param name="result_labels" value="$(var result_labels)"/>
       <param name="result_boxes" value="$(var result_boxes)"/>
       <param name="device" value="$(var device)"/>
+      <param name="verbose" value="$(var verbose)"/>
     </node>
     <node pkg="ultralytics_ros" exec="predict_with_cloud_node" output="screen">
       <param name="camera_info_topic" value="$(var camera_info_topic)"/>
@@ -58,6 +62,7 @@
       <param name="min_cluster_size" value="$(var min_cluster_size)"/>
       <param name="max_cluster_size" value="$(var max_cluster_size)"/>
       <param name="gz_camera_convention" value="$(var gz_camera_convention)"/>
+      <param name="bbox_range_fallback" value="$(var bbox_range_fallback)"/>
     </node>
   </group>
 
@@ -78,6 +83,7 @@
       <param name="result_labels" value="$(var result_labels)"/>
       <param name="result_boxes" value="$(var result_boxes)"/>
       <param name="device" value="$(var device)"/>
+      <param name="verbose" value="$(var verbose)"/>
     </node>
     <node pkg="ultralytics_ros" exec="predict_with_cloud_node" output="screen">
       <param name="camera_info_topic" value="/zed2i/depth_camera/camera_info"/>
@@ -89,6 +95,7 @@
       <param name="min_cluster_size" value="5"/>
       <param name="max_cluster_size" value="70"/>
       <param name="gz_camera_convention" value="true"/>
+      <param name="bbox_range_fallback" value="true"/>
     </node>
   </group>
 
