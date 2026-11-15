@@ -43,7 +43,8 @@ DEBUG_GPU = False
 
 # ------------------ FastSLAM Core Imports ------------------
 try:
-    # fastslam64 is vendored (slam/fastslam64, see its README): the kernel fixes live in its source.
+    # fastslam64 is a git submodule (slam/slam/fastslam64, pinned to an upstream commit): the kernel fixes
+    # are upstream. Missing? git submodule update --init slam/slam/fastslam64
     from slam.fastslam64.lib.particle3 import FlatParticle
     from slam.fastslam64.lib.common import CUDAMemory, rescale, get_pose_estimate, resample
     from slam.fastslam64.cuda import fastslam as fastslam_cuda
@@ -646,7 +647,7 @@ class FastSLAMCore:
             best_idx = int(np.argmax(FlatParticle.w(self.particles)))
             best_landmarks = FlatParticle.get_landmarks(self.particles, best_idx)
             # Weighted circular mean of the heading: a linear mean of particles at +3.1 and -3.1 rad
-            # (driving west) is ~0 and flipped the published heading by up to 180 deg. The vendored
+            # (driving west) is ~0 and flipped the published heading by up to 180 deg. fastslam64's
             # get_mean_position kernel does the same; this host copy keeps the pose on one array.
             p2d = self._particles_2d()
             w = p2d[:, 3] / max(p2d[:, 3].sum(), 1e-300)

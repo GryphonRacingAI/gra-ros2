@@ -4,3 +4,4 @@
 [submodule "slam/slam/fastslam64"]
 	path = slam/slam/fastslam64
 	url = https://github.com/GryphonRacingAI/fastslam64.git
+	shallow = true

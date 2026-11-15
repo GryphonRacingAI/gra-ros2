@@ -53,7 +53,7 @@ no collision at all. Measured RTF with the activator: 0.90-0.96 (before: 0.92).
    touch ros_venv/COLCON_IGNORE        # stop colcon scanning the venv
    source ros_venv/bin/activate
    pip install -r src/perception/ultralytics_ros/requirements.txt
-   pip install pycuda          # fastslam64 itself is vendored in slam/slam/fastslam64
+   pip install pycuda          # fastslam64 itself is the submodule slam/slam/fastslam64 (git submodule update --init slam/slam/fastslam64)
    pip install "numpy<2"
    deactivate
    ```
@@ -160,9 +160,10 @@ run (the car is ~1.1 m wide with the wheels): it clips cones on tight corners at
   car's `real_config.yaml` ([0.02, 0.01], a 0.1 rad/s yaw-rate error) still maps badly with 512
   particles (per the notes in `sim_config.yaml`; not re-tested after vendoring). That points at the real
   odometry noise, to be checked on the car.
-- **fastslam64** is vendored in `slam/slam/fastslam64` (see its README): the library bugs found in
-  the 2026-10-27 report (EKF bearing residual, colour-blind association, linear heading mean) are
-  fixed in its source, not patched at run time.
+- **fastslam64** is the git submodule `slam/slam/fastslam64`, pinned to an upstream commit
+  (`git submodule update --init slam/slam/fastslam64`). The library bugs found in the 2026-10-27 report
+  (EKF bearing residual, colour-blind association, linear heading mean) and the measurement buffer
+  overflow are fixed upstream (fastslam64 PR #2), not patched at run time.
 - **Estimated vehicle numbers** (check against the car): speed loop gains, brake torque at 100 %,
   steering rate (1 rad/s), rolling resistance, CdA, regenerative braking.
 - **VLP-16 blind band:** no ring hits a 0.325 m cone between ~10.5 and ~16 m (0.6 m mount, 2 deg
